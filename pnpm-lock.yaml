@@ -41,6 +41,9 @@ importers:
       '@atconseil/testvault-exporters':
         specifier: workspace:^
         version: link:../../packages/testvault-exporters
+      '@atconseil/testvault-importers':
+        specifier: workspace:^
+        version: link:../../packages/testvault-importers
       '@atconseil/testvault-sdk':
         specifier: workspace:^
         version: link:../../packages/testvault-sdk
