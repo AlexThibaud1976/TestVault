@@ -36,5 +36,5 @@
 	"content": {
 		"details": { "path": "overview.md" }
 	},
-	"files": [{ "path": "overview.md" }, { "path": "dist/hub", "addressable": true }]
+	"files": [{ "path": "dist/hub", "addressable": true }]
 }
