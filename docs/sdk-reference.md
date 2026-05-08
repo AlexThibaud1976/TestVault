@@ -58,3 +58,30 @@ Appends a Bug Work Item ID to the `bugLinks` array of a **finalized** execution.
 | Error | HTTP | When |
 | --- | --- | --- |
 | `TestExecutionImmutableError` | 403 | Mutation attempted on a `Completed` execution |
+
+---
+
+## Bug creation
+
+### `buildBugDraft(exec, testCase): BugDraft`
+
+Derives a pre-filled `BugDraft` from a finalized `TestVaultTestExecution` and its `TestVaultTestCase`. Only failed steps are included in `reproSteps`.
+
+```typescript
+const draft = buildBugDraft(finalizedExec, testCase);
+// draft.title     → "[Fail] {testCase.title} — {environment}"
+// draft.severity  → "2 - High"
+// draft.reproSteps → one block per failed step (action, expected, observed comment)
+```
+
+### `createBugCreationService(adoClient, testExecutionService): IBugCreationService`
+
+Returns an `IBugCreationService` with:
+
+#### `createBug(draft, executionId): Promise<{ id: number; url: string }>`
+
+1. Creates a Bug Work Item via `adoClient.createWorkItem("Bug", patches)`.
+2. Fetches the Test Execution WI (`adoClient.fetchWorkItem(executionId)`) to obtain its URL.
+3. Adds a `System.LinkTypes.Related` relation from Bug → Test Execution.
+4. Calls `testExecutionService.linkBug(executionId, bugId)` for the reverse link.
+5. Returns `{ id, url }` of the created Bug WI.

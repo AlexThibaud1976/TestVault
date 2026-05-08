@@ -1,4 +1,8 @@
-import type { ITestExecutionService, InProgressExecution } from "@atconseil/testvault-sdk";
+import type {
+	IBugCreationService,
+	ITestExecutionService,
+	InProgressExecution,
+} from "@atconseil/testvault-sdk";
 import type {
 	TestVaultPrecondition,
 	TestVaultTestCase,
@@ -77,6 +81,16 @@ function makeExecService(
 		attachEvidence: vi.fn().mockResolvedValue(inProgressExec),
 		finalizeRun: vi.fn().mockResolvedValue(makeFinalizedExec(globalStatus)),
 		linkBug: vi.fn().mockResolvedValue(makeFinalizedExec(globalStatus)),
+	};
+}
+
+function makeBugService(overrides?: Partial<IBugCreationService>): IBugCreationService {
+	return {
+		createBug: vi.fn().mockResolvedValue({
+			id: 200,
+			url: "https://dev.azure.com/org/MyProject/_workitems/edit/200",
+		}),
+		...overrides,
 	};
 }
 
@@ -284,6 +298,77 @@ describe("RunInterface", () => {
 		await user.click(screen.getByTestId("save-button"));
 		await waitFor(() => expect(screen.getByTestId("saved-status")).toBeDefined());
 		expect(screen.queryByTestId("create-bug-button")).toBeNull();
+	});
+
+	it("clicking create-bug-button shows CreateBugForm when bugService is provided", async () => {
+		const execService = makeExecService("Fail");
+		const user = userEvent.setup();
+		render(
+			<RunInterface
+				testCase={makeTC()}
+				testPlanId={10}
+				availableEnvironments={ENVS}
+				executionService={execService}
+				bugService={makeBugService()}
+			/>
+		);
+		await user.selectOptions(screen.getByTestId("env-selector"), "QA");
+		await user.click(screen.getByTestId("step-0-status-fail"));
+		await user.type(screen.getByTestId("step-0-comment"), "Something failed");
+		await user.click(screen.getByTestId("step-1-status-pass"));
+		await user.click(screen.getByTestId("save-button"));
+		await waitFor(() => expect(screen.getByTestId("create-bug-button")).toBeDefined());
+		await user.click(screen.getByTestId("create-bug-button"));
+		expect(screen.queryByTestId("create-bug-button")).toBeNull();
+		expect(screen.getByTestId("create-bug-title")).toBeDefined();
+	});
+
+	it("create-bug-button disappears while bug form is shown, reappears on cancel", async () => {
+		const execService = makeExecService("Fail");
+		const user = userEvent.setup();
+		render(
+			<RunInterface
+				testCase={makeTC()}
+				testPlanId={10}
+				availableEnvironments={ENVS}
+				executionService={execService}
+				bugService={makeBugService()}
+			/>
+		);
+		await user.selectOptions(screen.getByTestId("env-selector"), "QA");
+		await user.click(screen.getByTestId("step-0-status-fail"));
+		await user.type(screen.getByTestId("step-0-comment"), "Something failed");
+		await user.click(screen.getByTestId("step-1-status-pass"));
+		await user.click(screen.getByTestId("save-button"));
+		await waitFor(() => expect(screen.getByTestId("create-bug-button")).toBeDefined());
+		await user.click(screen.getByTestId("create-bug-button"));
+		await user.click(screen.getByTestId("create-bug-cancel"));
+		await waitFor(() => expect(screen.getByTestId("create-bug-button")).toBeDefined());
+	});
+
+	it("calls onCreateBug with saved exec when bug form reports success", async () => {
+		const onCreateBug = vi.fn();
+		const execService = makeExecService("Fail");
+		const user = userEvent.setup();
+		render(
+			<RunInterface
+				testCase={makeTC()}
+				testPlanId={10}
+				availableEnvironments={ENVS}
+				executionService={execService}
+				bugService={makeBugService()}
+				onCreateBug={onCreateBug}
+			/>
+		);
+		await user.selectOptions(screen.getByTestId("env-selector"), "QA");
+		await user.click(screen.getByTestId("step-0-status-fail"));
+		await user.type(screen.getByTestId("step-0-comment"), "Something failed");
+		await user.click(screen.getByTestId("step-1-status-pass"));
+		await user.click(screen.getByTestId("save-button"));
+		await waitFor(() => expect(screen.getByTestId("create-bug-button")).toBeDefined());
+		await user.click(screen.getByTestId("create-bug-button"));
+		await user.click(screen.getByTestId("create-bug-submit"));
+		await waitFor(() => expect(onCreateBug).toHaveBeenCalledOnce());
 	});
 
 	it("calls onCancelled when Cancel is clicked", async () => {

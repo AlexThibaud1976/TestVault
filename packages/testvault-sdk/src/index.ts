@@ -69,3 +69,5 @@ export type {
 	IEnvironmentConfigService,
 	IExtensionDataClient,
 } from "./environment-config-service.js";
+export { buildBugDraft, createBugCreationService } from "./bug-creation-service.js";
+export type { BugDraft, IBugCreationService } from "./bug-creation-service.js";

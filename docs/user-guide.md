@@ -43,7 +43,13 @@ The global status is calculated automatically from step results when a run is fi
 
 ### Linking a Bug
 
-After a run is finalized, click **Create Bug from Failure** to open a pre-filled Bug Work Item. The bug is automatically linked to the execution via `linkBug`.
+After a run is finalized with a **Fail** global status, the **Create Bug from Failure** button appears. Clicking it opens an inline form pre-filled with:
+
+- **Title** — `[Fail] {Test Case title} — {Environment}`
+- **Severity** — defaults to `2 - High` (editable)
+- **Repro Steps** — auto-generated from each failed step's action, expected value, and observed comment
+
+On submission the Bug Work Item is created in ADO and bidirectionally linked: a `System.LinkTypes.Related` relation from the Bug to the Test Execution WI, and a `linkBug` entry on the execution record. Cancel closes the form and returns to the saved-run view.
 
 ### Immutability guarantee
 

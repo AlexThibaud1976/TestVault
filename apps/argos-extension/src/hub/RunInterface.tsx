@@ -1,8 +1,10 @@
 import type {
+	IBugCreationService,
 	IEvidenceUploadService,
 	ITestExecutionService,
 	InProgressExecution,
 } from "@atconseil/testvault-sdk";
+import { buildBugDraft } from "@atconseil/testvault-sdk";
 import type {
 	TestVaultPrecondition,
 	TestVaultTestCase,
@@ -10,6 +12,7 @@ import type {
 } from "@atconseil/testvault-types";
 import { Button, Text, Textarea } from "@fluentui/react-components";
 import { useState } from "react";
+import { CreateBugForm } from "./CreateBugForm.js";
 import { EvidencePanel } from "./EvidencePanel.js";
 
 type StepStatus = "Pass" | "Fail" | "Blocked" | "Skipped";
@@ -25,6 +28,7 @@ export interface RunInterfaceProps {
 	availableEnvironments: string[];
 	executionService: ITestExecutionService;
 	uploadService?: IEvidenceUploadService;
+	bugService?: IBugCreationService;
 	preconditions?: TestVaultPrecondition[];
 	onSaved?: (exec: TestVaultTestExecution) => void;
 	onCancelled?: () => void;
@@ -48,6 +52,7 @@ export function RunInterface({
 	availableEnvironments,
 	executionService,
 	uploadService,
+	bugService,
 	preconditions,
 	onSaved,
 	onCancelled,
@@ -62,6 +67,7 @@ export function RunInterface({
 	const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 	const [evidenceError, setEvidenceError] = useState<string | undefined>();
 	const [uploading, setUploading] = useState(false);
+	const [showBugForm, setShowBugForm] = useState(false);
 
 	function setStepStatus(index: number, status: StepStatus) {
 		setStepStates((prev) => ({
@@ -148,10 +154,32 @@ export function RunInterface({
 					<div data-testid="saved-status" style={{ marginBottom: "16px" }}>
 						Run saved — {savedExec.globalStatus}
 					</div>
-					{savedExec.globalStatus === "Fail" && (
-						<Button data-testid="create-bug-button" appearance="primary">
+					{savedExec.globalStatus === "Fail" && !showBugForm && (
+						<Button
+							data-testid="create-bug-button"
+							appearance="primary"
+							onClick={() => {
+								if (bugService) {
+									setShowBugForm(true);
+								} else {
+									_onCreateBug?.(savedExec);
+								}
+							}}
+						>
 							Create Bug
 						</Button>
+					)}
+					{showBugForm && bugService && (
+						<CreateBugForm
+							draft={buildBugDraft(savedExec, testCase)}
+							service={bugService}
+							executionId={savedExec.id}
+							onCreated={() => {
+								_onCreateBug?.(savedExec);
+								setShowBugForm(false);
+							}}
+							onCancelled={() => setShowBugForm(false)}
+						/>
 					)}
 				</div>
 				<div
