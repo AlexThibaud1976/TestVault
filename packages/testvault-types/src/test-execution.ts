@@ -7,6 +7,8 @@ export const EvidenceRefSchema = z.object({
 	contentType: z.string(),
 	sizeBytes: z.number().int().nonnegative(),
 	uploadedAt: z.string().datetime(),
+	stepIndex: z.number().int().optional(),
+	url: z.string().optional(),
 });
 export type EvidenceRef = z.infer<typeof EvidenceRefSchema>;
 

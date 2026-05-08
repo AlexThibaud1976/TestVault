@@ -15,6 +15,7 @@ function makeAdoClient(overrides?: Partial<IAdoClient>): IAdoClient {
 		updateWorkItem: vi.fn(),
 		deleteWorkItem: vi.fn(),
 		queryByWiql: vi.fn(),
+		uploadAttachment: vi.fn(),
 		...overrides,
 	};
 }

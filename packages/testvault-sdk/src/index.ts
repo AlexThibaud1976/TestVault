@@ -58,3 +58,9 @@ export type {
 	ITestExecutionService,
 	InProgressExecution,
 } from "./test-execution-service.js";
+export {
+	EvidenceSizeLimitError,
+	EvidenceTypeError,
+	createEvidenceUploadService,
+} from "./evidence-upload-service.js";
+export type { IEvidenceUploadService } from "./evidence-upload-service.js";

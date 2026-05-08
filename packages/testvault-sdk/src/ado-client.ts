@@ -72,6 +72,11 @@ export interface IAdoClient {
 	updateWorkItem(id: number, fields: WorkItemFieldPatch[]): Promise<RawWorkItem>;
 	deleteWorkItem(id: number): Promise<void>;
 	queryByWiql(wiql: string): Promise<number[]>;
+	uploadAttachment(
+		filename: string,
+		content: Uint8Array,
+		contentType: string
+	): Promise<{ id: string; url: string }>;
 }
 
 export interface AdoClientConfig {
@@ -187,6 +192,24 @@ export function createAdoClient(config: AdoClientConfig): IAdoClient {
 			try {
 				const data = JSON.parse(text) as { workItems: Array<{ id: number }> };
 				return data.workItems.map((wi) => wi.id);
+			} catch {
+				throw new AdoServerError(`Invalid JSON response: ${text.slice(0, 100)}`);
+			}
+		},
+
+		async uploadAttachment(filename, content, _contentType) {
+			const res = await doFetch(
+				`${baseApiUrl}/attachments?fileName=${encodeURIComponent(filename)}&api-version=${API_VERSION}`,
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/octet-stream" },
+					body: content,
+				}
+			);
+			await throwForStatus(res);
+			const text = await res.text();
+			try {
+				return JSON.parse(text) as { id: string; url: string };
 			} catch {
 				throw new AdoServerError(`Invalid JSON response: ${text.slice(0, 100)}`);
 			}

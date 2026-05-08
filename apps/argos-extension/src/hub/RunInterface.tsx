@@ -1,4 +1,8 @@
-import type { ITestExecutionService, InProgressExecution } from "@atconseil/testvault-sdk";
+import type {
+	IEvidenceUploadService,
+	ITestExecutionService,
+	InProgressExecution,
+} from "@atconseil/testvault-sdk";
 import type {
 	TestVaultPrecondition,
 	TestVaultTestCase,
@@ -6,6 +10,7 @@ import type {
 } from "@atconseil/testvault-types";
 import { Button, Text, Textarea } from "@fluentui/react-components";
 import { useState } from "react";
+import { EvidencePanel } from "./EvidencePanel.js";
 
 type StepStatus = "Pass" | "Fail" | "Blocked" | "Skipped";
 
@@ -19,6 +24,7 @@ export interface RunInterfaceProps {
 	testPlanId: number;
 	availableEnvironments: string[];
 	executionService: ITestExecutionService;
+	uploadService?: IEvidenceUploadService;
 	preconditions?: TestVaultPrecondition[];
 	onSaved?: (exec: TestVaultTestExecution) => void;
 	onCancelled?: () => void;
@@ -41,6 +47,7 @@ export function RunInterface({
 	testPlanId,
 	availableEnvironments,
 	executionService,
+	uploadService,
 	preconditions,
 	onSaved,
 	onCancelled,
@@ -52,6 +59,9 @@ export function RunInterface({
 	const [savedExec, setSavedExec] = useState<TestVaultTestExecution | null>(null);
 	const [envRequired, setEnvRequired] = useState(false);
 	const [commentErrors, setCommentErrors] = useState<Set<number>>(new Set());
+	const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+	const [evidenceError, setEvidenceError] = useState<string | undefined>();
+	const [uploading, setUploading] = useState(false);
 
 	function setStepStatus(index: number, status: StepStatus) {
 		setStepStates((prev) => ({
@@ -65,6 +75,11 @@ export function RunInterface({
 			...prev,
 			[index]: { status: prev[index]?.status ?? null, comment },
 		}));
+	}
+
+	function handleFileSelected(file: File) {
+		setEvidenceError(undefined);
+		setPendingFiles((prev) => [...prev, file]);
 	}
 
 	async function handleSave() {
@@ -92,6 +107,19 @@ export function RunInterface({
 				environment,
 			});
 
+			if (uploadService && pendingFiles.length > 0) {
+				setUploading(true);
+				try {
+					for (const file of pendingFiles) {
+						await uploadService.upload(run.id, file);
+					}
+				} catch (err) {
+					setEvidenceError(err instanceof Error ? err.message : "Evidence upload failed");
+				} finally {
+					setUploading(false);
+				}
+			}
+
 			for (const step of testCase.steps) {
 				const state = stepStates[step.index];
 				if (!state?.status) continue;
@@ -115,15 +143,31 @@ export function RunInterface({
 
 	if (savedExec) {
 		return (
-			<div style={{ padding: "24px" }}>
-				<div data-testid="saved-status" style={{ marginBottom: "16px" }}>
-					Run saved — {savedExec.globalStatus}
+			<div style={{ padding: "24px", display: "flex", gap: "24px" }}>
+				<div style={{ flex: 1 }}>
+					<div data-testid="saved-status" style={{ marginBottom: "16px" }}>
+						Run saved — {savedExec.globalStatus}
+					</div>
+					{savedExec.globalStatus === "Fail" && (
+						<Button data-testid="create-bug-button" appearance="primary">
+							Create Bug
+						</Button>
+					)}
 				</div>
-				{savedExec.globalStatus === "Fail" && (
-					<Button data-testid="create-bug-button" appearance="primary">
-						Create Bug
-					</Button>
-				)}
+				<div
+					data-testid="evidence-panel"
+					style={{
+						width: "280px",
+						padding: "12px",
+						border: "1px solid #e0e0e0",
+						borderRadius: "4px",
+					}}
+				>
+					<Text weight="semibold" block style={{ marginBottom: "8px" }}>
+						Evidence
+					</Text>
+					<EvidencePanel evidence={savedExec.evidence} onFileSelected={() => undefined} />
+				</div>
 			</div>
 		);
 	}
@@ -255,7 +299,21 @@ export function RunInterface({
 				<Text weight="semibold" block style={{ marginBottom: "8px" }}>
 					Evidence
 				</Text>
-				<Text style={{ color: "#888" }}>Attach screenshots or files…</Text>
+				<EvidencePanel
+					evidence={[]}
+					onFileSelected={handleFileSelected}
+					uploading={uploading}
+					error={evidenceError}
+				/>
+				{pendingFiles.length > 0 && (
+					<ul style={{ listStyle: "none", padding: 0, marginTop: "8px" }}>
+						{pendingFiles.map((f, i) => (
+							<li key={`${f.name}-${i}`} style={{ fontSize: "12px", color: "#444" }}>
+								{f.name}
+							</li>
+						))}
+					</ul>
+				)}
 			</div>
 		</div>
 	);
