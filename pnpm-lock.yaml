@@ -99,6 +99,9 @@ importers:
 
   apps/argos-functions:
     dependencies:
+      '@atconseil/testvault-gherkin':
+        specifier: workspace:*
+        version: link:../../packages/testvault-gherkin
       '@atconseil/testvault-importers':
         specifier: workspace:*
         version: link:../../packages/testvault-importers
