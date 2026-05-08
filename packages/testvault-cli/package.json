@@ -3,6 +3,10 @@
 	"version": "0.0.1",
 	"private": false,
 	"type": "module",
+	"main": "./dist/index.js",
+	"exports": {
+		".": "./dist/index.js"
+	},
 	"bin": {
 		"testvault": "./dist/cli.js"
 	},

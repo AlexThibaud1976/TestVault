@@ -282,9 +282,15 @@ importers:
 
   tools/e2e:
     dependencies:
+      '@atconseil/testvault-cli':
+        specifier: workspace:*
+        version: link:../../packages/testvault-cli
       '@atconseil/testvault-exporters':
         specifier: workspace:^
         version: link:../../packages/testvault-exporters
+      '@atconseil/testvault-importers':
+        specifier: workspace:*
+        version: link:../../packages/testvault-importers
       '@atconseil/testvault-sdk':
         specifier: workspace:*
         version: link:../../packages/testvault-sdk
@@ -292,6 +298,9 @@ importers:
       '@playwright/test':
         specifier: ^1.49.0
         version: 1.59.1
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.18
       typescript:
         specifier: ^5.7.0
         version: 5.9.3

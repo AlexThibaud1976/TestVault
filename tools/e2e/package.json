@@ -9,11 +9,14 @@
 		"report": "playwright show-report"
 	},
 	"dependencies": {
+		"@atconseil/testvault-cli": "workspace:*",
 		"@atconseil/testvault-exporters": "workspace:^",
+		"@atconseil/testvault-importers": "workspace:*",
 		"@atconseil/testvault-sdk": "workspace:*"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.49.0",
+		"@types/node": "^22.0.0",
 		"typescript": "^5.7.0"
 	}
 }

@@ -3,6 +3,7 @@ import {
 	createPreconditionService,
 	createTestCaseService,
 	createTestCaseVersionService,
+	createTestExecutionService,
 	createTestPlanService,
 	createTestSetService,
 } from "@atconseil/testvault-sdk";
@@ -10,6 +11,7 @@ import type {
 	IPreconditionService,
 	ITestCaseService,
 	ITestCaseVersionService,
+	ITestExecutionService,
 	ITestPlanService,
 	ITestSetService,
 } from "@atconseil/testvault-sdk";
@@ -28,6 +30,7 @@ type E2EFixtures = {
 	planService: ITestPlanService;
 	precondService: IPreconditionService;
 	versionService: ITestCaseVersionService;
+	execService: ITestExecutionService;
 };
 
 export const test = base.extend<E2EFixtures>({
@@ -96,6 +99,18 @@ export const test = base.extend<E2EFixtures>({
 				pat: requireEnv("ADO_CLOUD_PAT"),
 			});
 			await use(createTestCaseVersionService(client));
+		},
+		{ scope: "worker" },
+	],
+
+	execService: [
+		async ({ project }, use) => {
+			const client = createAdoClient({
+				baseUrl: requireEnv("ADO_CLOUD_ORG_URL"),
+				project,
+				pat: requireEnv("ADO_CLOUD_PAT"),
+			});
+			await use(createTestExecutionService(client, project));
 		},
 		{ scope: "worker" },
 	],
