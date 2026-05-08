@@ -41,6 +41,9 @@ importers:
       '@atconseil/testvault-sdk':
         specifier: workspace:^
         version: link:../../packages/testvault-sdk
+      '@atconseil/testvault-types':
+        specifier: workspace:^
+        version: link:../../packages/testvault-types
       '@fluentui/react-components':
         specifier: ^9.54.0
         version: 9.73.8(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)
