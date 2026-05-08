@@ -21,3 +21,47 @@ export type {
 	IBddMappingReader,
 	IBddTcService,
 } from "./bdd-sync/git-push-handler.js";
+export { handleHealthRequest } from "./health/health-handler.js";
+export { VERSION } from "./shared/version.js";
+export { encryptApiKey, decryptApiKey } from "./shared/crypto.js";
+export type { EncryptedApiKey } from "./shared/crypto.js";
+export {
+	createAuditEntry,
+	maskSecret,
+	NoopAuditLogger,
+} from "./shared/audit-log.js";
+export type {
+	AuditEntry,
+	AuditOperation,
+	IAuditLogger,
+} from "./shared/audit-log.js";
+export { checkAndDecrementQuota, nextMonthlyReset } from "./shared/quota.js";
+export type {
+	IQuotaStore,
+	QuotaCheckResult,
+	QuotaMode,
+	QuotaState,
+} from "./shared/quota.js";
+export { parseCandidates, buildGenerationMessages } from "./shared/llm-client.js";
+export type {
+	ILlmClient,
+	LlmCallOptions,
+	LlmMessage,
+	LlmProviderType,
+	LlmResponse,
+	TcCandidate,
+} from "./shared/llm-client.js";
+export { handleGenerateTestCases } from "./llm-proxy/generate-test-cases.js";
+export type {
+	IProviderConfigStore,
+	LlmGenerateRequest,
+	LlmGenerateResult,
+	ProviderConfig,
+} from "./llm-proxy/generate-test-cases.js";
+export { setLlmServices } from "./llm-proxy/functions.js";
+export { computeFlakinessScore, runFlakinessDetection } from "./jobs/flakiness-detector.js";
+export type {
+	ExecutionRecord,
+	FlakinessReport,
+	IFlakinessDataSource,
+} from "./jobs/flakiness-detector.js";
