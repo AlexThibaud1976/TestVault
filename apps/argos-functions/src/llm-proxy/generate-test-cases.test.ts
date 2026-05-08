@@ -76,7 +76,7 @@ describe("handleGenerateTestCases", () => {
 		);
 		expect(result.status).toBe(200);
 		expect(result.candidates).toHaveLength(2);
-		expect(result.candidates[0]?.title).toBe("Login with valid credentials");
+		expect(result.candidates?.[0]?.title).toBe("Login with valid credentials");
 	});
 
 	it("returns 402 when quota is exhausted in hard mode", async () => {
