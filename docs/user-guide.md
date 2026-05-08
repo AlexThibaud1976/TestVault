@@ -89,4 +89,15 @@ The **argos-coverage-panel** widget appears on User Story, Bug, and Requirement 
 
 ---
 
+### Tagged Snapshots (Test Case versions)
+
+The **Snapshots** panel on a Test Case lets you freeze a named, immutable copy of the current Test Case at any point in time.
+
+- Click **Create Snapshot**, enter a name (e.g. `v1.0`) and an optional comment, then click **Create**.
+- Each snapshot stores the title, description, steps, and tags at creation time.
+- Snapshot names must be unique per Test Case — a duplicate name returns an error inline.
+- Snapshots are immutable (`System.State = Frozen`): once created they cannot be edited.
+
+---
+
 For architecture and technical details, see `plan.md` in the spec-kit.

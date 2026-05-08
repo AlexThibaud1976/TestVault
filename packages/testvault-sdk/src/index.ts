@@ -79,6 +79,16 @@ export type {
 } from "./environment-config-service.js";
 export { buildBugDraft, createBugCreationService } from "./bug-creation-service.js";
 export type { BugDraft, IBugCreationService } from "./bug-creation-service.js";
+export {
+	SnapshotImmutableError,
+	SnapshotNameConflictError,
+	createTestCaseVersionService,
+} from "./test-case-version-service.js";
+export type {
+	ITestCaseVersionService,
+	TestCaseVersionDraft,
+	TestVaultTestCaseVersion,
+} from "./test-case-version-service.js";
 export { WI_LINK_TYPE_ATTR, createWorkItemLinkService } from "./work-item-link-service.js";
 export type {
 	IWorkItemLinkService,
