@@ -1,0 +1,13 @@
+{
+	"entryPoints": ["src/index.ts"],
+	"out": "docs",
+	"name": "@atconseil/testvault-sdk",
+	"readme": "README.md",
+	"excludePrivate": true,
+	"excludeInternal": true,
+	"includeVersion": true,
+	"gitRevision": "main",
+	"navigationLinks": {
+		"GitHub": "https://github.com/AlexThibaud1976/TestVault"
+	}
+}

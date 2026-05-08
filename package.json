@@ -13,9 +13,13 @@
 		"typecheck": "turbo typecheck",
 		"format": "biome format --write .",
 		"check": "biome check .",
-		"prepare": "simple-git-hooks"
+		"prepare": "simple-git-hooks",
+		"changeset": "changeset",
+		"version": "changeset version",
+		"release": "changeset publish"
 	},
 	"devDependencies": {
+		"@changesets/cli": "^2.27.0",
 		"@biomejs/biome": "^1.9.4",
 		"secretlint": "^9.3.0",
 		"@secretlint/secretlint-rule-preset-recommend": "^9.3.0",

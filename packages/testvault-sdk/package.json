@@ -21,7 +21,8 @@
 		"build": "tsc --project tsconfig.json",
 		"typecheck": "tsc --project tsconfig.json --noEmit",
 		"test": "vitest run --passWithNoTests",
-		"lint": "biome check src/"
+		"lint": "biome check src/",
+		"docs": "typedoc"
 	},
 	"dependencies": {
 		"@atconseil/testvault-types": "workspace:*",
@@ -31,6 +32,7 @@
 	},
 	"devDependencies": {
 		"msw": "^2.14.5",
+		"typedoc": "^0.28.0",
 		"typescript": "^5.7.0",
 		"vitest": "^3.1.0"
 	}

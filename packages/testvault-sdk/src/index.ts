@@ -114,3 +114,6 @@ export type {
 	SnapshotTagDiff,
 	StepDiffEntry,
 } from "./snapshot-diff.js";
+export { buildTestCaseQuery, buildWiqlQuery } from "./wiql.js";
+export type { WiqlOptions } from "./wiql.js";
+export { paginate, paginateAsync } from "./paginator.js";
