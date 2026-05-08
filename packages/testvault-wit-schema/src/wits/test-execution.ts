@@ -1,0 +1,91 @@
+import type { WitDefinition } from "../model.js";
+
+export const TEST_EXECUTION_WIT: WitDefinition = {
+	referenceName: "TestVault.TestExecution",
+	displayName: "Test Execution (Argos)",
+	description:
+		"Immutable record of a single test run against a Test Case. Never modified after save.",
+	icon: "icon-run",
+	color: "#ff9d00",
+	isImmutableAfterCreate: true,
+	fields: [
+		{ referenceName: "System.Title", displayName: "Title", type: "string", required: true },
+		{
+			referenceName: "TestVault.TestPlanId",
+			displayName: "Test Plan ID",
+			type: "integer",
+			required: false,
+			description: "Weak reference — history preserved even if plan is deleted",
+		},
+		{
+			referenceName: "TestVault.TestCaseId",
+			displayName: "Test Case ID",
+			type: "integer",
+			required: true,
+			description: "Strong reference — parent-child link",
+		},
+		{
+			referenceName: "TestVault.TestCaseVersionId",
+			displayName: "Test Case Version ID",
+			type: "integer",
+			required: false,
+			description: "Set when Test Plan is Locked; references the frozen snapshot",
+		},
+		{
+			referenceName: "TestVault.Environment",
+			displayName: "Environment",
+			type: "string",
+			required: true,
+		},
+		{
+			referenceName: "TestVault.GlobalStatus",
+			displayName: "Global Status",
+			type: "picklistString",
+			required: true,
+			allowedValues: ["Pass", "Fail", "Blocked", "Unexecuted", "Skipped"],
+			defaultValue: "Unexecuted",
+		},
+		{
+			referenceName: "TestVault.StepResults",
+			displayName: "Step Results",
+			type: "longText",
+			required: false,
+			description: "JSON-serialized TestStepResult[]",
+		},
+		{
+			referenceName: "TestVault.ExecutionSource",
+			displayName: "Execution Source",
+			type: "picklistString",
+			required: true,
+			allowedValues: ["Manual", "CI"],
+			defaultValue: "Manual",
+		},
+		{
+			referenceName: "TestVault.CiPipelineRunId",
+			displayName: "CI Pipeline Run ID",
+			type: "string",
+			required: false,
+		},
+		{
+			referenceName: "TestVault.CiPipelineUrl",
+			displayName: "CI Pipeline URL",
+			type: "string",
+			required: false,
+		},
+		{
+			referenceName: "TestVault.CiPayloadHash",
+			displayName: "CI Payload Hash",
+			type: "string",
+			required: false,
+			description: "SHA-256 of the received CI payload for anti-replay",
+		},
+		{
+			referenceName: "TestVault.DurationSeconds",
+			displayName: "Duration (seconds)",
+			type: "integer",
+			required: false,
+		},
+	],
+	states: [{ name: "Completed", color: "#393939", stateCategory: "Completed" }],
+	transitions: [{ from: null, to: "Completed" }],
+};

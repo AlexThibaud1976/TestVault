@@ -7,19 +7,21 @@
 		".": {
 			"import": "./dist/index.js",
 			"types": "./dist/index.d.ts"
-		}
+		},
+		"./schema.json": "./dist/schema.json"
 	},
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"files": ["dist"],
 	"scripts": {
-		"build": "tsc --project tsconfig.json",
+		"build": "tsc --project tsconfig.json && node scripts/generate-schema.mjs",
 		"typecheck": "tsc --project tsconfig.json --noEmit",
 		"test": "vitest run --passWithNoTests",
 		"lint": "biome check src/"
 	},
 	"dependencies": {
-		"@atconseil/testvault-types": "workspace:*"
+		"@atconseil/testvault-types": "workspace:*",
+		"zod": "^3.24.0"
 	},
 	"devDependencies": {
 		"typescript": "^5.7.0",
