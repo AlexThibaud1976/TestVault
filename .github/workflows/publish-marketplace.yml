@@ -41,9 +41,9 @@ jobs:
         run: |
           mkdir -p dist
           tfx extension create \
-            --manifest-globs apps/argos-extension/vss-extension.json \
+            --manifest-globs vss-extension.json \
             --root apps/argos-extension \
-            --output-path ./dist/argos.vsix \
+            --output-path ../../dist/argos.vsix \
             --no-prompt
 
       - name: Upload VSIX artifact
@@ -59,7 +59,7 @@ jobs:
           MARKETPLACE_PAT: ${{ secrets.MARKETPLACE_PAT }}
         run: |
           tfx extension publish \
-            --manifest-globs apps/argos-extension/vss-extension.json \
+            --manifest-globs vss-extension.json \
             --root apps/argos-extension \
             --token "$MARKETPLACE_PAT" \
             --no-prompt

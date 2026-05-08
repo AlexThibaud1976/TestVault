@@ -42,9 +42,9 @@ jobs:
           npm install -g tfx-cli
           if [ -f apps/argos-extension/vss-extension.json ]; then
             tfx extension create \
-              --manifest-globs apps/argos-extension/vss-extension.json \
+              --manifest-globs vss-extension.json \
               --root apps/argos-extension \
-              --output-path ./dist/argos.vsix \
+              --output-path ../../dist/argos.vsix \
               --no-prompt
           else
             echo "vss-extension.json not yet created (pending T-0.4) — skipping"
