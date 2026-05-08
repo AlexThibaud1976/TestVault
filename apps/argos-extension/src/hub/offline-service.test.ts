@@ -1,8 +1,41 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { WriteQueue } from "./offline-service.js";
+import { WriteQueue, createBrowserConnectivityService } from "./offline-service.js";
 
 afterEach(() => {
 	vi.clearAllMocks();
+});
+
+describe("createBrowserConnectivityService", () => {
+	it("isOnline reflects navigator.onLine", () => {
+		Object.defineProperty(navigator, "onLine", { value: true, configurable: true, writable: true });
+		const svc = createBrowserConnectivityService();
+		expect(svc.isOnline()).toBe(true);
+	});
+
+	it("notifies listeners when online event fires", () => {
+		const svc = createBrowserConnectivityService();
+		const listener = vi.fn();
+		svc.subscribe(listener);
+		window.dispatchEvent(new Event("online"));
+		expect(listener).toHaveBeenCalledWith(true);
+	});
+
+	it("notifies listeners when offline event fires", () => {
+		const svc = createBrowserConnectivityService();
+		const listener = vi.fn();
+		svc.subscribe(listener);
+		window.dispatchEvent(new Event("offline"));
+		expect(listener).toHaveBeenCalledWith(false);
+	});
+
+	it("unsubscribe stops notifications", () => {
+		const svc = createBrowserConnectivityService();
+		const listener = vi.fn();
+		const unsub = svc.subscribe(listener);
+		unsub();
+		window.dispatchEvent(new Event("online"));
+		expect(listener).not.toHaveBeenCalled();
+	});
 });
 
 describe("WriteQueue", () => {

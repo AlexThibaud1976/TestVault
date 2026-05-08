@@ -59,4 +59,34 @@ describe("QuotaSettings", () => {
 		expect(screen.getByTestId("quota-mode-hard")).toBeDefined();
 		expect(screen.getByTestId("quota-mode-soft")).toBeDefined();
 	});
+
+	it("updates limitPerUser when limit input changes", async () => {
+		const user = userEvent.setup();
+		const service = makeService();
+		render(<QuotaSettings service={service} isAdmin />);
+		await waitFor(() => screen.getByTestId("quota-limit-input"));
+		const input = screen.getByTestId("quota-limit-input") as HTMLInputElement;
+		await user.clear(input);
+		await user.type(input, "50");
+		await user.click(screen.getByTestId("save-quota-button"));
+		await waitFor(() =>
+			expect(vi.mocked(service.setConfig)).toHaveBeenCalledWith(
+				expect.objectContaining({ limitPerUser: 50 })
+			)
+		);
+	});
+
+	it("updates mode when soft radio is selected", async () => {
+		const user = userEvent.setup();
+		const service = makeService();
+		render(<QuotaSettings service={service} isAdmin />);
+		await waitFor(() => screen.getByTestId("quota-mode-soft"));
+		await user.click(screen.getByTestId("quota-mode-soft"));
+		await user.click(screen.getByTestId("save-quota-button"));
+		await waitFor(() =>
+			expect(vi.mocked(service.setConfig)).toHaveBeenCalledWith(
+				expect.objectContaining({ mode: "soft" })
+			)
+		);
+	});
 });

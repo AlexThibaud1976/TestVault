@@ -118,6 +118,17 @@ describe("TestSetForm", () => {
 		);
 	});
 
+	it("adding a duplicate TC ID does not add it twice", async () => {
+		const user = userEvent.setup();
+		render(<TestSetForm service={makeService()} project="MyProject" />);
+		await user.type(screen.getByTestId("add-tc-id-input"), "42");
+		await user.click(screen.getByTestId("add-tc-id-button"));
+		await user.type(screen.getByTestId("add-tc-id-input"), "42");
+		await user.click(screen.getByTestId("add-tc-id-button"));
+		const items = screen.queryAllByTestId("tc-id-42");
+		expect(items).toHaveLength(1);
+	});
+
 	it("shows delete confirmation and calls service.delete on confirm", async () => {
 		const service = makeService();
 		const onDeleted = vi.fn();

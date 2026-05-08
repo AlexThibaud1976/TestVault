@@ -1,0 +1,321 @@
+openapi: "3.1.0"
+info:
+  title: TestVault / Argos — Azure Functions API
+  version: "1.0.0"
+  description: |
+    Internal REST API exposed by the TestVault Azure Functions app.
+    All endpoints are hosted under `/api/` by the Azure Functions runtime.
+    Authentication is via Azure Function keys (`code=`) unless noted as `authLevel: anonymous`.
+
+servers:
+  - url: https://{functionApp}.azurewebsites.net/api
+    variables:
+      functionApp:
+        default: testvault-functions
+        description: Azure Function App name
+
+tags:
+  - name: Health
+    description: Liveness and version probe
+  - name: LLM Proxy
+    description: BYOK AI generation (Cloud-Plus tier only)
+  - name: BDD Sync
+    description: Git-push triggered BDD/Gherkin synchronisation
+  - name: Webhooks
+    description: Generic ADO webhook ingest and Stripe subscription events
+
+paths:
+  /v1/health:
+    get:
+      operationId: getHealth
+      summary: Health probe
+      tags: [Health]
+      security: []
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /v1/llm/generate-test-cases:
+    post:
+      operationId: generateTestCases
+      summary: Generate test case candidates from a work item (BYOK)
+      tags: [LLM Proxy]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LlmGenerateRequest"
+      responses:
+        "200":
+          description: Candidates generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LlmGenerateResponse200"
+        "400":
+          description: Bad request (missing required fields)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "402":
+          description: Quota exhausted for the organisation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Provider not found or not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: Upstream LLM provider error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/bdd/git-push:
+    post:
+      operationId: bddGitPush
+      summary: Sync BDD/Gherkin feature files on a git-push event
+      tags: [BDD Sync]
+      security:
+        - functionKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdoGitPushPayload"
+      responses:
+        "200":
+          description: Sync result (or ignored event)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BddSyncResult"
+        "400":
+          description: Invalid JSON body
+
+  /v1/webhooks/{tokenId}:
+    post:
+      operationId: webhookIngest
+      summary: Ingest a generic ADO webhook payload
+      tags: [Webhooks]
+      security: []
+      parameters:
+        - name: tokenId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Registered webhook token ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Any valid ADO webhook payload
+      responses:
+        "202":
+          description: Webhook accepted and queued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookIngestResult"
+        "401":
+          description: Token not found or revoked
+
+  /v1/webhooks/stripe:
+    post:
+      operationId: stripeWebhook
+      summary: Receive Stripe subscription lifecycle events
+      tags: [Webhooks]
+      security: []
+      parameters:
+        - name: Stripe-Signature
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Stripe webhook signature for HMAC verification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Stripe event payload (raw body required for HMAC verification)
+      responses:
+        "200":
+          description: Event processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StripeWebhookResult"
+        "400":
+          description: Signature verification failed or unsupported event type
+        "503":
+          description: Service not configured (missing STRIPE_WEBHOOK_SECRET)
+
+components:
+  securitySchemes:
+    functionKey:
+      type: apiKey
+      in: query
+      name: code
+      description: Azure Function host or function key
+
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, version, timestamp]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+          example: ok
+        version:
+          type: string
+          example: "1.0.0"
+        timestamp:
+          type: string
+          format: date-time
+
+    TcCandidate:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          description: Generated test case title
+        description:
+          type: string
+        steps:
+          type: array
+          items:
+            $ref: "#/components/schemas/TestStep"
+        tags:
+          type: array
+          items:
+            type: string
+
+    TestStep:
+      type: object
+      required: [action, expected]
+      properties:
+        action:
+          type: string
+        expected:
+          type: string
+
+    LlmGenerateRequest:
+      type: object
+      required: [orgUrl, userId, providerId, workItemTitle, workItemDescription, params]
+      properties:
+        orgUrl:
+          type: string
+          format: uri
+          example: "https://dev.azure.com/myorg"
+        userId:
+          type: string
+        providerId:
+          type: string
+        workItemTitle:
+          type: string
+        workItemDescription:
+          type: string
+        params:
+          type: object
+          required: [temperature, maxTokens, count]
+          properties:
+            temperature:
+              type: number
+              minimum: 0
+              maximum: 2
+              default: 0.7
+            maxTokens:
+              type: integer
+              minimum: 100
+              maximum: 4096
+              default: 1024
+            count:
+              type: integer
+              minimum: 1
+              maximum: 10
+              default: 3
+        systemPromptOverride:
+          type: string
+          description: Optional custom system prompt (Admin only)
+
+    LlmGenerateResponse200:
+      type: object
+      required: [candidates, quotaRemaining]
+      properties:
+        candidates:
+          type: array
+          items:
+            $ref: "#/components/schemas/TcCandidate"
+        quotaRemaining:
+          type: integer
+          description: Remaining monthly quota calls for this user
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    AdoGitPushPayload:
+      type: object
+      description: ADO git.push service hook payload
+      properties:
+        eventType:
+          type: string
+          example: "git.push"
+        resource:
+          type: object
+
+    BddSyncResult:
+      type: object
+      properties:
+        synced:
+          type: integer
+          description: Number of feature files synchronised
+        skipped:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: string
+
+    WebhookIngestResult:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [accepted, rejected]
+        reason:
+          type: string
+
+    StripeWebhookResult:
+      type: object
+      required: [processed]
+      properties:
+        processed:
+          type: boolean
+        event:
+          type: string
+          description: Stripe event type that was processed

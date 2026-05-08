@@ -41,3 +41,8 @@ jobs:
 
       - name: Build
         run: pnpm turbo build
+
+      - name: Security audit
+        # GHSA-4r6h-8v6p-xvw6 and GHSA-5pgg-2g8v-p4x9 are xlsx (SheetJS) CVEs with no
+        # patched version available on npm — allowlisted in .audit-ci.json pending migration to exceljs.
+        run: pnpm dlx audit-ci --config .audit-ci.json
