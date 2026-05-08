@@ -4,18 +4,26 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"build": "tsc --project tsconfig.json",
-		"dev": "tsc --project tsconfig.json --watch",
+		"build": "node scripts/build.mjs",
+		"dev": "node scripts/build.mjs --watch",
 		"build:vsix": "tfx extension create --manifest-globs vss-extension.json --output-path ../../dist/argos.vsix",
-		"typecheck": "tsc --project tsconfig.json --noEmit",
+		"typecheck": "tsc --noEmit",
 		"test": "vitest run --passWithNoTests",
 		"lint": "biome check src/"
 	},
 	"dependencies": {
+		"@fluentui/react-components": "^9.54.0",
+		"azure-devops-extension-api": "^4.0.2",
 		"azure-devops-extension-sdk": "^4.0.2",
-		"azure-devops-extension-api": "^4.0.2"
+		"react": "^18.3.0",
+		"react-dom": "^18.3.0"
 	},
 	"devDependencies": {
+		"@testing-library/react": "^16.0.0",
+		"@types/react": "^18.3.0",
+		"@types/react-dom": "^18.3.0",
+		"esbuild": "^0.25.0",
+		"jsdom": "^25.0.0",
 		"typescript": "^5.7.0",
 		"vitest": "^3.1.0"
 	}
