@@ -64,3 +64,8 @@ export {
 	createEvidenceUploadService,
 } from "./evidence-upload-service.js";
 export type { IEvidenceUploadService } from "./evidence-upload-service.js";
+export { createEnvironmentConfigService } from "./environment-config-service.js";
+export type {
+	IEnvironmentConfigService,
+	IExtensionDataClient,
+} from "./environment-config-service.js";
