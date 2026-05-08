@@ -363,3 +363,158 @@ describe("globalStatus derivation (via finalizeRun)", () => {
 		expect(statusPatch?.value).toBe("Unexecuted");
 	});
 });
+
+// ─── listExecutions ───────────────────────────────────────────────────────────
+
+function rawCompletedWith(id: number, env: string, status: string, date: string): RawWorkItem {
+	return {
+		id,
+		rev: 1,
+		url: `https://dev.azure.com/org/${PROJECT}/_apis/wit/workitems/${id}`,
+		fields: {
+			"System.State": "Completed",
+			"System.CreatedBy": "tester@example.com",
+			"System.CreatedDate": date,
+			"TestVault.TestPlanId": 10,
+			"TestVault.TestCaseId": 5,
+			"TestVault.Environment": env,
+			"TestVault.GlobalStatus": status,
+			"TestVault.StepResults": JSON.stringify([]),
+			"TestVault.Evidence": JSON.stringify([]),
+			"TestVault.BugLinks": JSON.stringify([]),
+			"TestVault.ExecutionSource": "Manual",
+		},
+	};
+}
+
+describe("listExecutions", () => {
+	it("queries WIQL for TestVault.TestExecution WIs by testCaseId", async () => {
+		const adoClient = makeAdoClient({
+			queryByWiql: vi.fn().mockResolvedValue([101, 102]),
+			fetchWorkItem: vi
+				.fn()
+				.mockResolvedValueOnce(rawCompletedWith(101, "QA", "Pass", "2026-05-08T10:00:00.000Z"))
+				.mockResolvedValueOnce(rawCompletedWith(102, "Dev", "Fail", "2026-05-07T10:00:00.000Z")),
+		});
+		const service = createTestExecutionService(adoClient, PROJECT);
+		await service.listExecutions({ testCaseId: 5 });
+		const wiql = vi.mocked(adoClient.queryByWiql).mock.lastCall?.[0] ?? "";
+		expect(wiql).toContain("TestVault.TestExecution");
+		expect(wiql).toContain("TestVault.TestCaseId");
+		expect(wiql).toContain("5");
+	});
+
+	it("returns items matching the IDs from WIQL", async () => {
+		const adoClient = makeAdoClient({
+			queryByWiql: vi.fn().mockResolvedValue([101]),
+			fetchWorkItem: vi
+				.fn()
+				.mockResolvedValue(rawCompletedWith(101, "QA", "Pass", "2026-05-08T10:00:00.000Z")),
+		});
+		const service = createTestExecutionService(adoClient, PROJECT);
+		const page = await service.listExecutions({ testCaseId: 5 });
+		expect(page.items).toHaveLength(1);
+		expect(page.items[0]?.id).toBe(101);
+		expect(page.items[0]?.globalStatus).toBe("Pass");
+		expect(page.items[0]?.environment).toBe("QA");
+	});
+
+	it("total reflects the full result count from WIQL", async () => {
+		const ids = Array.from({ length: 15 }, (_, i) => i + 1);
+		const adoClient = makeAdoClient({
+			queryByWiql: vi.fn().mockResolvedValue(ids),
+			fetchWorkItem: vi
+				.fn()
+				.mockImplementation((id: number) =>
+					Promise.resolve(rawCompletedWith(id, "QA", "Pass", "2026-05-08T10:00:00.000Z"))
+				),
+		});
+		const service = createTestExecutionService(adoClient, PROJECT);
+		const page = await service.listExecutions({ testCaseId: 5, pageSize: 10 });
+		expect(page.total).toBe(15);
+		expect(page.items).toHaveLength(10);
+	});
+
+	it("page 2 returns the second slice", async () => {
+		const ids = Array.from({ length: 15 }, (_, i) => i + 1);
+		const adoClient = makeAdoClient({
+			queryByWiql: vi.fn().mockResolvedValue(ids),
+			fetchWorkItem: vi
+				.fn()
+				.mockImplementation((id: number) =>
+					Promise.resolve(rawCompletedWith(id, "QA", "Pass", "2026-05-08T10:00:00.000Z"))
+				),
+		});
+		const service = createTestExecutionService(adoClient, PROJECT);
+		const page = await service.listExecutions({ testCaseId: 5, page: 2, pageSize: 10 });
+		expect(page.items).toHaveLength(5);
+		expect(page.items[0]?.id).toBe(11);
+	});
+
+	it("environment filter is included in the WIQL query", async () => {
+		const adoClient = makeAdoClient({
+			queryByWiql: vi.fn().mockResolvedValue([]),
+		});
+		const service = createTestExecutionService(adoClient, PROJECT);
+		await service.listExecutions({ testCaseId: 5, environment: "QA" });
+		const wiql = vi.mocked(adoClient.queryByWiql).mock.lastCall?.[0] ?? "";
+		expect(wiql).toContain("QA");
+	});
+
+	it("status filter is included in the WIQL query", async () => {
+		const adoClient = makeAdoClient({
+			queryByWiql: vi.fn().mockResolvedValue([]),
+		});
+		const service = createTestExecutionService(adoClient, PROJECT);
+		await service.listExecutions({ testCaseId: 5, status: "Fail" });
+		const wiql = vi.mocked(adoClient.queryByWiql).mock.lastCall?.[0] ?? "";
+		expect(wiql).toContain("Fail");
+	});
+
+	it("from filter is included in the WIQL query as a date condition", async () => {
+		const adoClient = makeAdoClient({
+			queryByWiql: vi.fn().mockResolvedValue([]),
+		});
+		const service = createTestExecutionService(adoClient, PROJECT);
+		await service.listExecutions({ testCaseId: 5, from: "2026-05-01" });
+		const wiql = vi.mocked(adoClient.queryByWiql).mock.lastCall?.[0] ?? "";
+		expect(wiql).toContain("2026-05-01");
+	});
+
+	it("to filter is included in the WIQL query as a date condition", async () => {
+		const adoClient = makeAdoClient({
+			queryByWiql: vi.fn().mockResolvedValue([]),
+		});
+		const service = createTestExecutionService(adoClient, PROJECT);
+		await service.listExecutions({ testCaseId: 5, to: "2026-05-31" });
+		const wiql = vi.mocked(adoClient.queryByWiql).mock.lastCall?.[0] ?? "";
+		expect(wiql).toContain("2026-05-31");
+	});
+
+	it("returns empty items array and total 0 when no executions found", async () => {
+		const adoClient = makeAdoClient({
+			queryByWiql: vi.fn().mockResolvedValue([]),
+		});
+		const service = createTestExecutionService(adoClient, PROJECT);
+		const page = await service.listExecutions({ testCaseId: 5 });
+		expect(page.items).toHaveLength(0);
+		expect(page.total).toBe(0);
+	});
+
+	it("defaults to page 1 and pageSize 20 when not specified", async () => {
+		const ids = Array.from({ length: 25 }, (_, i) => i + 1);
+		const adoClient = makeAdoClient({
+			queryByWiql: vi.fn().mockResolvedValue(ids),
+			fetchWorkItem: vi
+				.fn()
+				.mockImplementation((id: number) =>
+					Promise.resolve(rawCompletedWith(id, "QA", "Pass", "2026-05-08T10:00:00.000Z"))
+				),
+		});
+		const service = createTestExecutionService(adoClient, PROJECT);
+		const page = await service.listExecutions({ testCaseId: 5 });
+		expect(page.page).toBe(1);
+		expect(page.pageSize).toBe(20);
+		expect(page.items).toHaveLength(20);
+	});
+});

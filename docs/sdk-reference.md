@@ -59,6 +59,24 @@ Appends a Bug Work Item ID to the `bugLinks` array of a **finalized** execution.
 | --- | --- | --- |
 | `TestExecutionImmutableError` | 403 | Mutation attempted on a `Completed` execution |
 
+#### `listExecutions(options): Promise<ExecutionPage>`
+
+Returns a paginated list of finalized executions for a Test Case.
+
+```typescript
+const page = await executionService.listExecutions({
+    testCaseId: 42,
+    environment: "QA",      // optional
+    status: "Fail",         // optional
+    from: "2026-05-01",     // optional ISO date
+    to: "2026-05-31",       // optional ISO date
+    page: 1,                // default: 1
+    pageSize: 20,           // default: 20
+});
+// page.items  → TestVaultTestExecution[]
+// page.total  → total matching items (for pagination)
+```
+
 ---
 
 ## Bug creation

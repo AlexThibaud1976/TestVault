@@ -18,6 +18,23 @@ export class TestExecutionImmutableError extends AdoForbiddenError {
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
+export type ListExecutionsOptions = {
+	testCaseId: number;
+	environment?: string;
+	status?: GlobalStatus;
+	from?: string;
+	to?: string;
+	page?: number;
+	pageSize?: number;
+};
+
+export type ExecutionPage = {
+	items: TestVaultTestExecution[];
+	total: number;
+	page: number;
+	pageSize: number;
+};
+
 export type ExecutionDraft = {
 	testPlanId: number;
 	testCaseId: number;
@@ -45,6 +62,7 @@ export interface ITestExecutionService {
 	attachEvidence(id: number, evidence: EvidenceRef): Promise<InProgressExecution>;
 	finalizeRun(id: number): Promise<TestVaultTestExecution>;
 	linkBug(id: number, bugId: number): Promise<TestVaultTestExecution>;
+	listExecutions(options: ListExecutionsOptions): Promise<ExecutionPage>;
 }
 
 // ─── Field mapping helpers ────────────────────────────────────────────────────
@@ -203,6 +221,34 @@ export function createTestExecutionService(
 				},
 			]);
 			return fromRawFinalized(updatedRaw);
+		},
+
+		async listExecutions(options) {
+			const page = options.page ?? 1;
+			const pageSize = options.pageSize ?? 20;
+
+			let wiql = `SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'TestVault.TestExecution' AND [TestVault.TestCaseId] = ${options.testCaseId}`;
+			if (options.environment) {
+				wiql += ` AND [TestVault.Environment] = '${options.environment}'`;
+			}
+			if (options.status) {
+				wiql += ` AND [TestVault.GlobalStatus] = '${options.status}'`;
+			}
+			if (options.from) {
+				wiql += ` AND [System.CreatedDate] >= '${options.from}'`;
+			}
+			if (options.to) {
+				wiql += ` AND [System.CreatedDate] <= '${options.to}'`;
+			}
+			wiql += " ORDER BY [System.CreatedDate] DESC";
+
+			const allIds = await adoClient.queryByWiql(wiql);
+			const total = allIds.length;
+			const start = (page - 1) * pageSize;
+			const pageIds = allIds.slice(start, start + pageSize);
+
+			const items = await Promise.all(pageIds.map((id) => adoClient.fetchWorkItem(id)));
+			return { items: items.map(fromRawFinalized), total, page, pageSize };
 		},
 	};
 }

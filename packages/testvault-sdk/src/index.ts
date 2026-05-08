@@ -55,8 +55,10 @@ export {
 } from "./test-execution-service.js";
 export type {
 	ExecutionDraft,
+	ExecutionPage,
 	ITestExecutionService,
 	InProgressExecution,
+	ListExecutionsOptions,
 } from "./test-execution-service.js";
 export {
 	EvidenceSizeLimitError,

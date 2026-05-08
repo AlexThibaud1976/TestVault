@@ -51,6 +51,16 @@ After a run is finalized with a **Fail** global status, the **Create Bug from Fa
 
 On submission the Bug Work Item is created in ADO and bidirectionally linked: a `System.LinkTypes.Related` relation from the Bug to the Test Execution WI, and a `linkBug` entry on the execution record. Cancel closes the form and returns to the saved-run view.
 
+### Execution history
+
+The `ExecutionHistory` component displays a paginated list of all finalized executions for a given Test Case. Features:
+
+- **Filters** — environment (dropdown limited to configured environments), global status, from/to date range; applied by clicking **Apply Filters**
+- **Environment matrix** — a summary row showing the latest status per environment for the current page
+- **Pagination** — 20 results per page; Previous / Next controls appear when `total > 20`
+
+Each row shows: date, environment, global status, bug count, and executed-by user.
+
 ### Immutability guarantee
 
 A finalized execution (`System.State = Completed`) cannot be modified. Any attempt to call `saveStepResult` or `attachEvidence` on a completed execution returns a `403 Forbidden` error (`TestExecutionImmutableError`). To re-test, use **Re-run** which creates a new linked execution.
