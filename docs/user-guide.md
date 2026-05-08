@@ -98,6 +98,14 @@ The **Snapshots** panel on a Test Case lets you freeze a named, immutable copy o
 - Snapshot names must be unique per Test Case — a duplicate name returns an error inline.
 - Snapshots are immutable (`System.State = Frozen`): once created they cannot be edited.
 
+### Version diff (side-by-side comparison)
+
+Select any two snapshots and click **Compare** to open the `SnapshotDiffPanel`. It shows:
+
+- **Title / Description** — changed values side-by-side (red = before, green = after).
+- **Tags** — removed tags in red, added tags in green.
+- **Steps** — a side-by-side table computed by LCS (Longest Common Subsequence); equal rows are neutral, removed rows are highlighted red, added rows are highlighted green.
+
 ---
 
 For architecture and technical details, see `plan.md` in the spec-kit.

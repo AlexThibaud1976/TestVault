@@ -95,3 +95,10 @@ export type {
 	WiLinkType,
 	WorkItemLink,
 } from "./work-item-link-service.js";
+export { diffSnapshots, lcsStepDiff } from "./snapshot-diff.js";
+export type {
+	SnapshotDiff,
+	SnapshotFieldDiff,
+	SnapshotTagDiff,
+	StepDiffEntry,
+} from "./snapshot-diff.js";
