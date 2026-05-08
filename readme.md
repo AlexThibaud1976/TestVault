@@ -4,7 +4,7 @@
 >
 > Publisher: **ATConseil** | Author: Alexandre Thibaud — atconseil.info
 
-[![CI](https://github.com/atconseil/testvault/actions/workflows/ci-pr.yml/badge.svg)](https://github.com/atconseil/testvault/actions/workflows/ci-pr.yml)
+[![CI](https://github.com/AlexThibaud1976/TestVault/actions/workflows/ci-pr.yml/badge.svg)](https://github.com/AlexThibaud1976/TestVault/actions/workflows/ci-pr.yml)
 
 ---
 
