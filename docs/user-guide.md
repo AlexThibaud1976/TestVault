@@ -67,4 +67,26 @@ A finalized execution (`System.State = Completed`) cannot be modified. Any attem
 
 ---
 
+## Phase 3 — Traceability
+
+### Work Item links on a Test Case
+
+On the Test Case form, the **Work Item Links** panel (`WorkItemLinkPanel`) lets you link ADO Work Items bidirectionally. Three semantic link types are available:
+
+| Type | Meaning |
+| --- | --- |
+| `TestedBy` | This TC tests the linked Work Item |
+| `Validates` | This TC validates the linked requirement |
+| `Covers` | This TC covers the linked feature |
+
+Links are stored as `System.LinkTypes.Related` ADO relations with a `TestVault.LinkType` attribute. Because ADO related links are bidirectional, the link also appears on the target Work Item.
+
+**Orphan detection** — click **Detect Orphans** to check which linked Work Items have been deleted. Orphans are highlighted with an orange badge.
+
+### Test Coverage panel (User Story / Bug / Requirement)
+
+The **argos-coverage-panel** widget appears on User Story, Bug, and Requirement Work Item forms. It shows all Test Cases that have a `TestedBy`, `Validates`, or `Covers` link back to the current Work Item, alongside the latest execution status per Test Case.
+
+---
+
 For architecture and technical details, see `plan.md` in the spec-kit.

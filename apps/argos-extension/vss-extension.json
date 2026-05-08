@@ -19,6 +19,17 @@
 				"order": 99,
 				"uri": "dist/hub/hub.html"
 			}
+		},
+		{
+			"id": "argos-coverage-panel",
+			"type": "ms.vss-work-web.work-item-form-page",
+			"description": "Test Coverage panel shown on User Story, Bug, and Requirement Work Item forms — lists linked Test Cases with their latest execution status per environment.",
+			"targets": ["ms.vss-work-web.work-item-form"],
+			"properties": {
+				"name": "Test Coverage",
+				"uri": "dist/hub/hub.html",
+				"height": 300
+			}
 		}
 	],
 	"files": [{ "path": "dist/hub", "addressable": true }]

@@ -53,11 +53,18 @@ export class AdoServerError extends AdoClientError {
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
+export interface WorkItemRelation {
+	rel: string;
+	url: string;
+	attributes?: Record<string, unknown>;
+}
+
 export interface RawWorkItem {
 	id: number;
 	rev: number;
 	fields: Record<string, unknown>;
 	url: string;
+	relations?: WorkItemRelation[];
 }
 
 export interface WorkItemFieldPatch {

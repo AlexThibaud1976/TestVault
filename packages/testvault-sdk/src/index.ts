@@ -8,7 +8,13 @@ export {
 	AdoUnauthorizedError,
 	createAdoClient,
 } from "./ado-client.js";
-export type { AdoClientConfig, IAdoClient, RawWorkItem, WorkItemFieldPatch } from "./ado-client.js";
+export type {
+	AdoClientConfig,
+	IAdoClient,
+	RawWorkItem,
+	WorkItemFieldPatch,
+	WorkItemRelation,
+} from "./ado-client.js";
 export {
 	ProcessInstallError,
 	ProcessPermissionError,
@@ -73,3 +79,9 @@ export type {
 } from "./environment-config-service.js";
 export { buildBugDraft, createBugCreationService } from "./bug-creation-service.js";
 export type { BugDraft, IBugCreationService } from "./bug-creation-service.js";
+export { WI_LINK_TYPE_ATTR, createWorkItemLinkService } from "./work-item-link-service.js";
+export type {
+	IWorkItemLinkService,
+	WiLinkType,
+	WorkItemLink,
+} from "./work-item-link-service.js";
