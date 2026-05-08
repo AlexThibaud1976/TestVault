@@ -30,8 +30,8 @@ export function CoverageMatrix({ input, environments }: CoverageMatrixProps) {
 				<Button
 					data-testid="export-excel-button"
 					size="small"
-					onClick={() => {
-						const buf = exportMatrixToExcel(matrix);
+					onClick={async () => {
+						const buf = await exportMatrixToExcel(matrix);
 						const blob = new Blob([buf], {
 							type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 						});

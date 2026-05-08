@@ -1,3 +1,4 @@
+import ExcelJS from "exceljs";
 import { describe, expect, it } from "vitest";
 import { exportCatalogToExcel, exportCatalogToPdf } from "./catalog-export.js";
 import type { CatalogItem, ExportOptions } from "./types.js";
@@ -23,39 +24,40 @@ function makeItems(): CatalogItem[] {
 }
 
 describe("exportCatalogToExcel", () => {
-	it("returns a non-empty ArrayBuffer", () => {
-		const buf = exportCatalogToExcel(makeItems());
-		expect(buf).toBeInstanceOf(ArrayBuffer);
+	it("returns a non-empty Uint8Array", async () => {
+		const buf = await exportCatalogToExcel(makeItems());
+		expect(buf).toBeInstanceOf(Uint8Array);
 		expect(buf.byteLength).toBeGreaterThan(0);
 	});
 
-	it("output starts with PK magic bytes (XLSX format)", () => {
-		const buf = exportCatalogToExcel(makeItems());
-		const view = new Uint8Array(buf);
-		expect(view[0]).toBe(0x50);
-		expect(view[1]).toBe(0x4b);
+	it("output starts with PK magic bytes (XLSX format)", async () => {
+		const buf = await exportCatalogToExcel(makeItems());
+		expect(buf[0]).toBe(0x50);
+		expect(buf[1]).toBe(0x4b);
 	});
 
-	it("handles empty catalog", () => {
-		const buf = exportCatalogToExcel([]);
-		expect(buf).toBeInstanceOf(ArrayBuffer);
+	it("handles empty catalog", async () => {
+		const buf = await exportCatalogToExcel([]);
+		expect(buf).toBeInstanceOf(Uint8Array);
 		expect(buf.byteLength).toBeGreaterThan(0);
 	});
 
 	it("includes header row", async () => {
-		const buf = exportCatalogToExcel(makeItems());
-		const XLSX = await import("xlsx");
-		const wb = XLSX.read(buf, { type: "array" });
-		const ws = wb.Sheets[wb.SheetNames[0] ?? ""] ?? {};
-		expect(ws.A1?.v).toBe("Title");
+		const buf = await exportCatalogToExcel(makeItems());
+		const wb = new ExcelJS.Workbook();
+		// @ts-expect-error ExcelJS 4.x load() type predates TS 5.7+ generic Buffer
+		await wb.xlsx.load(buf);
+		const ws = wb.worksheets[0]!;
+		expect(ws.getRow(1).getCell(1).value).toBe("Title");
 	});
 
 	it("includes TC title in first data row", async () => {
-		const buf = exportCatalogToExcel(makeItems());
-		const XLSX = await import("xlsx");
-		const wb = XLSX.read(buf, { type: "array" });
-		const ws = wb.Sheets[wb.SheetNames[0] ?? ""] ?? {};
-		expect(ws.A2?.v).toBe("TC-Login");
+		const buf = await exportCatalogToExcel(makeItems());
+		const wb = new ExcelJS.Workbook();
+		// @ts-expect-error ExcelJS 4.x load() type predates TS 5.7+ generic Buffer
+		await wb.xlsx.load(buf);
+		const ws = wb.worksheets[0]!;
+		expect(ws.getRow(2).getCell(1).value).toBe("TC-Login");
 	});
 });
 

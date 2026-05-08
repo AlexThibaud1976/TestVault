@@ -11,7 +11,7 @@ vi.mock("@atconseil/testvault-importers", () => ({
 		],
 		errors: [],
 	}),
-	parseExcel: vi.fn().mockReturnValue({ items: [], errors: [] }),
+	parseExcel: vi.fn().mockResolvedValue({ items: [], errors: [] }),
 	parseJUnit: vi.fn().mockReturnValue({ items: [], errors: [] }),
 	parseNUnit: vi.fn().mockReturnValue({ items: [], errors: [] }),
 	parseXUnit: vi.fn().mockReturnValue({ items: [], errors: [] }),

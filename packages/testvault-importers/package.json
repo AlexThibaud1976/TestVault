@@ -21,7 +21,7 @@
 	"dependencies": {
 		"@atconseil/testvault-types": "workspace:*",
 		"fast-xml-parser": "^5.7.3",
-		"xlsx": "^0.18.5"
+		"exceljs": "^4.4.0"
 	},
 	"devDependencies": {
 		"typescript": "^5.7.0",

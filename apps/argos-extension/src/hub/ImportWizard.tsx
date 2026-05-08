@@ -29,7 +29,11 @@ function detectFormat(file: File, text: string): Format {
 	return "Unknown";
 }
 
-function parseSource(format: Format, text: string, buffer: ArrayBuffer): ImportResult {
+async function parseSource(
+	format: Format,
+	text: string,
+	buffer: ArrayBuffer
+): Promise<ImportResult> {
 	switch (format) {
 		case "CSV":
 			return parseCsv(text);
@@ -99,7 +103,7 @@ export function ImportWizard({ onImport }: ImportWizardProps) {
 		const text = await readText(file);
 		const buffer = await readBuffer(file);
 		const detected = detectFormat(file, text);
-		const result = parseSource(detected, text, buffer);
+		const result = await parseSource(detected, text, buffer);
 		setFormat(detected);
 		setItems(result.items);
 		setErrors(result.errors);

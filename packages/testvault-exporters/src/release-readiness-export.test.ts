@@ -1,3 +1,4 @@
+import ExcelJS from "exceljs";
 import { describe, expect, it } from "vitest";
 import {
 	exportReleaseReadinessToExcel,
@@ -19,47 +20,49 @@ function makeReport(): ReleaseReadinessReport {
 }
 
 describe("exportReleaseReadinessToExcel", () => {
-	it("returns a non-empty ArrayBuffer", () => {
-		const buf = exportReleaseReadinessToExcel(makeReport());
-		expect(buf).toBeInstanceOf(ArrayBuffer);
+	it("returns a non-empty Uint8Array", async () => {
+		const buf = await exportReleaseReadinessToExcel(makeReport());
+		expect(buf).toBeInstanceOf(Uint8Array);
 		expect(buf.byteLength).toBeGreaterThan(0);
 	});
 
-	it("output starts with PK magic bytes (XLSX format)", () => {
-		const buf = exportReleaseReadinessToExcel(makeReport());
-		const view = new Uint8Array(buf);
-		expect(view[0]).toBe(0x50);
-		expect(view[1]).toBe(0x4b);
+	it("output starts with PK magic bytes (XLSX format)", async () => {
+		const buf = await exportReleaseReadinessToExcel(makeReport());
+		expect(buf[0]).toBe(0x50);
+		expect(buf[1]).toBe(0x4b);
 	});
 
-	it("handles empty items list", () => {
-		const buf = exportReleaseReadinessToExcel({ planTitle: "Empty", items: [] });
-		expect(buf).toBeInstanceOf(ArrayBuffer);
+	it("handles empty items list", async () => {
+		const buf = await exportReleaseReadinessToExcel({ planTitle: "Empty", items: [] });
+		expect(buf).toBeInstanceOf(Uint8Array);
 		expect(buf.byteLength).toBeGreaterThan(0);
 	});
 
 	it("includes header row with Test Case column", async () => {
-		const buf = exportReleaseReadinessToExcel(makeReport());
-		const XLSX = await import("xlsx");
-		const wb = XLSX.read(buf, { type: "array" });
-		const ws = wb.Sheets[wb.SheetNames[0] ?? ""] ?? {};
-		expect(ws.A1?.v).toBe("Test Case");
+		const buf = await exportReleaseReadinessToExcel(makeReport());
+		const wb = new ExcelJS.Workbook();
+		// @ts-expect-error ExcelJS 4.x load() type predates TS 5.7+ generic Buffer
+		await wb.xlsx.load(buf);
+		const ws = wb.worksheets[0]!;
+		expect(ws.getRow(1).getCell(1).value).toBe("Test Case");
 	});
 
 	it("includes TC title in data rows", async () => {
-		const buf = exportReleaseReadinessToExcel(makeReport());
-		const XLSX = await import("xlsx");
-		const wb = XLSX.read(buf, { type: "array" });
-		const ws = wb.Sheets[wb.SheetNames[0] ?? ""] ?? {};
-		expect(ws.A2?.v).toBe("TC-Login");
+		const buf = await exportReleaseReadinessToExcel(makeReport());
+		const wb = new ExcelJS.Workbook();
+		// @ts-expect-error ExcelJS 4.x load() type predates TS 5.7+ generic Buffer
+		await wb.xlsx.load(buf);
+		const ws = wb.worksheets[0]!;
+		expect(ws.getRow(2).getCell(1).value).toBe("TC-Login");
 	});
 
 	it("includes status in second column", async () => {
-		const buf = exportReleaseReadinessToExcel(makeReport());
-		const XLSX = await import("xlsx");
-		const wb = XLSX.read(buf, { type: "array" });
-		const ws = wb.Sheets[wb.SheetNames[0] ?? ""] ?? {};
-		expect(ws.B2?.v).toBe("Pass");
+		const buf = await exportReleaseReadinessToExcel(makeReport());
+		const wb = new ExcelJS.Workbook();
+		// @ts-expect-error ExcelJS 4.x load() type predates TS 5.7+ generic Buffer
+		await wb.xlsx.load(buf);
+		const ws = wb.worksheets[0]!;
+		expect(ws.getRow(2).getCell(2).value).toBe("Pass");
 	});
 });
 

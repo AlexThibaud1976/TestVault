@@ -1,42 +1,41 @@
 import type { CoverageMatrix } from "@atconseil/testvault-sdk";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
+
+// ARGB format: FF + RGB (e.g. FFC6EFCE = opaque green)
+const STATUS_ARGB: Record<string, string> = {
+	Pass: "FFC6EFCE",
+	Fail: "FFFFC7CE",
+	Blocked: "FFFFEB9C",
+};
 
 // ─── Excel export ─────────────────────────────────────────────────────────────
 
-const STATUS_FILL: Record<string, { fgColor: { rgb: string } }> = {
-	Pass: { fgColor: { rgb: "C6EFCE" } },
-	Fail: { fgColor: { rgb: "FFC7CE" } },
-	Blocked: { fgColor: { rgb: "FFEB9C" } },
-};
+export async function exportMatrixToExcel(matrix: CoverageMatrix): Promise<Uint8Array> {
+	const wb = new ExcelJS.Workbook();
+	const ws = wb.addWorksheet("Coverage Matrix");
 
-export function exportMatrixToExcel(matrix: CoverageMatrix): ArrayBuffer {
-	const wb = XLSX.utils.book_new();
+	ws.addRow(["Work Item", ...matrix.columns.map((c) => c.testCaseTitle)]);
 
-	// Header row: ["Work Item", ...TC titles]
-	const header = ["Work Item", ...matrix.columns.map((c) => c.testCaseTitle)];
-
-	// Data rows
-	const rows: (string | undefined)[][] = matrix.rows.map((row) => [
-		row.workItemTitle,
-		...row.cells.map((cell) => (cell.linked ? (cell.latestStatus ?? "—") : "—")),
-	]);
-
-	const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
-
-	// Apply conditional fill to data cells
-	matrix.rows.forEach((row, rIdx) => {
+	for (const row of matrix.rows) {
+		const dataRow = ws.addRow([
+			row.workItemTitle,
+			...row.cells.map((cell) => (cell.linked ? (cell.latestStatus ?? "—") : "—")),
+		]);
 		row.cells.forEach((cell, cIdx) => {
 			if (!cell.linked || !cell.latestStatus) return;
-			const cellAddr = XLSX.utils.encode_cell({ r: rIdx + 1, c: cIdx + 1 });
-			const fill = STATUS_FILL[cell.latestStatus];
-			if (fill && ws[cellAddr]) {
-				ws[cellAddr].s = { fill: { patternType: "solid", ...fill } };
-			}
+			const argb = STATUS_ARGB[cell.latestStatus];
+			if (!argb) return;
+			// +2: 1-based column index, offset by the leading "Work Item" column
+			dataRow.getCell(cIdx + 2).fill = {
+				type: "pattern",
+				pattern: "solid",
+				fgColor: { argb },
+			};
 		});
-	});
+	}
 
-	XLSX.utils.book_append_sheet(wb, ws, "Coverage Matrix");
-	return XLSX.write(wb, { type: "array", bookType: "xlsx", cellStyles: true }) as ArrayBuffer;
+	const raw = await wb.xlsx.writeBuffer();
+	return raw as unknown as Uint8Array;
 }
 
 // ─── PDF (HTML) export ────────────────────────────────────────────────────────

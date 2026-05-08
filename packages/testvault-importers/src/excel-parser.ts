@@ -1,38 +1,47 @@
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import type { ImportError, ImportResult, ParsedTestCase } from "./types.js";
 
-export function parseExcel(source: ArrayBuffer): ImportResult {
+export async function parseExcel(source: ArrayBuffer | Uint8Array): Promise<ImportResult> {
 	const items: ParsedTestCase[] = [];
 	const errors: ImportError[] = [];
 
-	const wb = XLSX.read(source, { type: "array" });
-	const sheetName = wb.SheetNames[0];
-	if (!sheetName) return { items, errors };
+	const wb = new ExcelJS.Workbook();
+	// @ts-expect-error ExcelJS 4.x load() type predates TS 5.7+ generic Buffer/Uint8Array
+	await wb.xlsx.load(source);
 
-	const ws = wb.Sheets[sheetName];
+	const ws = wb.worksheets[0];
 	if (!ws) return { items, errors };
 
-	const rows = XLSX.utils.sheet_to_json<Record<string, string>>(ws, {
-		defval: "",
-		raw: false,
+	// Build a map of lowercase column name → 1-based column index from the header row
+	const colMap: Record<string, number> = {};
+	ws.getRow(1).eachCell((cell, colNum) => {
+		const name = String(cell.value ?? "")
+			.trim()
+			.toLowerCase();
+		if (name) colMap[name] = colNum;
 	});
 
-	for (let i = 0; i < rows.length; i++) {
-		const row = rows[i] ?? {};
-		const rowNum = i + 2;
+	ws.eachRow((row, rowNum) => {
+		if (rowNum === 1) return; // skip header
 
-		const title = (row.title ?? "").trim();
+		const getVal = (field: string): string => {
+			const col = colMap[field];
+			if (!col) return "";
+			return String(row.getCell(col).value ?? "").trim();
+		};
+
+		const title = getVal("title");
 		if (!title) {
 			errors.push({ row: rowNum, field: "title", message: "Missing required field: title" });
-			continue;
+			return;
 		}
 
 		const tc: ParsedTestCase = { title };
 
-		const description = (row.description ?? "").trim();
+		const description = getVal("description");
 		if (description) tc.description = description;
 
-		const tagsRaw = (row.tags ?? "").trim();
+		const tagsRaw = getVal("tags");
 		if (tagsRaw) {
 			const parts = tagsRaw
 				.split(/[;,]/)
@@ -41,11 +50,11 @@ export function parseExcel(source: ArrayBuffer): ImportResult {
 			if (parts.length > 0) tc.tags = parts;
 		}
 
-		const automationKey = (row.automationKey ?? "").trim();
+		const automationKey = getVal("automationkey");
 		if (automationKey) tc.automationKey = automationKey;
 
 		items.push(tc);
-	}
+	});
 
 	return { items, errors };
 }

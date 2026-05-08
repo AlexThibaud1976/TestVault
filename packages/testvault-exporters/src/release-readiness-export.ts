@@ -1,11 +1,12 @@
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import type { ExportOptions, ReleaseReadinessReport } from "./types.js";
 
-const STATUS_FILL: Record<string, { fgColor: { rgb: string } }> = {
-	Pass: { fgColor: { rgb: "C6EFCE" } },
-	Fail: { fgColor: { rgb: "FFC7CE" } },
-	Blocked: { fgColor: { rgb: "FFEB9C" } },
-	Unexecuted: { fgColor: { rgb: "DDDDDD" } },
+// ARGB format: FF + RGB
+const STATUS_ARGB: Record<string, string> = {
+	Pass: "FFC6EFCE",
+	Fail: "FFFFC7CE",
+	Blocked: "FFFFEB9C",
+	Unexecuted: "FFDDDDDD",
 };
 
 const STATUS_BG: Record<string, string> = {
@@ -17,29 +18,25 @@ const STATUS_BG: Record<string, string> = {
 
 // ─── Excel ────────────────────────────────────────────────────────────────────
 
-export function exportReleaseReadinessToExcel(report: ReleaseReadinessReport): ArrayBuffer {
-	const wb = XLSX.utils.book_new();
-	const header = ["Test Case", "Status"];
-	const rows = report.items.map((item) => [item.testCaseTitle, item.status]);
-	const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
+export async function exportReleaseReadinessToExcel(
+	report: ReleaseReadinessReport
+): Promise<Uint8Array> {
+	const wb = new ExcelJS.Workbook();
+	const ws = wb.addWorksheet("Release Readiness");
 
-	// Bold header
-	for (let c = 0; c < header.length; c++) {
-		const addr = XLSX.utils.encode_cell({ r: 0, c });
-		if (ws[addr]) ws[addr].s = { font: { bold: true } };
+	const headerRow = ws.addRow(["Test Case", "Status"]);
+	headerRow.font = { bold: true };
+
+	for (const item of report.items) {
+		const row = ws.addRow([item.testCaseTitle, item.status]);
+		const argb = STATUS_ARGB[item.status];
+		if (argb) {
+			row.getCell(2).fill = { type: "pattern", pattern: "solid", fgColor: { argb } };
+		}
 	}
 
-	// Color status cells
-	report.items.forEach((item, rIdx) => {
-		const addr = XLSX.utils.encode_cell({ r: rIdx + 1, c: 1 });
-		const fill = STATUS_FILL[item.status];
-		if (fill && ws[addr]) {
-			ws[addr].s = { fill: { patternType: "solid", ...fill } };
-		}
-	});
-
-	XLSX.utils.book_append_sheet(wb, ws, "Release Readiness");
-	return XLSX.write(wb, { type: "array", bookType: "xlsx", cellStyles: true }) as ArrayBuffer;
+	const raw = await wb.xlsx.writeBuffer();
+	return raw as unknown as Uint8Array;
 }
 
 // ─── PDF (HTML) ───────────────────────────────────────────────────────────────

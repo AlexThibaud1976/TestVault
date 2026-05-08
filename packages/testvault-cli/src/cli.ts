@@ -206,8 +206,8 @@ plan
 			if (fmt === "pdf") {
 				writeFileSync(outPath, exportReleaseReadinessToPdf(report));
 			} else {
-				const buf = exportReleaseReadinessToExcel(report);
-				writeFileSync(outPath, Buffer.from(buf));
+				const buf = await exportReleaseReadinessToExcel(report);
+				writeFileSync(outPath, buf);
 			}
 			console.log(`Exported to ${outPath}`);
 		}

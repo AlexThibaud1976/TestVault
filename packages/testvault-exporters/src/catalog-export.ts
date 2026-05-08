@@ -1,26 +1,25 @@
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import type { CatalogItem, ExportOptions } from "./types.js";
 
 // ─── Excel ────────────────────────────────────────────────────────────────────
 
-export function exportCatalogToExcel(items: CatalogItem[]): ArrayBuffer {
-	const wb = XLSX.utils.book_new();
+export async function exportCatalogToExcel(items: CatalogItem[]): Promise<Uint8Array> {
+	const wb = new ExcelJS.Workbook();
+	const ws = wb.addWorksheet("Test Case Catalog");
 	const header = ["Title", "Description", "Tags", "AutomationKey", "Steps"];
-	const rows = items.map((item) => [
-		item.title,
-		item.description ?? "",
-		(item.tags ?? []).join("; "),
-		item.automationKey ?? "",
-		(item.steps ?? []).map((s) => `${s.action} → ${s.expected}`).join(" | "),
-	]);
-	const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
-	// Bold header row
-	for (let c = 0; c < header.length; c++) {
-		const addr = XLSX.utils.encode_cell({ r: 0, c });
-		if (ws[addr]) ws[addr].s = { font: { bold: true } };
+	const headerRow = ws.addRow(header);
+	headerRow.font = { bold: true };
+	for (const item of items) {
+		ws.addRow([
+			item.title,
+			item.description ?? "",
+			(item.tags ?? []).join("; "),
+			item.automationKey ?? "",
+			(item.steps ?? []).map((s) => `${s.action} → ${s.expected}`).join(" | "),
+		]);
 	}
-	XLSX.utils.book_append_sheet(wb, ws, "Test Case Catalog");
-	return XLSX.write(wb, { type: "array", bookType: "xlsx", cellStyles: true }) as ArrayBuffer;
+	const raw = await wb.xlsx.writeBuffer();
+	return raw as unknown as Uint8Array;
 }
 
 // ─── PDF (HTML) ───────────────────────────────────────────────────────────────

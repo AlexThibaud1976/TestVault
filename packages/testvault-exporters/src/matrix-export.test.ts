@@ -30,23 +30,21 @@ function makeMatrix(): CoverageMatrix {
 }
 
 describe("exportMatrixToExcel", () => {
-	it("returns a non-empty ArrayBuffer", () => {
-		const buf = exportMatrixToExcel(makeMatrix());
-		expect(buf).toBeInstanceOf(ArrayBuffer);
+	it("returns a non-empty Uint8Array", async () => {
+		const buf = await exportMatrixToExcel(makeMatrix());
+		expect(buf).toBeInstanceOf(Uint8Array);
 		expect(buf.byteLength).toBeGreaterThan(0);
 	});
 
-	it("output starts with PK magic bytes (ZIP/XLSX format)", () => {
-		const buf = exportMatrixToExcel(makeMatrix());
-		// XLSX is a ZIP file — magic bytes 0x50 0x4B
-		const view = new Uint8Array(buf);
-		expect(view[0]).toBe(0x50);
-		expect(view[1]).toBe(0x4b);
+	it("output starts with PK magic bytes (ZIP/XLSX format)", async () => {
+		const buf = await exportMatrixToExcel(makeMatrix());
+		expect(buf[0]).toBe(0x50);
+		expect(buf[1]).toBe(0x4b);
 	});
 
-	it("returns an ArrayBuffer for an empty matrix", () => {
-		const buf = exportMatrixToExcel({ rows: [], columns: [] });
-		expect(buf).toBeInstanceOf(ArrayBuffer);
+	it("returns a Uint8Array for an empty matrix", async () => {
+		const buf = await exportMatrixToExcel({ rows: [], columns: [] });
+		expect(buf).toBeInstanceOf(Uint8Array);
 		expect(buf.byteLength).toBeGreaterThan(0);
 	});
 });
