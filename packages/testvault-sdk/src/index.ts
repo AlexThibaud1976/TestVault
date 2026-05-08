@@ -24,3 +24,10 @@ export type {
 	ProcessInstallServiceConfig,
 	ProcessInstallState,
 } from "./process-install.js";
+export { createTestCaseService } from "./test-case-service.js";
+export type {
+	ITestCaseService,
+	ListOptions,
+	TestCaseDraft,
+	TestCasePatch,
+} from "./test-case-service.js";

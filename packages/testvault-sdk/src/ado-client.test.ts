@@ -237,6 +237,40 @@ describe("updateWorkItem", () => {
 	});
 });
 
+// ─── queryByWiql ─────────────────────────────────────────────────────────────
+
+describe("queryByWiql", () => {
+	it("returns array of work item IDs on success", async () => {
+		server.use(
+			http.post(`${API_BASE}/wiql`, () =>
+				HttpResponse.json({ workItems: [{ id: 1 }, { id: 2 }, { id: 3 }] })
+			)
+		);
+		const ids = await client.queryByWiql("SELECT [System.Id] FROM WorkItems");
+		expect(ids).toEqual([1, 2, 3]);
+	});
+
+	it("returns empty array when no results", async () => {
+		server.use(http.post(`${API_BASE}/wiql`, () => HttpResponse.json({ workItems: [] })));
+		const ids = await client.queryByWiql("SELECT [System.Id] FROM WorkItems WHERE 1=0");
+		expect(ids).toEqual([]);
+	});
+
+	it("throws AdoServerError on malformed JSON", async () => {
+		server.use(http.post(`${API_BASE}/wiql`, () => new HttpResponse("not-json", { status: 200 })));
+		await expect(client.queryByWiql("SELECT [System.Id] FROM WorkItems")).rejects.toThrow(
+			AdoServerError
+		);
+	});
+
+	it("throws AdoForbiddenError on 403", async () => {
+		server.use(http.post(`${API_BASE}/wiql`, () => new HttpResponse(null, { status: 403 })));
+		await expect(client.queryByWiql("SELECT [System.Id] FROM WorkItems")).rejects.toThrow(
+			AdoForbiddenError
+		);
+	});
+});
+
 // ─── deleteWorkItem ───────────────────────────────────────────────────────────
 
 describe("deleteWorkItem", () => {

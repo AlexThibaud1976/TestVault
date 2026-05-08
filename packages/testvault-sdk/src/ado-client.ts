@@ -71,6 +71,7 @@ export interface IAdoClient {
 	createWorkItem(type: string, fields: WorkItemFieldPatch[]): Promise<RawWorkItem>;
 	updateWorkItem(id: number, fields: WorkItemFieldPatch[]): Promise<RawWorkItem>;
 	deleteWorkItem(id: number): Promise<void>;
+	queryByWiql(wiql: string): Promise<number[]>;
 }
 
 export interface AdoClientConfig {
@@ -121,7 +122,7 @@ async function parseJsonBody(response: Response): Promise<RawWorkItem> {
 
 export function createAdoClient(config: AdoClientConfig): IAdoClient {
 	const { baseUrl, project, pat, timeoutMs = DEFAULT_TIMEOUT_MS } = config;
-	const baseApiUrl = `${baseUrl}/${project}/_apis/wit`;
+	const baseApiUrl = `${baseUrl}/${encodeURIComponent(project)}/_apis/wit`;
 	const defaultHeaders: Record<string, string> = {
 		Authorization: buildAuthHeader(pat),
 		Accept: "application/json",
@@ -173,6 +174,22 @@ export function createAdoClient(config: AdoClientConfig): IAdoClient {
 				method: "DELETE",
 			});
 			await throwForStatus(res);
+		},
+
+		async queryByWiql(wiql) {
+			const res = await doFetch(`${baseApiUrl}/wiql?api-version=${API_VERSION}`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ query: wiql }),
+			});
+			await throwForStatus(res);
+			const text = await res.text();
+			try {
+				const data = JSON.parse(text) as { workItems: Array<{ id: number }> };
+				return data.workItems.map((wi) => wi.id);
+			} catch {
+				throw new AdoServerError(`Invalid JSON response: ${text.slice(0, 100)}`);
+			}
 		},
 	};
 }

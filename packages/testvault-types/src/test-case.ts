@@ -24,6 +24,7 @@ export const TestVaultTestCaseSchema = z.object({
 	assignedTo: z.string().optional(),
 	automationKey: z.string().optional(),
 	gherkin: z.string().optional(),
+	estimatedDuration: z.number().int().nonnegative().optional(),
 	createdBy: z.string(),
 	createdAt: z.string().datetime(),
 	modifiedBy: z.string(),
