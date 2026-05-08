@@ -43,3 +43,9 @@ export type {
 	TestPlanDraft,
 	TestPlanPatch,
 } from "./test-plan-service.js";
+export { createPreconditionService } from "./precondition-service.js";
+export type {
+	IPreconditionService,
+	PreconditionDraft,
+	PreconditionPatch,
+} from "./precondition-service.js";
