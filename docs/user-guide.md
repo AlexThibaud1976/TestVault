@@ -127,3 +127,25 @@ When a Test Plan transitions to **Locked** state via `lockWithAutoSnapshot`, Arg
 ---
 
 For architecture and technical details, see `plan.md` in the spec-kit.
+
+---
+
+## Phase 4 — Import / Export / CLI
+
+### Importing Test Cases
+
+The **Import** wizard (accessible from Settings or the Cases list) accepts the following formats:
+
+| Format | Extension | Notes |
+| --- | --- | --- |
+| CSV | `.csv` | Auto-detects comma or semicolon delimiter. Columns: `title` (required), `description`, `steps` (JSON array), `tags` (`;`-separated), `automationKey` |
+| Excel | `.xlsx` | Same columns as CSV, first sheet used |
+| JUnit XML | `.xml` | Maps each `<testcase>` to a TC; `classname.name` becomes `automationKey` |
+| NUnit XML | `.xml` | Supports NUnit 2 (`test-results`) and NUnit 3 (`test-run`) formats |
+| xUnit XML | `.xml` | Maps each `<test>` element; `type.method` becomes `automationKey` |
+| TestNG XML | `.xml` | Maps each `<test-method>`; `class.method` becomes `automationKey` |
+| Cucumber JSON | `.json` | Maps each `scenario` to a TC; steps mapped to `action` fields |
+
+Steps are carried over when the source format includes step-level data (Cucumber, CSV/Excel with JSON steps column).
+
+The `automationKey` field enables matching when uploading CI results — a test result with the same `automationKey` as an existing TC will update that TC's latest execution status rather than creating a duplicate.

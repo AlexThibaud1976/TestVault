@@ -19,7 +19,9 @@
 		"lint": "biome check src/"
 	},
 	"dependencies": {
-		"@atconseil/testvault-types": "workspace:*"
+		"@atconseil/testvault-types": "workspace:*",
+		"fast-xml-parser": "^5.7.3",
+		"xlsx": "^0.18.5"
 	},
 	"devDependencies": {
 		"typescript": "^5.7.0",
