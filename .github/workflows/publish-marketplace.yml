@@ -39,18 +39,18 @@ jobs:
 
       - name: Package VSIX
         run: |
-          mkdir -p dist
+          mkdir -p "$GITHUB_WORKSPACE/dist"
           tfx extension create \
             --manifest-globs vss-extension.json \
             --root apps/argos-extension \
-            --output-path ../../dist/argos.vsix \
+            --output-path "$GITHUB_WORKSPACE/dist/argos.vsix" \
             --no-prompt
 
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v4
         with:
           name: argos-vsix
-          path: ./dist/argos.vsix
+          path: ${{ github.workspace }}/dist/argos.vsix
           retention-days: 30
 
       - name: Publish to Marketplace
@@ -59,6 +59,6 @@ jobs:
           MARKETPLACE_PAT: ${{ secrets.MARKETPLACE_PAT }}
         run: |
           tfx extension publish \
-            --vsix ./dist/argos.vsix \
+            --vsix "$GITHUB_WORKSPACE/dist/argos.vsix" \
             --token "$MARKETPLACE_PAT" \
             --no-prompt

@@ -41,10 +41,11 @@ jobs:
         run: |
           npm install -g tfx-cli
           if [ -f apps/argos-extension/vss-extension.json ]; then
+            mkdir -p "$GITHUB_WORKSPACE/dist"
             tfx extension create \
               --manifest-globs vss-extension.json \
               --root apps/argos-extension \
-              --output-path ../../dist/argos.vsix \
+              --output-path "$GITHUB_WORKSPACE/dist/argos.vsix" \
               --no-prompt
           else
             echo "vss-extension.json not yet created (pending T-0.4) — skipping"
