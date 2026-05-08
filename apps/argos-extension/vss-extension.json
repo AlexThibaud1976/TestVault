@@ -8,6 +8,7 @@
 	"public": true,
 	"targets": [{ "id": "Microsoft.VisualStudio.Services" }],
 	"categories": ["Azure Boards"],
+	"icons": { "default": "images/icon.png" },
 	"scopes": ["vso.work"],
 	"contributions": [
 		{
