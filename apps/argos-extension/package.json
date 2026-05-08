@@ -12,6 +12,7 @@
 		"lint": "biome check src/"
 	},
 	"dependencies": {
+		"@atconseil/testvault-exporters": "workspace:^",
 		"@atconseil/testvault-sdk": "workspace:^",
 		"@atconseil/testvault-types": "workspace:^",
 		"@fluentui/react-components": "^9.54.0",

@@ -1,4 +1,3 @@
-export { detectEnvironment } from "./environment.js";
 export {
 	AdoClientError,
 	AdoForbiddenError,

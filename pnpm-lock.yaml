@@ -236,6 +236,9 @@ importers:
 
   tools/e2e:
     dependencies:
+      '@atconseil/testvault-exporters':
+        specifier: workspace:^
+        version: link:../../packages/testvault-exporters
       '@atconseil/testvault-sdk':
         specifier: workspace:*
         version: link:../../packages/testvault-sdk

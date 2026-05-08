@@ -1,6 +1,6 @@
 import { HostType } from "azure-devops-extension-sdk";
 import { describe, expect, it, vi } from "vitest";
-import { detectEnvironment } from "./index.js";
+import { detectEnvironment } from "./environment.js";
 
 vi.mock("azure-devops-extension-sdk", () => ({
 	HostType: { Unknown: 0, Deployment: 1, Enterprise: 2, Organization: 4 },
