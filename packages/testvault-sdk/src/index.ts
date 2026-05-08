@@ -37,3 +37,9 @@ export type {
 	TestSetDraft,
 	TestSetPatch,
 } from "./test-set-service.js";
+export { createTestPlanService } from "./test-plan-service.js";
+export type {
+	ITestPlanService,
+	TestPlanDraft,
+	TestPlanPatch,
+} from "./test-plan-service.js";
