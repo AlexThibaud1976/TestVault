@@ -106,6 +106,10 @@ Select any two snapshots and click **Compare** to open the `SnapshotDiffPanel`. 
 - **Tags** — removed tags in red, added tags in green.
 - **Steps** — a side-by-side table computed by LCS (Longest Common Subsequence); equal rows are neutral, removed rows are highlighted red, added rows are highlighted green.
 
+### Auto-snapshot on Test Plan lock
+
+When a Test Plan transitions to **Locked** state via `lockWithAutoSnapshot`, Argos automatically creates one snapshot per Test Case in the plan (from all referenced Test Sets and `additionalTestCaseIds`). The snapshot names follow the pattern `auto-lock-{planId}-{tcId}`. The resulting snapshot IDs are stored in `TestVault.LockedSnapshotIds` on the plan Work Item, ensuring executions run against an immutable version of each Test Case.
+
 ---
 
 For architecture and technical details, see `plan.md` in the spec-kit.

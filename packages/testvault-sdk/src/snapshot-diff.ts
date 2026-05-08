@@ -39,12 +39,14 @@ export function lcsStepDiff(left: TestStep[], right: TestStep[]): StepDiffEntry[
 
 	// Build LCS length table
 	const dp: number[][] = Array.from({ length: m + 1 }, () => new Array<number>(n + 1).fill(0));
+	const at = (arr: number[][], r: number, c: number): number => arr[r]?.[c] ?? 0;
+	const atStep = (arr: TestStep[], idx: number): TestStep => arr[idx] as TestStep;
 	for (let i = 1; i <= m; i++) {
 		for (let j = 1; j <= n; j++) {
-			if (stepsEqual(left[i - 1]!, right[j - 1]!)) {
-				dp[i]![j] = dp[i - 1]![j - 1]! + 1;
+			if (stepsEqual(atStep(left, i - 1), atStep(right, j - 1))) {
+				(dp[i] as number[])[j] = at(dp, i - 1, j - 1) + 1;
 			} else {
-				dp[i]![j] = Math.max(dp[i - 1]![j]!, dp[i]![j - 1]!);
+				(dp[i] as number[])[j] = Math.max(at(dp, i - 1, j), at(dp, i, j - 1));
 			}
 		}
 	}
@@ -54,15 +56,15 @@ export function lcsStepDiff(left: TestStep[], right: TestStep[]): StepDiffEntry[
 	let i = m;
 	let j = n;
 	while (i > 0 || j > 0) {
-		if (i > 0 && j > 0 && stepsEqual(left[i - 1]!, right[j - 1]!)) {
-			result.push({ type: "equal", left: left[i - 1]!, right: right[j - 1]! });
+		if (i > 0 && j > 0 && stepsEqual(atStep(left, i - 1), atStep(right, j - 1))) {
+			result.push({ type: "equal", left: atStep(left, i - 1), right: atStep(right, j - 1) });
 			i--;
 			j--;
-		} else if (j > 0 && (i === 0 || dp[i]![j - 1]! >= dp[i - 1]![j]!)) {
-			result.push({ type: "added", left: null, right: right[j - 1]! });
+		} else if (j > 0 && (i === 0 || at(dp, i, j - 1) >= at(dp, i - 1, j))) {
+			result.push({ type: "added", left: null, right: atStep(right, j - 1) });
 			j--;
 		} else {
-			result.push({ type: "removed", left: left[i - 1]!, right: null });
+			result.push({ type: "removed", left: atStep(left, i - 1), right: null });
 			i--;
 		}
 	}

@@ -33,7 +33,7 @@ export function createWorkItemLinkService(adoClient: IAdoClient): IWorkItemLinkS
 				.map((r) => ({
 					targetId: extractIdFromUrl(r.url),
 					targetUrl: r.url,
-					linkType: r.attributes![WI_LINK_TYPE_ATTR] as WiLinkType,
+					linkType: r.attributes?.[WI_LINK_TYPE_ATTR] as WiLinkType,
 					isOrphan: false,
 				}));
 		},

@@ -57,17 +57,15 @@ describe("listLinks", () => {
 
 	it("returns only relations tagged with WI_LINK_TYPE_ATTR", async () => {
 		const adoClient = makeAdoClient({
-			fetchWorkItem: vi
-				.fn()
-				.mockResolvedValue(
-					rawTc([
-						tvRelation(100, "TestVault.TestedBy"),
-						{
-							rel: "System.LinkTypes.Related",
-							url: "https://dev.azure.com/org/x/_apis/wit/workitems/200",
-						},
-					])
-				),
+			fetchWorkItem: vi.fn().mockResolvedValue(
+				rawTc([
+					tvRelation(100, "TestVault.TestedBy"),
+					{
+						rel: "System.LinkTypes.Related",
+						url: "https://dev.azure.com/org/x/_apis/wit/workitems/200",
+					},
+				])
+			),
 		});
 		const service = createWorkItemLinkService(adoClient);
 		const links = await service.listLinks(42);

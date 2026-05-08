@@ -45,6 +45,7 @@ export type {
 } from "./test-set-service.js";
 export { createTestPlanService } from "./test-plan-service.js";
 export type {
+	AutoSnapshotServices,
 	ITestPlanService,
 	TestPlanDraft,
 	TestPlanPatch,

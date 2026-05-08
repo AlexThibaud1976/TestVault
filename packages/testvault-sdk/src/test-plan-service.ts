@@ -1,5 +1,7 @@
-import type { TestVaultTestPlan } from "@atconseil/testvault-types";
+import type { TestVaultTestCase, TestVaultTestPlan } from "@atconseil/testvault-types";
 import type { IAdoClient, RawWorkItem, WorkItemFieldPatch } from "./ado-client.js";
+import type { ITestCaseVersionService } from "./test-case-version-service.js";
+import type { ITestSetService } from "./test-set-service.js";
 
 export type TestPlanDraft = {
 	name: string;
@@ -13,6 +15,12 @@ export type TestPlanDraft = {
 
 export type TestPlanPatch = Partial<TestPlanDraft>;
 
+export type AutoSnapshotServices = {
+	testSetService: ITestSetService;
+	fetchTestCase: (id: number) => Promise<TestVaultTestCase>;
+	versionService: ITestCaseVersionService;
+};
+
 export interface ITestPlanService {
 	create(draft: TestPlanDraft): Promise<TestVaultTestPlan>;
 	read(id: number): Promise<TestVaultTestPlan>;
@@ -21,6 +29,7 @@ export interface ITestPlanService {
 	list(): Promise<TestVaultTestPlan[]>;
 	lock(id: number): Promise<TestVaultTestPlan>;
 	unlock(id: number): Promise<TestVaultTestPlan>;
+	lockWithAutoSnapshot(id: number, services: AutoSnapshotServices): Promise<TestVaultTestPlan>;
 }
 
 // ─── Field mapping ────────────────────────────────────────────────────────────
@@ -150,6 +159,40 @@ export function createTestPlanService(adoClient: IAdoClient, project: string): I
 			const raw = await adoClient.updateWorkItem(id, [
 				{ op: "add", path: "/fields/System.State", value: "Draft" },
 			]);
+			return fromRaw(raw);
+		},
+
+		async lockWithAutoSnapshot(id, { testSetService, fetchTestCase, versionService }) {
+			const plan = await readById(id);
+
+			// Collect all TC IDs: from each test set + additionalTestCaseIds
+			const setTcIds = (
+				await Promise.all(plan.testSetIds.map((setId) => testSetService.resolveTestCaseIds(setId)))
+			).flat();
+			const allTcIds = Array.from(new Set([...setTcIds, ...plan.additionalTestCaseIds]));
+
+			// Create a snapshot for each TC
+			const testCases = await Promise.all(allTcIds.map(fetchTestCase));
+			const snapshots = await Promise.all(
+				testCases.map((tc) =>
+					versionService.createSnapshot(tc, {
+						name: `auto-lock-${id}-${tc.id}`,
+						parentTestCaseId: tc.id,
+					})
+				)
+			);
+			const snapshotIds = snapshots.map((s) => s.id);
+
+			// Lock the plan with snapshot IDs stored
+			const patches: WorkItemFieldPatch[] = [
+				{ op: "add", path: "/fields/System.State", value: "Locked" },
+				{
+					op: "add",
+					path: "/fields/TestVault.LockedSnapshotIds",
+					value: JSON.stringify(snapshotIds),
+				},
+			];
+			const raw = await adoClient.updateWorkItem(id, patches);
 			return fromRaw(raw);
 		},
 	};
