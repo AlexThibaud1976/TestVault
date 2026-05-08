@@ -16,6 +16,7 @@ function makeService(overrides?: Partial<ITestPlanService>): ITestPlanService {
 		list: vi.fn().mockResolvedValue([]),
 		lock: vi.fn().mockResolvedValue(makePlan({ state: "Locked" })),
 		unlock: vi.fn().mockResolvedValue(makePlan()),
+		lockWithAutoSnapshot: vi.fn().mockResolvedValue(makePlan({ state: "Locked" })),
 		...overrides,
 	};
 }

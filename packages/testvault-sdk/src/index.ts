@@ -96,6 +96,18 @@ export type {
 	WiLinkType,
 	WorkItemLink,
 } from "./work-item-link-service.js";
+export { buildCoverageMatrix } from "./coverage-matrix.js";
+export type {
+	CoverageMatrix,
+	MatrixCell,
+	MatrixColumn,
+	MatrixExecution,
+	MatrixInput,
+	MatrixLink,
+	MatrixRow,
+	MatrixTestCase,
+	MatrixWorkItem,
+} from "./coverage-matrix.js";
 export { diffSnapshots, lcsStepDiff } from "./snapshot-diff.js";
 export type {
 	SnapshotDiff,

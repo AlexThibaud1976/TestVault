@@ -106,6 +106,18 @@ Select any two snapshots and click **Compare** to open the `SnapshotDiffPanel`. 
 - **Tags** — removed tags in red, added tags in green.
 - **Steps** — a side-by-side table computed by LCS (Longest Common Subsequence); equal rows are neutral, removed rows are highlighted red, added rows are highlighted green.
 
+### Requirements Coverage Matrix
+
+The **Coverage Matrix** (`CoverageMatrix` component) shows a cross-table of Work Items (rows) × Test Cases (columns). Each cell displays the latest execution status for the corresponding TC:
+
+- **Green** — latest execution is `Pass`
+- **Red** — latest execution is `Fail`
+- **Amber** — latest execution is `Blocked`
+- **Blue** — TC is linked but has no execution yet
+- **—** — TC is not linked to this Work Item
+
+An **Environment** filter dropdown narrows cells to a specific environment. The matrix only shows WIs that have at least one linked TC, and only TC columns that are referenced by a link.
+
 ### Auto-snapshot on Test Plan lock
 
 When a Test Plan transitions to **Locked** state via `lockWithAutoSnapshot`, Argos automatically creates one snapshot per Test Case in the plan (from all referenced Test Sets and `additionalTestCaseIds`). The snapshot names follow the pattern `auto-lock-{planId}-{tcId}`. The resulting snapshot IDs are stored in `TestVault.LockedSnapshotIds` on the plan Work Item, ensuring executions run against an immutable version of each Test Case.
