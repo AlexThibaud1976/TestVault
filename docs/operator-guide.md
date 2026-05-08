@@ -180,3 +180,47 @@ pnpm dlx @cyclonedx/cyclonedx-npm --output-file sbom.json
 ```
 
 Run `npm audit --audit-level=high` before any release. CI blocks merges with high/critical advisories.
+
+---
+
+## ADO Extension Contribution Points
+
+This section documents the exact ADO hub groups and contribution targets used by Argos, to prevent regressions when updating `vss-extension.json`.
+
+### Hub contribution — Boards tab
+
+| Field | Value |
+|---|---|
+| Contribution type | `ms.vss-web.hub` |
+| Target | `ms.vss-work-web.work-hub-group` |
+| URI | `dist/hub/hub.html` |
+
+**Why `ms.vss-work-web.work-hub-group` and not `ms.vss-web.project-hub-group`?**
+
+`ms.vss-web.project-hub-group` places the hub in the top-level Project navigation (alongside Repos, Pipelines, etc.). `ms.vss-work-web.work-hub-group` places it inside **Boards** — the correct location for a test management tool that is work-item-centric. Using the wrong group causes the tab to appear in the wrong section or not at all.
+
+### Coverage panel contribution — Work Item Form page
+
+| Field | Value |
+|---|---|
+| Contribution type | `ms.vss-work-web.work-item-form-page` |
+| Target | `ms.vss-work-web.work-item-form` |
+| URI | `dist/widgets/coverage-panel/index.html` |
+
+The coverage panel is a **separate bundle** from the main hub. Its entry point (`src/widgets/coverage-panel/index.tsx`) initializes the ADO SDK independently, retrieves the current work item ID via the Work Item Form Service (`ms.vss-work-web.work-item-form`), and renders the `CoveragePanel` React component.
+
+Pointing this contribution at `dist/hub/hub.html` (the main hub bundle) would load the full Argos application inside a narrow work item form panel — visually broken and functionally wrong.
+
+### Declared scopes and why each is needed
+
+| Scope | Reason |
+|---|---|
+| `vso.work_full` | CRUD on Test Cases, Test Plans, Preconditions, Test Executions (Custom WITs) + Attachments for evidence |
+| `vso.profile` | Retrieve current user identity for audit logging and execution attribution |
+| `vso.code` | Read Gherkin feature files from Azure Repos (BDD sync feature) |
+| `vso.extension.data_write` | ExtensionDataService — stores lightweight config (LLM provider, quota, repo mappings) at org scope |
+| `vso.identity` | Resolve ADO groups for role derivation (Admin / Contributor / Reader) |
+
+### ADO Server 2022 target version
+
+The `Microsoft.TeamFoundation.Server` target uses version `[18.0,)`. ADO Server 2022 reports its internal version as `18.x`. This excludes Server 2020 (17.x) and older, per the compatibility contract in `Specs/constitution.md §1`.

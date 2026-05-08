@@ -132,6 +132,29 @@ Ce document liste les tÃ¢ches d'implÃ©mentation par phase. Chaque tÃ¢che e
 
 ---
 
+### T-0.8 — Manifest ADO-conforme : hub group, scopes, widget coverage-panel 🟡
+
+📚 `plan.md` §2.1 — alignement du manifest `vss-extension.json` avec l'architecture cible
+
+- [x] `scopes` → `[“vso.work_full”, “vso.profile”, “vso.code”, “vso.extension.data_write”, “vso.identity”]`
+- [x] `targets` → ajouter `{ “id”: “Microsoft.TeamFoundation.Server”, “version”: “[18.0,)” }` (ADO Server 2022)
+- [x] Hub contribution target → `ms.vss-work-web.work-hub-group` (Boards tab, pas Project hub group)
+- [x] Coverage panel `uri` → `dist/widgets/coverage-panel/index.html`
+- [x] `files` → `{ “path”: “dist”, “addressable”: true }` (packager dist complète, y compris widgets/)
+- [x] Créer point d'entrée `src/widgets/coverage-panel/index.tsx` + `index.html` (TDD)
+- [x] Adapter `scripts/build.mjs` pour produire `dist/widgets/coverage-panel/` bundle
+- [x] Bump version `0.1.1`
+- [x] CHANGELOG.md + `docs/operator-guide.md` (section hub groups ADO)
+- [x] CI publish green
+
+**Done quand :**
+- [x] L'onglet Argos apparaît dans Boards (ms.vss-work-web.work-hub-group)
+- [x] Le panneau Test Coverage s'affiche sur le formulaire Work Item
+- [x] unzip -l argos.vsix liste dist/hub/hub.html et dist/widgets/coverage-panel/index.html
+- [x] CI publish-marketplace.yml verte
+
+---
+
 ## Phase 1 â€” Custom WIT et CRUD rÃ©fÃ©rentiel
 
 > **Objectif :** crÃ©er le Custom Process Inheritance, installer les Custom WIT, et permettre le CRUD complet de `TestCase`, `TestPlan`, `TestSet`, `Precondition` via l'UI Argos.

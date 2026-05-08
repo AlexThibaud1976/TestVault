@@ -32,7 +32,7 @@ export function CoverageMatrix({ input, environments }: CoverageMatrixProps) {
 					size="small"
 					onClick={async () => {
 						const buf = await exportMatrixToExcel(matrix);
-						const blob = new Blob([buf], {
+						const blob = new Blob([buf.buffer as ArrayBuffer], {
 							type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 						});
 						const url = URL.createObjectURL(blob);
