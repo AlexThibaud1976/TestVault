@@ -1,0 +1,64 @@
+name: Publish — Marketplace
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run only (package without publishing)"
+        type: boolean
+        default: false
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  publish:
+    name: Build & Publish VSIX
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm turbo build
+
+      - name: Install tfx-cli
+        run: npm install -g tfx-cli
+
+      - name: Package VSIX
+        run: |
+          tfx extension create \
+            --manifest-globs apps/argos-extension/vss-extension.json \
+            --output-path ./dist/argos.vsix \
+            --no-prompt
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: argos-vsix
+          path: ./dist/argos.vsix
+          retention-days: 30
+
+      - name: Publish to Marketplace
+        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
+        env:
+          MARKETPLACE_PAT: ${{ secrets.MARKETPLACE_PAT }}
+        run: |
+          tfx extension publish \
+            --manifest-globs apps/argos-extension/vss-extension.json \
+            --token "$MARKETPLACE_PAT" \
+            --no-prompt
