@@ -40,9 +40,9 @@ jobs:
       - name: Package VSIX
         run: |
           mkdir -p "$GITHUB_WORKSPACE/dist"
+          cd apps/argos-extension
           tfx extension create \
             --manifest-globs vss-extension.json \
-            --root apps/argos-extension \
             --output-path "$GITHUB_WORKSPACE/dist/argos.vsix" \
             --no-prompt
 

@@ -42,9 +42,9 @@ jobs:
           npm install -g tfx-cli
           if [ -f apps/argos-extension/vss-extension.json ]; then
             mkdir -p "$GITHUB_WORKSPACE/dist"
+            cd apps/argos-extension
             tfx extension create \
               --manifest-globs vss-extension.json \
-              --root apps/argos-extension \
               --output-path "$GITHUB_WORKSPACE/dist/argos.vsix" \
               --no-prompt
           else
