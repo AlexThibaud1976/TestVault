@@ -31,3 +31,9 @@ export type {
 	TestCaseDraft,
 	TestCasePatch,
 } from "./test-case-service.js";
+export { createTestSetService } from "./test-set-service.js";
+export type {
+	ITestSetService,
+	TestSetDraft,
+	TestSetPatch,
+} from "./test-set-service.js";
