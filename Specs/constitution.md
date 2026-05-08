@@ -329,24 +329,26 @@ Une checklist automatisée bloque la publication si l'un des points est rouge :
 
 ## 11. Checklist de validation pré-release
 
+> Mise à jour : 2026-05-08 — Bilan post-Phase 7 (feature-complete en code, pas encore déployé).
+
 Toute publication sur le Marketplace exige que **TOUS** les points suivants soient verts :
 
-- [ ] Tests unitaires aux seuils §10.1 (≥ 90% core, ≥ 80% UI)
-- [ ] Tests E2E parcours critiques verts sur Cloud
-- [ ] Tests E2E parcours critiques verts sur Server 2022 (instance de test maintenue)
-- [ ] Suite de régression complète verte
-- [ ] Tests contractuels API publique verts (OpenAPI)
-- [ ] Vérification des API externes (ADO REST, Entra ID, fournisseurs LLM) passées
-- [ ] Vérification que les modèles LLM par défaut sont supportés (non dépréciés) chez chaque fournisseur
-- [ ] Documentation README + user guide à jour et relue
-- [ ] `npm audit` sans CVE haute ou critique
-- [ ] SBOM CycloneDX publié
-- [ ] Schéma Custom WIT documenté et versionné
-- [ ] Schéma `TestVaultAuditLog` documenté
-- [ ] Script de migration testé (si schéma touché)
-- [ ] CHANGELOG.md mis à jour
-- [ ] Spec-kit mis à jour si périmètre touché
-- [ ] Validation manuelle Alexandre Thibaud
+- [ ] Tests unitaires aux seuils §10.1 (≥ 90% core, ≥ 80% UI) — 670 tests passent ; **couverture % non mesurée** (lancer `pnpm test --coverage` et vérifier les seuils v8)
+- [ ] Tests E2E parcours critiques verts sur Cloud — specs 01–11 écrites, **nécessite instance ADO Cloud** (`ADO_CLOUD_ORG_URL`, `ADO_CLOUD_PAT`)
+- [ ] Tests E2E parcours critiques verts sur Server 2022 — **nécessite instance ADO Server 2022** dédiée
+- [ ] Suite de régression complète verte — aucun bug production confirmé à ce stade, suite vide ; **à alimenter dès le premier bug prod**
+- [ ] Tests contractuels API publique verts (OpenAPI) — **spécification OpenAPI non générée** (à faire via `@anatine/zod-openapi` à partir des schémas Zod existants)
+- [ ] Vérification des API externes (ADO REST, Entra ID, fournisseurs LLM) passées — **nécessite déploiement Azure Functions** + clés réelles
+- [x] Vérification que les modèles LLM par défaut sont supportés — modèles en code : `claude-sonnet-4-6`, `claude-haiku-4-5`, `gpt-4.1` ; actifs au 2026-05-08 ✓
+- [x] Documentation README + user guide à jour et relue — `user-guide.md`, `api-reference.md`, `sdk-reference.md`, `operator-guide.md`, `wit-schema.md` tous complétés en T-7.6 ✓
+- [ ] `npm audit` sans CVE haute ou critique — **non lancé** ; lancer `npm audit --audit-level=high` avant release
+- [ ] SBOM CycloneDX publié — **non généré** ; lancer `pnpm dlx @cyclonedx/cyclonedx-npm --output-file sbom.json`
+- [x] Schéma Custom WIT documenté et versionné — `docs/wit-schema.md` v1.0.0, 7 WITs documentés ✓
+- [x] Schéma `TestVaultAuditLog` documenté — inclus dans `docs/wit-schema.md` §TestVault.AuditLog ✓
+- [x] Script de migration testé (si schéma touché) — N/A : premier release v1.0.0, aucune migration requise ✓
+- [x] CHANGELOG.md mis à jour — entrée v1.0.0 complète avec résumé des phases 0–7 ✓
+- [ ] Spec-kit mis à jour si périmètre touché — `Specs/tasks.md` : cases à cocher des tâches T-1.x à T-7.x **non mises à jour** (toujours en `[ ]`)
+- [ ] Validation manuelle Alexandre Thibaud — **en attente**
 
 ---
 
