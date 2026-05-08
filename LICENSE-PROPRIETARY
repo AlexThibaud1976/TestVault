@@ -1,0 +1,39 @@
+TestVault (Argos) — Proprietary Software License
+
+Copyright (c) 2026 ATConseil — Alexandre Thibaud (atconseil.info)
+All rights reserved.
+
+This license applies to all components of this repository EXCEPT the following,
+which are licensed under Apache 2.0 (see LICENSE file):
+  - packages/testvault-sdk
+  - packages/testvault-cli
+
+GRANT OF LICENSE
+ATConseil grants end users a limited, non-exclusive, non-transferable license to
+install and use the Argos extension ("Software") solely for their internal business
+purposes, subject to the terms of their active subscription agreement with ATConseil.
+
+RESTRICTIONS
+You may not:
+  - Copy, modify, or distribute the Software or any portion thereof;
+  - Reverse-engineer, decompile, or disassemble the Software;
+  - Sublicense, sell, rent, or lease the Software;
+  - Use the Software beyond the scope of your subscription tier;
+  - Remove or alter any proprietary notices or labels on the Software.
+
+DATA SOVEREIGNTY
+The Software is designed to store all customer business data exclusively within
+the customer's Azure DevOps instance. ATConseil does not access, store, or
+process customer test data except as required to provide Cloud-Plus features,
+and only ephemerally as described in the product documentation.
+
+NO WARRANTY
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND. ATCONSEIL DISCLAIMS
+ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+
+LIMITATION OF LIABILITY
+IN NO EVENT SHALL ATCONSEIL BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL,
+CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING FROM YOUR USE OF THE SOFTWARE.
+
+Contact: Alexandre Thibaud — atconseil.info

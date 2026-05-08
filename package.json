@@ -1,0 +1,37 @@
+{
+	"name": "testvault",
+	"version": "0.0.0",
+	"private": true,
+	"engines": {
+		"node": ">=22.0.0",
+		"pnpm": ">=9.0.0"
+	},
+	"scripts": {
+		"build": "turbo build",
+		"test": "turbo test",
+		"lint": "turbo lint",
+		"typecheck": "turbo typecheck",
+		"format": "biome format --write .",
+		"check": "biome check .",
+		"prepare": "simple-git-hooks"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.4",
+		"secretlint": "^9.3.0",
+		"@secretlint/secretlint-rule-preset-recommend": "^9.3.0",
+		"@vitest/coverage-v8": "^3.1.0",
+		"lint-staged": "^15.4.0",
+		"simple-git-hooks": "^2.11.0",
+		"turbo": "^2.3.0",
+		"typescript": "^5.7.0",
+		"vitest": "^3.1.0"
+	},
+	"simple-git-hooks": {
+		"pre-commit": "pnpm lint-staged"
+	},
+	"lint-staged": {
+		"*.{ts,tsx,js,jsx,json}": "biome check --apply",
+		"*": "secretlint --maskSecrets"
+	},
+	"packageManager": "pnpm@9.0.0"
+}

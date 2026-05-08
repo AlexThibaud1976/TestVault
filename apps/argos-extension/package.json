@@ -1,0 +1,22 @@
+{
+	"name": "argos-extension",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "tsc --project tsconfig.json",
+		"dev": "tsc --project tsconfig.json --watch",
+		"build:vsix": "tfx extension create --manifest-globs vss-extension.json --output-path ../../dist/argos.vsix",
+		"typecheck": "tsc --project tsconfig.json --noEmit",
+		"test": "vitest run --passWithNoTests",
+		"lint": "biome check src/"
+	},
+	"dependencies": {
+		"azure-devops-extension-sdk": "^4.0.2",
+		"azure-devops-extension-api": "^4.0.2"
+	},
+	"devDependencies": {
+		"typescript": "^5.7.0",
+		"vitest": "^3.1.0"
+	}
+}

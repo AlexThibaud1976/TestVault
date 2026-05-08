@@ -1,0 +1,12 @@
+{
+	"name": "docs-site",
+	"version": "0.0.1",
+	"private": true,
+	"scripts": {
+		"build": "echo 'docs-site build placeholder'",
+		"dev": "echo 'docs-site dev placeholder'",
+		"typecheck": "echo 'ok'",
+		"test": "echo 'ok'",
+		"lint": "echo 'ok'"
+	}
+}

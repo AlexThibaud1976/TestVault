@@ -1,0 +1,21 @@
+{
+	"name": "argos-functions",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "tsc --project tsconfig.json",
+		"dev": "func start",
+		"typecheck": "tsc --project tsconfig.json --noEmit",
+		"test": "vitest run --passWithNoTests",
+		"lint": "biome check src/"
+	},
+	"dependencies": {
+		"@azure/functions": "^4.5.0",
+		"zod": "^3.24.0"
+	},
+	"devDependencies": {
+		"typescript": "^5.7.0",
+		"vitest": "^3.1.0"
+	}
+}

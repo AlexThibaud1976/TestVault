@@ -1,0 +1,353 @@
+# Constitution — TestVault
+
+> Version 0.2.4 — 8 mai 2026
+> Principes non-négociables pour le projet TestVault par ATConseil
+> Auteur : Alexandre Thibaud — atconseil.info
+
+> **Changelog v0.2.4** : adoption de Biome (lint + format unifiés) en remplacement de ESLint + Prettier. Justification : performance significativement supérieure sur monorepo, configuration unique, ESM-natif. Le choix est figé pour v1.
+> **Changelog v0.2.3** : correction technique — SDK ADO v5 → v4 (la v5 n'existe pas, le SDK reste sur la branche 4.x) ; Node.js 20 LTS → Node.js 22 LTS (Node 20 EOL avril 2026 ; Azure SDK JS impose Node 22 minimum dès juillet 2026).
+> **Changelog v0.2.2** : naming consolidé — projet `TestVault`, extension Marketplace `Argos`, publisher `ATConseil`. SDK npm renommé `@atconseil/testvault-sdk`.
+> **Changelog v0.2.1** : rétention de l'audit trail rendue paramétrable par l'Admin (avec plancher de sécurité).
+> **Changelog v0.2.0** : ajout §6 Permissions & Rôles, ajout §3.2.1 Stratégie LLM (BYOK), couverture tests relevée à 90/80, validation licence Server passée à 7j, confirmation TestPulse évolution indépendante.
+
+---
+
+## Mission
+
+TestVault est l'extension de test management pour Azure DevOps qui apporte aux équipes QA une parité fonctionnelle stricte avec Xray (Jira), aussi bien sur Azure DevOps Services (Cloud) que sur Azure DevOps Server 2022 (on-premises). Elle s'appuie sur le stockage Work Items natif d'ADO pour garantir la souveraineté des données du client, et alimente l'extension de reporting TestPulse via un schéma documenté.
+
+---
+
+## 1. Périmètre de compatibilité
+
+**Plateformes officiellement supportées en v1 :**
+
+- **Azure DevOps Services (Cloud)** — support officiel, premier-class
+- **Azure DevOps Server 2022** (on-premises) — support officiel, parité fonctionnelle stricte sauf zones explicitement listées en §3
+
+**Plateformes hors périmètre v1 :**
+
+- Azure DevOps Server 2020 et antérieurs (mainstream support terminé le 14 octobre 2025)
+- Team Foundation Server (toutes versions)
+- Visual Studio Code et Visual Studio IDE (hors scope)
+
+**Justification :** concentrer l'effort de QA sur les versions activement maintenues par Microsoft, réduire la matrice de tests, éviter le coût de support de plateformes en extended support.
+
+---
+
+## 2. Stack & Runtime
+
+- **MUST** : TypeScript 5+ en mode strict (`strict: true`, `noImplicitAny`, `strictNullChecks`)
+- **MUST** : **Biome** comme linter et formatter unifié (configuration unique `biome.json` à la racine), appliqué et bloquant en CI
+- **MUST** : React 18+ pour l'UI de l'extension
+- **MUST** : ADO Extension SDK v4 (`azure-devops-extension-sdk`, version 4.x ; il n'existe pas de v5 publiée à ce jour) + `azure-devops-extension-api` v4.x pour les clients REST
+- **MUST** : Node.js **22 LTS** pour les outils de build, le CLI, et les Azure Functions Cloud-Plus (Node.js 20 atteint l'EOL en avril 2026 et le SDK Azure JS impose Node 22 minimum à compter du 9 juillet 2026)
+- **MUST** : monorepo via Turborepo ou Nx, avec packages distincts pour TestVault, TestPulse, SDK, CLI, et composants UI partagés
+- **NEVER** : pas de jQuery, pas de bundle CommonJS dans la production, pas de framework UI tiers concurrent à Fluent UI 2 (qui est la base ADO native)
+
+---
+
+## 3. Architecture & Distribution
+
+### 3.1 Modèle d'extension
+
+- **MUST** : extension contributive Azure DevOps publiée sur le Visual Studio Marketplace
+- **MUST** : un seul VSIX par version, supportant à la fois Cloud et Server 2022 sans variantes ni builds parallèles
+- **MUST** : Custom Process via le modèle **Inheritance uniquement** (pas de XML on-prem, pas de Hosted XML)
+- **MUST** : installation du process custom assistée par un wizard intégré à l'extension (détection des permissions admin requises, instructions claires en cas de manque de droits)
+
+**Naming & identité (non-négociable) :**
+
+| Référence | Valeur |
+|---|---|
+| Nom du projet (interne, code, repo, monorepo packages, doc technique) | `TestVault` |
+| Nom commercial de l'extension sur le Visual Studio Marketplace | `Argos` |
+| Publisher Azure Marketplace | `ATConseil` |
+| Scope npm SDK & CLI | `@atconseil/*` |
+| Site de référence | atconseil.info |
+
+- **MUST** : la documentation utilisateur publique privilégie le nom commercial **Argos**, en mentionnant *TestVault* uniquement comme référence technique (nom du moteur, du SDK, du schéma WIT) lorsque pertinent.
+- **MUST** : les Custom Work Item Types installés gardent le préfixe technique `TestVault.*` (ex: `TestVault.TestCase`, `TestVault.TestCaseVersion`, `TestVault.TestVaultAuditLog`) pour stabilité du contrat avec TestPulse et pour ne pas couper la rétrocompatibilité (cf. §9).
+- **MUST** : le manifest `vss-extension.json` déclare `publisher: "ATConseil"` et `name: "Argos"`. L'identifiant technique de l'extension (`extensionId`) reste `argos` ou équivalent stable.
+
+### 3.2 Modèle backend — "Cloud Plus"
+
+Toutes les fonctionnalités cœur sont **client-side pures** et identiques Cloud/Server. Les fonctionnalités enrichies sont **Cloud-exclusives** via Azure Functions hébergées par ATConseil.
+
+**Cœur (parité Cloud/Server stricte) :**
+
+- CRUD Test Cases / Test Plans / Test Sets / Preconditions / Test Executions
+- Attachments (evidence) via API Attachments ADO native
+- Import : CSV, Excel, JUnit XML, NUnit XML, xUnit, TestNG, Cucumber JSON
+- Export : Excel, PDF
+- Traceability matrix Work Items ↔ Test Cases (liens bidirectionnels)
+- BDD/Gherkin import/export et liaison avec feature files
+- Recherche WIQL + index local côté client (compense l'absence de `ContentMatchesIndex` sur Cloud)
+- Versioning des Test Cases par snapshots taggés (cf. §8)
+- Alimentation du schéma WIT consommé par TestPulse
+
+**Cloud-Plus (Azure Functions ATConseil, Cloud uniquement) :**
+
+- Génération AI-assistée de Test Cases depuis User Stories (cf. §3.2.1)
+- Détection AI de flakiness multi-runs (cf. §3.2.1)
+- Ingestion webhook directe depuis CI externes (GitHub Actions, Jenkins, GitLab CI, CircleCI)
+- Jobs planifiés (refresh nocturne, agrégations métriques, notifications)
+
+- **MUST** : tout indicateur Cloud-Plus est explicitement marqué dans l'UI (badge, tooltip, page de pricing). Aucune dégradation silencieuse côté Server.
+- **MUST** : la liste des features Cloud-Plus est versionnée dans la documentation publique. Toute promotion d'une feature de Cloud-Plus vers Cœur (et donc vers Server) est célébrée comme bugfix de parité.
+
+### 3.2.1 Stratégie LLM — Bring Your Own Key (BYOK)
+
+Toutes les features AI dépendent d'un fournisseur LLM. **TestVault ne fournit pas de clé LLM mutualisée** ; le client configure ses propres credentials chez son fournisseur de choix. Ce modèle BYOK est non-négociable et garantit la souveraineté des données du client.
+
+**Fournisseurs supportés en v1 :**
+
+- Anthropic (Claude API directe)
+- OpenAI (API directe)
+- Azure OpenAI Service (recommandé pour les clients enterprise avec contrats de confidentialité signés avec Microsoft)
+
+- **MUST** : aucun appel LLM ne part de ATConseil sans clé fournie par le client (jamais de fallback sur une clé ATConseil).
+- **MUST** : les clés API LLM sont stockées chiffrées dans ExtensionDataService scope organisation, accessibles uniquement aux Admin TestVault (cf. §6). Jamais en clair en logs ni en télémétrie.
+- **MUST** : les appels LLM passent par les Azure Functions ATConseil (proxy d'orchestration) pour ne jamais exposer la clé côté navigateur. Sur ADO Server air-gapped, les features AI sont donc indisponibles, conformément au modèle Cloud-Plus.
+- **MUST** : tout appel LLM est précédé d'une validation de quota (consommation par user/mois) configurable par l'Admin pour éviter les dépassements imprévus de coût chez le client.
+- **MUST** : aucune persistance des contenus (prompts, réponses) côté ATConseil ; uniquement un cache éphémère (TTL ≤ 1h) pour la déduplication.
+
+**Paramétrage fin par l'Admin (cf. §6) :**
+
+- Choix du fournisseur par feature (TC generation peut utiliser Anthropic, flakiness detection peut utiliser OpenAI)
+- Choix du modèle (claude-opus-4-7, claude-sonnet-4-6, gpt-4.1, etc.)
+- Édition des paramètres (temperature, max_tokens, top_p)
+- Édition des system prompts par feature
+- Quotas mensuels par utilisateur ou par projet
+- Activation/désactivation feature par feature
+- Provider de fallback en cas d'indisponibilité
+
+**Mise à jour des modèles LLM** : le checklist de release (§11) impose une vérification systématique que les modèles configurés par défaut sont les versions actuellement recommandées par leur fournisseur. Toute dépréciation déclenche une issue bloquante et une PR de mise à jour.
+
+### 3.3 Stockage des données
+
+| Donnée | Emplacement |
+|---|---|
+| Test Cases, Test Plans, Test Sets, Preconditions, Test Executions, TestCaseVersion | Custom Work Items ADO (Inheritance) chez le client |
+| Audit log des opérations Admin TestVault | Custom Work Item `TestVaultAuditLog` chez le client |
+| Evidence et pièces jointes | API Attachments ADO native chez le client |
+| Settings extension légers (UI prefs, feature flags, indicateurs onboarding) | ExtensionDataService (scope user ou organisation) |
+| Configuration LLM (clés API chiffrées, prompts custom, modèles, quotas) | ExtensionDataService scope organisation, chiffré au repos |
+| Métadonnées Cloud-Plus (jobs, webhooks) | Azure Table Storage ATConseil (Cloud uniquement, sans données métier) |
+
+- **MUST** : aucune donnée métier (test cases, executions, results, evidence) n'est stockée hors de l'instance ADO du client. La souveraineté des données du client est un critère non-négociable.
+- **MUST** : pour les features Cloud-Plus, les données métier transitent éphémèrement par les Azure Functions sans persistance, sauf cache court terme strictement délimité (TTL ≤ 1h, anonymisable).
+
+### 3.4 API publique — Modèle hybride
+
+- **API primaire** : SDK npm `@atconseil/testvault-sdk` + CLI `testvault-cli`. Wrappent l'API ADO native et le schéma WIT TestVault. Identiques Cloud/Server, fonctionnent en air-gap si le client a un PAT.
+- **API secondaire** : endpoints REST ATConseil (Azure Functions) pour features Cloud-Plus uniquement. Documentés en spécification OpenAPI séparée.
+- **MUST** : SDK et CLI publiés open-source sous licence Apache 2.0, pour favoriser l'adoption et l'intégration tierce.
+- **MUST** : tous les endpoints REST Cloud-Plus sont versionnés (`/v1/...`) avec une politique de dépréciation minimum 12 mois.
+- **MUST** : la spécification OpenAPI est générée à partir du code (pas l'inverse) et publiée à chaque release.
+
+### 3.5 Intégration TestPulse
+
+- TestPulse reste une extension **standalone** distincte sur le Marketplace, alimentée par TestVault quand co-installée.
+- TestPulse continue d'évoluer indépendamment de TestVault sur sa propre roadmap. La co-installation est un *enrichissement*, pas une dépendance.
+- Le code source TestPulse vit dans le même monorepo que TestVault, avec packages séparés mais composants UI et types partagés.
+- **MUST** : TestPulse fonctionne en mode autonome (sur Microsoft Test Plans natifs et autres sources de tests) si TestVault n'est pas co-installé. Cette capacité préexiste et est préservée.
+- **MUST** : le schéma des Custom WIT TestVault (noms de champs, types, états, transitions, liens) constitue le **contrat public** entre TestVault et TestPulse. Il est documenté publiquement.
+- **MUST** : tout changement breaking de ce schéma exige un bump majeur des deux extensions, une période de transition documentée, et un script de migration testé.
+
+---
+
+## 4. Performance & Volumétrie
+
+| Critère | Cible v1 |
+|---|---|
+| Volume max supporté par projet ADO | 100 000 Test Cases |
+| Volume max supporté par Test Plan | 10 000 Test Cases |
+| Volume max supporté par Test Execution | 5 000 résultats |
+| Temps de chargement initial UI | < 2 s sur connexion 4G |
+| Temps de réponse interaction CRUD test case | < 500 ms p95 |
+| Temps de chargement Test Plan (1 000 cases) | < 3 s p95 |
+| Limite WIQL (contrainte ADO native) | 20 000 résultats par requête |
+| Latence appel LLM (UI feedback) | Streaming dès le 1er token, < 2 s pour la 1ère réponse |
+
+- **MUST** : au-delà de 20 000 résultats WIQL, l'extension paginate automatiquement et indique le volume total à l'utilisateur. **NEVER** échouer silencieusement sur un dépassement WIQL.
+- **MUST** : les limites de volumétrie sont affichées dans la documentation utilisateur, dans l'UI (info-bulle ou écran de settings), et appliquées en garde-fou (warning utilisateur à 80% du seuil).
+- **MUST** : un projet dépassant 100 000 Test Cases reste utilisable mais affiche un avertissement et n'est plus couvert par le SLA de performance.
+
+---
+
+## 5. Sécurité
+
+- **MUST** : authentification via PAT, OAuth 2.0, ou Microsoft Entra ID (Azure AD). Aucun stockage de credentials côté extension.
+- **MUST** : permissions ADO natives héritées sans surcouche (cf. §6). Si l'utilisateur n'a pas le droit de lire un Work Item dans ADO, il ne le voit pas dans TestVault.
+- **MUST** : aucun appel sortant depuis l'extension client-side vers une URL non ATConseil sauf API ADO du client.
+- **MUST** : pour les features Cloud-Plus, les credentials ADO du client (PAT) ne sont **jamais** persistés côté ATConseil. Tokens éphémères en mémoire uniquement.
+- **MUST** : les clés API LLM (BYOK) sont chiffrées au repos (chiffrement AES-256 avec clé dérivée par organisation) et ne sont déchiffrables que dans le contexte d'exécution autorisé.
+- **MUST** : audit des dépendances via `npm audit` + Dependabot ; aucune CVE haute ou critique non patchée n'est mergée en `main`.
+- **MUST** : SBOM CycloneDX généré et publié avec chaque release.
+- **MUST** : revue manuelle de toute nouvelle dépendance avant introduction (auteur, dernière mise à jour, alternatives évaluées).
+- **NEVER** : envoi de télémétrie incluant des données métier (titres de test, contenus, résultats, attachments, prompts LLM, réponses LLM). Télémétrie limitée à : version extension, plateforme (Cloud/Server), opcodes anonymisés, métriques techniques (durée d'opération, type d'erreur sans payload).
+- **NEVER** : envoi des données client à des tiers (LLM, services externes) sans consentement explicite et documenté du client (toggle de Cloud-Plus AI features, configuration BYOK explicite).
+
+---
+
+## 6. Permissions & Rôles
+
+TestVault hérite du modèle de permissions ADO natif et le complète d'opérations sensibles réservées aux administrateurs. Aucun modèle parallèle n'est introduit (zéro double-administration).
+
+### 6.1 Mapping des rôles
+
+| Rôle TestVault | Hérité de | Capacités |
+|---|---|---|
+| **Admin TestVault** | ADO *Project Administrator* (au minimum) ; configurable par l'Admin Org pour scope étendu | Toutes capacités User + opérations sensibles (cf. §6.2) |
+| **User TestVault** | ADO *Contributor* | CRUD Test Cases / Plans / Sets / Executions selon les permissions ADO natives, snapshots, exports, utilisation des features AI configurées par l'Admin |
+| **Reader TestVault** | ADO *Reader* | Lecture seule : voir les tests, plans, snapshots, résultats. Aucune modification, aucun export sensible. |
+
+- **MUST** : la qualification du rôle TestVault est dérivée à la volée des permissions ADO de l'utilisateur. Pas de table de mapping persistée.
+- **MUST** : un utilisateur sans aucun droit ADO sur le projet ne voit pas l'extension.
+
+### 6.2 Opérations Admin uniquement
+
+Les opérations suivantes sont **strictement réservées au rôle Admin TestVault** et l'UI les masque ou les désactive pour les autres rôles :
+
+1. Configuration des **fournisseurs LLM** : ajout, modification, suppression d'un provider (Anthropic, OpenAI, Azure OpenAI), saisie/rotation des clés API
+2. Configuration des **modèles** par feature : génération TC, détection flakiness, autres features AI futures
+3. Édition des **system prompts** custom et des paramètres de génération (temperature, max_tokens, top_p)
+4. Définition des **quotas** AI par utilisateur ou par projet (mensuels, en nombre d'appels ou en tokens)
+5. Activation/désactivation **globale** des features AI au niveau organisation
+6. Gestion de la **clé de licence** TestVault et des **tiers** d'abonnement
+7. Installation et mise à jour du **Custom Process Inheritance** (gated en sus par ADO Collection/Org Admin)
+8. Configuration des **webhooks CI externes** (Cloud-Plus uniquement)
+9. Configuration des **feature flags** d'organisation
+10. Configuration de la **rétention** des Test Executions, snapshots, et audit log (cf. §6.3)
+
+### 6.3 Audit trail des opérations Admin
+
+- **MUST** : chaque opération de la liste §6.2 est journalisée dans un Custom Work Item de type `TestVaultAuditLog` avec : auteur (user ID + display name), horodatage UTC, opération exécutée, ancienne valeur (anonymisée si donnée sensible — clé API tronquée), nouvelle valeur (anonymisée si donnée sensible), métadonnées contextuelles.
+- **MUST** : le log d'audit est consultable par tout Admin TestVault via une vue dédiée dans l'extension et via l'UI Work Items native d'ADO.
+- **MUST** : les entrées du log sont **immutables** (jamais modifiées, jamais supprimées par l'extension hors politique de rétention configurée).
+- **MUST** : la durée de rétention de l'audit log est **paramétrable par l'Admin TestVault**, avec un plancher de sécurité de **90 jours minimum** (en deçà, l'UI refuse la configuration). Valeur par défaut à l'installation : **24 mois**. Pas de plafond imposé par l'extension (les contraintes réglementaires SOC 2 / ISO 27001 / RGPD peuvent justifier des durées de plusieurs années).
+- **MUST** : toute modification de la durée de rétention est elle-même une opération Admin journalisée dans `TestVaultAuditLog`.
+- **NEVER** : les valeurs sensibles (clés API en clair, secrets) ne sont jamais inscrites dans l'audit log. Seul un identifiant tronqué (4 derniers caractères) ou un hash est consigné.
+
+---
+
+## 7. Modèle de monétisation
+
+**Modèle retenu : Freemium + Per-user tiered, avec différenciation Cloud/Server.**
+
+| Tier | Cloud | Server 2022 |
+|---|---|---|
+| **Free** | ≤ 5 users actifs, ≤ 500 Test Cases / projet, pas de features Cloud-Plus | ≤ 5 users actifs, ≤ 500 Test Cases / projet |
+| **Pro** | ~18 €/user/mois (objectif ~30% sous Xray Cloud) | Licence perpétuelle ~250 €/user + 20% maintenance annuelle |
+| **Enterprise** | Sur devis (SLA, SSO custom, support prioritaire, accompagnement) | Sur devis (SLA, support prioritaire, accompagnement) |
+
+**Justification résumée :** le marché ADO est moins monétisé que Jira sur le test management ; le freemium réduit la friction d'adoption ; le per-user mensuel sur Cloud aligne avec les attentes SaaS modernes ; le perpétuel sur Server respecte les habitudes d'achat on-prem ; les features Cloud-Plus (webhooks CI externes, jobs planifiés, agrégations, AI BYOK) justifient le différentiel Cloud > Server.
+
+> **Note sur la valeur AI avec BYOK** : les coûts LLM ne sont pas absorbés par ATConseil (le client paie son provider). La valeur AI vendue dans le Cloud Pro est *fonctionnelle* (gain de temps, qualité de génération, détection de flakiness) et non *financière*. Cette posture doit être tenue dans la communication marketing.
+
+- **MUST** : facturation gérée hors Marketplace (Stripe + portail ATConseil). Microsoft a arrêté le billing tiers en juillet 2019 ; aucun mécanisme natif Marketplace n'existe.
+- **MUST** : activation par clé de licence avec validation périodique (toutes 24h Cloud, toutes 7 jours Server pour permettre les déconnexions courtes en air-gap).
+- **MUST** : downgrade Pro → Free non destructif (les données restent dans ADO ; seules les limites de tier s'appliquent au-delà).
+
+> Voir `monetisation-analyse.md` pour l'analyse comparative détaillée des 5 modèles évalués (per-user, per-org tier, licence unique, freemium, OSS core).
+
+---
+
+## 8. Versioning des Test Cases — Snapshots taggés
+
+**Modèle retenu : Snapshots taggés** (équivalent fonctionnel des *Test Versions* de Xray).
+
+- Un Test Case peut être figé à tout moment via un snapshot nommé (ex : `v1.0`, `Sprint-12`, `Release-2025-Q4`).
+- Un snapshot = Custom Work Item de type `TestCaseVersion`, immutable, lié au Test Case parent.
+- Plusieurs versions d'un même Test Case peuvent coexister et être référencées par des Test Plans distincts.
+- L'UI fournit un comparateur de versions (diff steps, attachments, fields).
+
+- **MUST** : un snapshot ne peut jamais être modifié après création. Immutability stricte.
+- **MUST** : la suppression d'un snapshot est interdite tant qu'une Test Execution archivée le référence.
+- **MUST** : le bump de version d'un Test Case est explicite (action utilisateur), jamais automatique sur sauvegarde.
+
+---
+
+## 9. Rétrocompatibilité & Souveraineté des données
+
+- **MUST** : si l'extension TestVault est désinstallée, tous les Custom Work Items créés (Test Cases, Plans, Sets, Executions, TestCaseVersion, Preconditions, TestVaultAuditLog) restent intacts dans ADO et accessibles via l'UI Work Items standard du client.
+- **MUST** : le schéma Custom WIT (champs, états, transitions) est documenté publiquement et stable, garantissant que les données sont exploitables par un script tiers ou par un autre outil.
+- **MUST** : aucune donnée métier dans ExtensionDataService — uniquement des préférences UI réversibles, configuration LLM (chiffrée), et indicateurs d'état réversibles.
+- **MUST** : compatibilité ascendante des Custom WIT garantie sur toute version mineure de TestVault. Une migration de schéma majeure (vX → vX+1) est documentée et accompagnée d'un script de migration testé end-to-end sur instance réelle.
+
+---
+
+## 10. Qualité & Gouvernance — règles méta non-négociables
+
+Toute évolution du codebase TestVault et TestPulse respecte impérativement les règles suivantes.
+
+### 10.1 Test-first (TDD)
+
+- **MUST** : tout nouveau code (feature ou bugfix) commence par un test rouge avant l'implémentation.
+- **MUST** : couverture unitaire ≥ **90%** sur le core, ≥ **80%** sur l'UI, mesurée par Istanbul/c8 et bloquante en CI.
+- **MUST** : un bug fix s'accompagne obligatoirement d'un test de non-régression nommé explicitement (`regression/bug-NNN.test.ts`).
+
+### 10.2 Documentation toujours synchronisée
+
+- **MUST** : toute PR qui modifie une feature, une API ou un schéma met à jour `README.md` et `docs/user-guide.md` dans le même commit.
+- **MUST** : la CI échoue si un changement touche `src/api/**`, `src/extension/manifest.json`, ou le schéma Custom WIT sans mise à jour correspondante de la documentation.
+- **MUST** : `CHANGELOG.md` au format Keep a Changelog mis à jour pour chaque release.
+
+### 10.3 Vérification systématique à chaque release candidate
+
+Une checklist automatisée bloque la publication si l'un des points est rouge :
+
+- [ ] Toutes les routes de l'API REST publique répondent avec le contrat OpenAPI attendu (test contractuel)
+- [ ] Toutes les API externes consommées (ADO REST, Microsoft Graph, fournisseurs LLM Cloud-Plus) répondent et leurs schémas sont vérifiés
+- [ ] Les modèles de LLM proposés par défaut dans la configuration sont les versions actuellement recommandées par leur fournisseur — toute dépréciation déclenche une issue bloquante
+- [ ] Aucune régression sur la suite de tests E2E (Playwright contre instance ADO réelle Cloud + Server 2022)
+
+### 10.4 Tracking des régressions
+
+- **MUST** : suite de tests de régression nommée et croissante. Tout bug confirmé en prod ajoute un test à cette suite avant fix.
+- **MUST** : la CI exécute la suite de régression à chaque PR et bloque le merge en cas d'échec.
+
+### 10.5 Dépendances & vulnérabilités
+
+- **MUST** : `npm audit --audit-level=high` clean en CI, bloquant.
+- **MUST** : Dependabot configuré sur `main` avec PR auto pour security updates et patch updates.
+- **MUST** : SBOM CycloneDX généré et publié avec chaque release sur GitHub Releases et Marketplace.
+- **MUST** : aucune dépendance non maintenue depuis > 24 mois introduite. Toute dépendance existante dans cette situation fait l'objet d'un plan de remplacement documenté dans `tasks.md`.
+
+### 10.6 Spec-kit obligatoire
+
+- **MUST** : tout changement touchant à un Custom WIT, un endpoint API public, le SDK, le schéma de données, le modèle de monétisation, le modèle de permissions, la stratégie LLM, ou un comportement utilisateur visible passe d'abord par une mise à jour des 4 fichiers spec-kit (constitution, spec, plan, tasks) avant écriture de code.
+- **MUST** : un changement spec-kit nécessite revue et approbation explicite d'Alexandre Thibaud avant code.
+
+### 10.7 Non-régression contre l'existant
+
+- **MUST** : avant tout merge, vérifier qu'aucune fonctionnalité existante listée dans `spec.md` ne devient cassée ou dégradée.
+- **MUST** : template de PR incluant la question : *"Quelle fonctionnalité existante ai-je potentiellement impactée et comment l'ai-je vérifié ?"*. Réponse obligatoire avec lien vers test ou justification.
+
+---
+
+## 11. Checklist de validation pré-release
+
+Toute publication sur le Marketplace exige que **TOUS** les points suivants soient verts :
+
+- [ ] Tests unitaires aux seuils §10.1 (≥ 90% core, ≥ 80% UI)
+- [ ] Tests E2E parcours critiques verts sur Cloud
+- [ ] Tests E2E parcours critiques verts sur Server 2022 (instance de test maintenue)
+- [ ] Suite de régression complète verte
+- [ ] Tests contractuels API publique verts (OpenAPI)
+- [ ] Vérification des API externes (ADO REST, Entra ID, fournisseurs LLM) passées
+- [ ] Vérification que les modèles LLM par défaut sont supportés (non dépréciés) chez chaque fournisseur
+- [ ] Documentation README + user guide à jour et relue
+- [ ] `npm audit` sans CVE haute ou critique
+- [ ] SBOM CycloneDX publié
+- [ ] Schéma Custom WIT documenté et versionné
+- [ ] Schéma `TestVaultAuditLog` documenté
+- [ ] Script de migration testé (si schéma touché)
+- [ ] CHANGELOG.md mis à jour
+- [ ] Spec-kit mis à jour si périmètre touché
+- [ ] Validation manuelle Alexandre Thibaud
+
+---
+
+> ⚠️ Toute modification de ce document requiert l'approbation explicite d'Alexandre Thibaud (ATConseil — atconseil.info).
