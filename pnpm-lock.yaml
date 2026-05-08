@@ -96,6 +96,12 @@ importers:
 
   apps/argos-functions:
     dependencies:
+      '@atconseil/testvault-importers':
+        specifier: workspace:*
+        version: link:../../packages/testvault-importers
+      '@atconseil/testvault-sdk':
+        specifier: workspace:*
+        version: link:../../packages/testvault-sdk
       '@azure/functions':
         specifier: ^4.5.0
         version: 4.14.0

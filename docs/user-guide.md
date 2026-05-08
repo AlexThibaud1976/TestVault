@@ -149,3 +149,38 @@ The **Import** wizard (accessible from Settings or the Cases list) accepts the f
 Steps are carried over when the source format includes step-level data (Cucumber, CSV/Excel with JSON steps column).
 
 The `automationKey` field enables matching when uploading CI results — a test result with the same `automationKey` as an existing TC will update that TC's latest execution status rather than creating a duplicate.
+
+### CI / CD integration
+
+Upload results from any CI system using the `testvault` CLI, the `atconseil/testvault-action` GitHub Action, or the `ArgosUploadResults` Azure Pipelines task. All three accept the same test result formats listed above and share the same matching logic. See `docs/integrations/` for quick-start examples.
+
+### Webhook ingestion (Cloud-Plus)
+
+Webhook tokens allow external CI systems (Jenkins, TeamCity, Bamboo, etc.) to push test results to Argos without installing the CLI.
+
+#### Setting up a webhook token
+
+1. Open **Settings → Webhook Tokens** (Admin-only).
+2. Click **New token**, enter a label, and click **Create**.
+3. Copy the displayed **secret** — it will never be shown again.
+4. Record the generated **endpoint URL**: `https://<your-functions-host>/api/v1/webhooks/<token-id>`
+
+#### Configuring the CI job
+
+Sign each POST request with an HMAC-SHA256 signature using the secret:
+
+```bash
+# Example: curl with HMAC signature
+BODY=$(cat test-results.xml)
+SIG="sha256=$(echo -n "$BODY" | openssl dgst -sha256 -hmac "$TOKEN_SECRET" | awk '{print $2}')"
+curl -X POST "$WEBHOOK_URL" \
+  -H "Content-Type: application/xml" \
+  -H "X-Hub-Signature-256: $SIG" \
+  --data-binary "$BODY"
+```
+
+The endpoint accepts the same formats as the import wizard (JUnit, NUnit, xUnit, TestNG, Cucumber JSON). The payload is processed asynchronously via a queue — the endpoint returns `202 Accepted` immediately.
+
+#### Revoking a token
+
+Open **Settings → Webhook Tokens**, find the token, and click **Revoke**. Revoked tokens are rejected immediately; no restart required.
