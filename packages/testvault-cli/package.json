@@ -20,6 +20,7 @@
 	},
 	"dependencies": {
 		"@atconseil/testvault-exporters": "workspace:*",
+		"@atconseil/testvault-gherkin": "workspace:*",
 		"@atconseil/testvault-importers": "workspace:*",
 		"@atconseil/testvault-sdk": "workspace:*",
 		"@atconseil/testvault-types": "workspace:*",

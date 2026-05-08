@@ -1,6 +1,10 @@
 import { Button, Input, Text } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
-import type { IRepoMappingService, RepoMapping } from "./repo-mapping-service.js";
+import type {
+	IRepoMappingService,
+	RepoMapping,
+	SyncMappingResult,
+} from "./repo-mapping-service.js";
 
 export interface RepoMappingSettingsProps {
 	service: IRepoMappingService;
@@ -28,6 +32,8 @@ export function RepoMappingSettings({ service, isAdmin }: RepoMappingSettingsPro
 	const [repoUrlError, setRepoUrlError] = useState(false);
 	const [areaPathError, setAreaPathError] = useState(false);
 	const [adding, setAdding] = useState(false);
+	const [syncingId, setSyncingId] = useState<string | null>(null);
+	const [syncResults, setSyncResults] = useState<Map<string, SyncMappingResult>>(new Map());
 
 	useEffect(() => {
 		service.list().then((ms) => {
@@ -75,6 +81,16 @@ export function RepoMappingSettings({ service, isAdmin }: RepoMappingSettingsPro
 	async function handleRemove(id: string) {
 		setMappings((prev) => prev.filter((m) => m.id !== id));
 		await service.remove(id);
+	}
+
+	async function handleSync(id: string) {
+		setSyncingId(id);
+		try {
+			const result = await service.sync(id);
+			setSyncResults((prev) => new Map(prev).set(id, result));
+		} finally {
+			setSyncingId(null);
+		}
 	}
 
 	if (loading) {
@@ -127,7 +143,21 @@ export function RepoMappingSettings({ service, isAdmin }: RepoMappingSettingsPro
 								<Text block size={200} style={{ color: "#666" }}>
 									{m.branch} · {m.pathGlob} → {m.areaPath}
 								</Text>
+								{syncResults.has(m.id) && (
+									<Text data-testid={`sync-result-${m.id}`} size={200} style={{ color: "#28a745" }}>
+										{`Sync done — +${syncResults.get(m.id)?.created ?? 0} created, ${syncResults.get(m.id)?.updated ?? 0} updated`}
+									</Text>
+								)}
 							</div>
+							<Button
+								size="small"
+								appearance="subtle"
+								data-testid={`sync-mapping-${m.id}`}
+								disabled={syncingId === m.id}
+								onClick={() => handleSync(m.id)}
+							>
+								{syncingId === m.id ? "Syncing…" : "Sync Now"}
+							</Button>
 							<Button
 								size="small"
 								appearance="subtle"

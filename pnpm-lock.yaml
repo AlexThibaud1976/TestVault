@@ -142,6 +142,9 @@ importers:
       '@atconseil/testvault-exporters':
         specifier: workspace:*
         version: link:../testvault-exporters
+      '@atconseil/testvault-gherkin':
+        specifier: workspace:*
+        version: link:../testvault-gherkin
       '@atconseil/testvault-importers':
         specifier: workspace:*
         version: link:../testvault-importers

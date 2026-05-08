@@ -6,10 +6,13 @@ export type RepoMapping = {
 	areaPath: string;
 };
 
+export type SyncMappingResult = { created: number; updated: number; deprecated: number };
+
 export interface IRepoMappingService {
 	list(): Promise<RepoMapping[]>;
 	add(mapping: Omit<RepoMapping, "id">): Promise<RepoMapping>;
 	remove(id: string): Promise<void>;
+	sync(id: string): Promise<SyncMappingResult>;
 }
 
 export interface IDataStore {
@@ -48,6 +51,12 @@ export function createRepoMappingService(store: IDataStore): IRepoMappingService
 
 		async remove(id) {
 			await store.delete(COLLECTION, id);
+		},
+
+		async sync(_id) {
+			// Runtime implementation posts to the Azure Function endpoint.
+			// The host wires this up at bootstrap; the factory returns a no-op stub.
+			return { created: 0, updated: 0, deprecated: 0 };
 		},
 	};
 }

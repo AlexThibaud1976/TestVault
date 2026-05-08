@@ -28,6 +28,7 @@ function makeService(
 		list: vi.fn().mockResolvedValue(mappings),
 		add: vi.fn().mockImplementation(async (m) => ({ ...m, id: "new-id" })),
 		remove: vi.fn().mockResolvedValue(undefined),
+		sync: vi.fn().mockResolvedValue({ created: 2, updated: 1, deprecated: 0 }),
 		...overrides,
 	};
 }
@@ -159,5 +160,31 @@ describe("RepoMappingSettings", () => {
 		await waitFor(() => screen.getByTestId(`remove-mapping-${m.id}`));
 		await user.click(screen.getByTestId(`remove-mapping-${m.id}`));
 		await waitFor(() => expect(screen.queryByTestId(`repo-mapping-${m.id}`)).toBeNull());
+	});
+
+	it("shows Sync Now button for each mapping row", async () => {
+		const m = makeMapping();
+		render(<RepoMappingSettings service={makeService([m])} isAdmin />);
+		await waitFor(() => screen.getByTestId(`sync-mapping-${m.id}`));
+	});
+
+	it("calls service.sync with mapping id when Sync Now is clicked", async () => {
+		const m = makeMapping();
+		const service = makeService([m]);
+		const user = userEvent.setup();
+		render(<RepoMappingSettings service={service} isAdmin />);
+		await waitFor(() => screen.getByTestId(`sync-mapping-${m.id}`));
+		await user.click(screen.getByTestId(`sync-mapping-${m.id}`));
+		await waitFor(() => expect(vi.mocked(service.sync)).toHaveBeenCalledWith(m.id));
+	});
+
+	it("shows sync result after Sync Now completes", async () => {
+		const m = makeMapping();
+		const service = makeService([m]);
+		const user = userEvent.setup();
+		render(<RepoMappingSettings service={service} isAdmin />);
+		await waitFor(() => screen.getByTestId(`sync-mapping-${m.id}`));
+		await user.click(screen.getByTestId(`sync-mapping-${m.id}`));
+		await waitFor(() => expect(screen.getByTestId(`sync-result-${m.id}`)).toBeDefined());
 	});
 });

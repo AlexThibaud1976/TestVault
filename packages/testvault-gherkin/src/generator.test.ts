@@ -53,7 +53,8 @@ describe("generateFeature", () => {
 	});
 
 	it("includes tags before scenario", () => {
-		const tagged: ParsedScenario[] = [{ ...SIMPLE_SCENARIOS[0]!, tags: ["smoke", "critical"] }];
+		const base = SIMPLE_SCENARIOS[0] as ParsedScenario;
+		const tagged: ParsedScenario[] = [{ ...base, tags: ["smoke", "critical"] }];
 		const out = generateFeature("Login", tagged);
 		expect(out).toContain("@smoke @critical");
 	});
@@ -150,7 +151,7 @@ describe("Round-trip (parse → generate → parse)", () => {
 		const gen = generateFeature(parsed.title, parsed.scenarios, parsed.background);
 		const reparsed = parseFeature(gen);
 		for (let i = 0; i < parsed.scenarios.length; i++) {
-			expect(reparsed.scenarios[i]!.title).toBe(parsed.scenarios[i]!.title);
+			expect(reparsed.scenarios[i]?.title).toBe(parsed.scenarios[i]?.title);
 		}
 	});
 
@@ -159,7 +160,7 @@ describe("Round-trip (parse → generate → parse)", () => {
 		const gen = generateFeature(parsed.title, parsed.scenarios, parsed.background);
 		const reparsed = parseFeature(gen);
 		for (let i = 0; i < parsed.scenarios.length; i++) {
-			expect(reparsed.scenarios[i]!.steps).toHaveLength(parsed.scenarios[i]!.steps.length);
+			expect(reparsed.scenarios[i]?.steps).toHaveLength(parsed.scenarios[i]?.steps.length ?? 0);
 		}
 	});
 
@@ -167,15 +168,15 @@ describe("Round-trip (parse → generate → parse)", () => {
 		const parsed = parseFeature(COMPLEX);
 		const gen = generateFeature(parsed.title, parsed.scenarios, parsed.background);
 		const reparsed = parseFeature(gen);
-		expect(reparsed.scenarios[0]!.tags).toEqual(parsed.scenarios[0]!.tags);
+		expect(reparsed.scenarios[0]?.tags).toEqual(parsed.scenarios[0]?.tags);
 	});
 
 	it("preserves Examples table headers", () => {
 		const parsed = parseFeature(COMPLEX);
 		const gen = generateFeature(parsed.title, parsed.scenarios, parsed.background);
 		const reparsed = parseFeature(gen);
-		expect(reparsed.scenarios[1]!.examples!.headers).toEqual(
-			parsed.scenarios[1]!.examples!.headers
+		expect(reparsed.scenarios[1]?.examples?.headers).toEqual(
+			parsed.scenarios[1]?.examples?.headers
 		);
 	});
 
@@ -183,8 +184,8 @@ describe("Round-trip (parse → generate → parse)", () => {
 		const parsed = parseFeature(COMPLEX);
 		const gen = generateFeature(parsed.title, parsed.scenarios, parsed.background);
 		const reparsed = parseFeature(gen);
-		expect(reparsed.scenarios[1]!.examples!.rows).toHaveLength(
-			parsed.scenarios[1]!.examples!.rows.length
+		expect(reparsed.scenarios[1]?.examples?.rows).toHaveLength(
+			parsed.scenarios[1]?.examples?.rows.length ?? 0
 		);
 	});
 

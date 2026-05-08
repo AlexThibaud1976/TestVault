@@ -141,7 +141,7 @@ export function parseFeature(text: string): ParsedFeature {
 
 		const stepMatch = t.match(/^(Given|When|Then|And|But)\s+(.*)/);
 		if (stepMatch) {
-			const step: ParsedStep = { keyword: stepMatch[1]!, text: stepMatch[2]! };
+			const step: ParsedStep = { keyword: stepMatch[1] ?? "", text: stepMatch[2] ?? "" };
 			if (inBackground) {
 				background.push(step);
 			} else if (currentScenario) {
