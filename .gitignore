@@ -38,6 +38,10 @@ pnpm-debug.log*
 local.settings.json
 apps/argos-functions/.azure/
 
+# Playwright E2E
+tools/e2e/playwright-report/
+tools/e2e/test-results/
+
 # Secrets (belt-and-suspenders alongside gitleaks)
 *.pem
 *.key
