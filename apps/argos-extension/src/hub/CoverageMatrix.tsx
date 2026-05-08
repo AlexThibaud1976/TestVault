@@ -1,6 +1,7 @@
+import { exportMatrixToExcel, exportMatrixToPdf } from "@atconseil/testvault-exporters";
 import type { MatrixInput } from "@atconseil/testvault-sdk";
 import { buildCoverageMatrix } from "@atconseil/testvault-sdk";
-import { Text } from "@fluentui/react-components";
+import { Button, Text } from "@fluentui/react-components";
 import { useMemo, useState } from "react";
 
 const STATUS_COLOR: Record<string, string> = {
@@ -25,6 +26,41 @@ export function CoverageMatrix({ input, environments }: CoverageMatrixProps) {
 
 	return (
 		<div data-testid="coverage-matrix" style={{ padding: "16px" }}>
+			<div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+				<Button
+					data-testid="export-excel-button"
+					size="small"
+					onClick={() => {
+						const buf = exportMatrixToExcel(matrix);
+						const blob = new Blob([buf], {
+							type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+						});
+						const url = URL.createObjectURL(blob);
+						const a = document.createElement("a");
+						a.href = url;
+						a.download = "coverage-matrix.xlsx";
+						a.click();
+						URL.revokeObjectURL(url);
+					}}
+				>
+					Export Excel
+				</Button>
+				<Button
+					data-testid="export-pdf-button"
+					size="small"
+					onClick={() => {
+						const html = exportMatrixToPdf(matrix);
+						const blob = new Blob([html], { type: "text/html" });
+						const url = URL.createObjectURL(blob);
+						const win = window.open(url, "_blank");
+						win?.print();
+						URL.revokeObjectURL(url);
+					}}
+				>
+					Export PDF
+				</Button>
+			</div>
+
 			{environments && environments.length > 0 && (
 				<div style={{ marginBottom: "12px" }}>
 					<label htmlFor="env-filter" style={{ marginRight: "8px" }}>

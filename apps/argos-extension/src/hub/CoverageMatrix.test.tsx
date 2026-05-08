@@ -91,4 +91,14 @@ describe("CoverageMatrix", () => {
 		const cell = screen.getByTestId("matrix-cell-100-1");
 		expect(cell.textContent).toContain("Fail");
 	});
+
+	it("renders export-excel-button", () => {
+		render(<CoverageMatrix input={makeInput()} />);
+		expect(screen.getByTestId("export-excel-button")).toBeDefined();
+	});
+
+	it("renders export-pdf-button", () => {
+		render(<CoverageMatrix input={makeInput()} />);
+		expect(screen.getByTestId("export-pdf-button")).toBeDefined();
+	});
 });

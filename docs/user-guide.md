@@ -118,6 +118,8 @@ The **Coverage Matrix** (`CoverageMatrix` component) shows a cross-table of Work
 
 An **Environment** filter dropdown narrows cells to a specific environment. The matrix only shows WIs that have at least one linked TC, and only TC columns that are referenced by a link.
 
+Use **Export Excel** to download a colour-coded `.xlsx` file (SheetJS), or **Export PDF** to open a printable HTML version in a new tab.
+
 ### Auto-snapshot on Test Plan lock
 
 When a Test Plan transitions to **Locked** state via `lockWithAutoSnapshot`, Argos automatically creates one snapshot per Test Case in the plan (from all referenced Test Sets and `additionalTestCaseIds`). The snapshot names follow the pattern `auto-lock-{planId}-{tcId}`. The resulting snapshot IDs are stored in `TestVault.LockedSnapshotIds` on the plan Work Item, ensuring executions run against an immutable version of each Test Case.
