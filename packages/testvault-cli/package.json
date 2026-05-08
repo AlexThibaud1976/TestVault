@@ -15,8 +15,11 @@
 		"lint": "biome check src/"
 	},
 	"dependencies": {
+		"@atconseil/testvault-exporters": "workspace:*",
+		"@atconseil/testvault-importers": "workspace:*",
 		"@atconseil/testvault-sdk": "workspace:*",
-		"@atconseil/testvault-types": "workspace:*"
+		"@atconseil/testvault-types": "workspace:*",
+		"commander": "^13.0.0"
 	},
 	"devDependencies": {
 		"typescript": "^5.7.0",

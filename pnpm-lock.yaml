@@ -127,12 +127,21 @@ importers:
 
   packages/testvault-cli:
     dependencies:
+      '@atconseil/testvault-exporters':
+        specifier: workspace:*
+        version: link:../testvault-exporters
+      '@atconseil/testvault-importers':
+        specifier: workspace:*
+        version: link:../testvault-importers
       '@atconseil/testvault-sdk':
         specifier: workspace:*
         version: link:../testvault-sdk
       '@atconseil/testvault-types':
         specifier: workspace:*
         version: link:../testvault-types
+      commander:
+        specifier: ^13.0.0
+        version: 13.1.0
     devDependencies:
       typescript:
         specifier: ^5.7.0
