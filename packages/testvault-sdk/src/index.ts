@@ -49,3 +49,12 @@ export type {
 	PreconditionDraft,
 	PreconditionPatch,
 } from "./precondition-service.js";
+export {
+	TestExecutionImmutableError,
+	createTestExecutionService,
+} from "./test-execution-service.js";
+export type {
+	ExecutionDraft,
+	ITestExecutionService,
+	InProgressExecution,
+} from "./test-execution-service.js";

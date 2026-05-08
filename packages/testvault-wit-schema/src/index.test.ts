@@ -45,8 +45,8 @@ describe("WIT definitions — structural validity", () => {
 		for (const wit of ALL_WITS) {
 			const f = wit.fields.find((f) => f.referenceName === "System.Title");
 			expect(f, `${wit.referenceName} missing System.Title`).toBeDefined();
-			expect(f!.required).toBe(true);
-			expect(f!.type).toBe("string");
+			expect(f?.required).toBe(true);
+			expect(f?.type).toBe("string");
 		}
 	});
 
@@ -85,17 +85,17 @@ describe("TestVault.TestCase", () => {
 	it("Priority is a picklistInteger with allowed values [1,2,3,4] and default 3", () => {
 		const f = TEST_CASE_WIT.fields.find((f) => f.referenceName === "TestVault.Priority");
 		expect(f).toBeDefined();
-		expect(f!.type).toBe("picklistInteger");
-		expect(f!.allowedValues).toEqual([1, 2, 3, 4]);
-		expect(f!.defaultValue).toBe(3);
+		expect(f?.type).toBe("picklistInteger");
+		expect(f?.allowedValues).toEqual([1, 2, 3, 4]);
+		expect(f?.defaultValue).toBe(3);
 	});
 
 	it("AutomationStatus is a picklistString with Manual/Planned/Automated, default Manual", () => {
 		const f = TEST_CASE_WIT.fields.find((f) => f.referenceName === "TestVault.AutomationStatus");
 		expect(f).toBeDefined();
-		expect(f!.type).toBe("picklistString");
-		expect(f!.allowedValues).toEqual(["Manual", "Planned", "Automated"]);
-		expect(f!.defaultValue).toBe("Manual");
+		expect(f?.type).toBe("picklistString");
+		expect(f?.allowedValues).toEqual(["Manual", "Planned", "Automated"]);
+		expect(f?.defaultValue).toBe("Manual");
 	});
 
 	it("Steps and PreconditionLinks are longText fields", () => {
@@ -103,14 +103,14 @@ describe("TestVault.TestCase", () => {
 		const precond = TEST_CASE_WIT.fields.find(
 			(f) => f.referenceName === "TestVault.PreconditionLinks"
 		);
-		expect(steps!.type).toBe("longText");
-		expect(precond!.type).toBe("longText");
+		expect(steps?.type).toBe("longText");
+		expect(precond?.type).toBe("longText");
 	});
 
 	it("System.AreaPath is a required treePath field", () => {
 		const f = TEST_CASE_WIT.fields.find((f) => f.referenceName === "System.AreaPath");
-		expect(f!.type).toBe("treePath");
-		expect(f!.required).toBe(true);
+		expect(f?.type).toBe("treePath");
+		expect(f?.required).toBe(true);
 	});
 });
 
@@ -131,7 +131,7 @@ describe("TestVault.TestPlan", () => {
 		]) {
 			const f = TEST_PLAN_WIT.fields.find((f) => f.referenceName === refName);
 			expect(f, `missing ${refName}`).toBeDefined();
-			expect(f!.type).toBe("longText");
+			expect(f?.type).toBe("longText");
 		}
 	});
 });
@@ -141,13 +141,13 @@ describe("TestVault.TestPlan", () => {
 describe("TestVault.TestSet", () => {
 	it("has TestCaseIds as a longText field", () => {
 		const f = TEST_SET_WIT.fields.find((f) => f.referenceName === "TestVault.TestCaseIds");
-		expect(f!.type).toBe("longText");
+		expect(f?.type).toBe("longText");
 	});
 
 	it("has optional WiqlQuery as a longText field", () => {
 		const f = TEST_SET_WIT.fields.find((f) => f.referenceName === "TestVault.WiqlQuery");
-		expect(f!.type).toBe("longText");
-		expect(f!.required).toBe(false);
+		expect(f?.type).toBe("longText");
+		expect(f?.required).toBe(false);
 	});
 });
 
@@ -161,27 +161,27 @@ describe("TestVault.TestExecution", () => {
 	it("GlobalStatus is a picklistString with Pass/Fail/Blocked/Unexecuted/Skipped", () => {
 		const f = TEST_EXECUTION_WIT.fields.find((f) => f.referenceName === "TestVault.GlobalStatus");
 		expect(f).toBeDefined();
-		expect(f!.type).toBe("picklistString");
-		expect(f!.allowedValues).toEqual(["Pass", "Fail", "Blocked", "Unexecuted", "Skipped"]);
+		expect(f?.type).toBe("picklistString");
+		expect(f?.allowedValues).toEqual(["Pass", "Fail", "Blocked", "Unexecuted", "Skipped"]);
 	});
 
 	it("ExecutionSource is a picklistString with Manual/CI", () => {
 		const f = TEST_EXECUTION_WIT.fields.find(
 			(f) => f.referenceName === "TestVault.ExecutionSource"
 		);
-		expect(f!.type).toBe("picklistString");
-		expect(f!.allowedValues).toEqual(["Manual", "CI"]);
+		expect(f?.type).toBe("picklistString");
+		expect(f?.allowedValues).toEqual(["Manual", "CI"]);
 	});
 
 	it("StepResults is a longText field", () => {
 		const f = TEST_EXECUTION_WIT.fields.find((f) => f.referenceName === "TestVault.StepResults");
-		expect(f!.type).toBe("longText");
+		expect(f?.type).toBe("longText");
 	});
 
 	it("TestCaseId is a required integer field", () => {
 		const f = TEST_EXECUTION_WIT.fields.find((f) => f.referenceName === "TestVault.TestCaseId");
-		expect(f!.type).toBe("integer");
-		expect(f!.required).toBe(true);
+		expect(f?.type).toBe("integer");
+		expect(f?.required).toBe(true);
 	});
 });
 
@@ -196,15 +196,15 @@ describe("TestVault.TestCaseVersion", () => {
 		const f = TEST_CASE_VERSION_WIT.fields.find(
 			(f) => f.referenceName === "TestVault.FrozenFields"
 		);
-		expect(f!.type).toBe("longText");
+		expect(f?.type).toBe("longText");
 	});
 
 	it("ParentTestCaseId is a required integer field", () => {
 		const f = TEST_CASE_VERSION_WIT.fields.find(
 			(f) => f.referenceName === "TestVault.ParentTestCaseId"
 		);
-		expect(f!.type).toBe("integer");
-		expect(f!.required).toBe(true);
+		expect(f?.type).toBe("integer");
+		expect(f?.required).toBe(true);
 	});
 });
 
@@ -218,13 +218,13 @@ describe("TestVault.AuditLog", () => {
 	it("Operation picklist contains all 14 defined operations", () => {
 		const f = AUDIT_LOG_WIT.fields.find((f) => f.referenceName === "TestVault.Operation");
 		expect(f).toBeDefined();
-		expect(f!.type).toBe("picklistString");
-		expect(f!.allowedValues).toHaveLength(14);
+		expect(f?.type).toBe("picklistString");
+		expect(f?.allowedValues).toHaveLength(14);
 	});
 
 	it("ContextMetadata is a longText field", () => {
 		const f = AUDIT_LOG_WIT.fields.find((f) => f.referenceName === "TestVault.ContextMetadata");
-		expect(f!.type).toBe("longText");
+		expect(f?.type).toBe("longText");
 	});
 });
 

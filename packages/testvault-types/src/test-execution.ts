@@ -28,6 +28,7 @@ export const TestVaultTestExecutionSchema = z.object({
 	id: z.number().int(),
 	testPlanId: z.number().int(),
 	testCaseId: z.number().int(),
+	testCaseVersionId: z.number().int().optional(),
 	environment: z.string(),
 	globalStatus: GlobalStatusSchema,
 	stepResults: z.array(TestStepResultSchema),

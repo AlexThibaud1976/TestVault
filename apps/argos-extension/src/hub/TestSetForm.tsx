@@ -33,7 +33,7 @@ export interface TestSetFormProps {
 
 export function TestSetForm({
 	service,
-	project: _project,
+	project,
 	initialValue,
 	onSaved,
 	onDeleted,
@@ -73,6 +73,7 @@ export function TestSetForm({
 		try {
 			const draft: TestSetDraft = {
 				name: form.name,
+				areaPath: project,
 				description: form.description,
 				testCaseIds: form.mode === "static" ? form.testCaseIds : [],
 				wiqlQuery: form.mode === "dynamic" ? form.wiqlQuery : undefined,

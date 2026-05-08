@@ -17,7 +17,9 @@ function makeService(overrides?: Partial<IProcessInstallService>): IProcessInsta
 describe("InstallWizard", () => {
 	it("shows spinner while detecting install state", () => {
 		const service = makeService({
-			detectInstallState: vi.fn(() => new Promise(() => {})), // never resolves
+			detectInstallState: vi.fn<IProcessInstallService["detectInstallState"]>(
+				() => new Promise(() => {})
+			), // never resolves
 		});
 		render(<InstallWizard service={service} />);
 		expect(screen.getByText(/detecting/i)).toBeDefined();
