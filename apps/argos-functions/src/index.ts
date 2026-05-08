@@ -65,3 +65,26 @@ export type {
 	FlakinessReport,
 	IFlakinessDataSource,
 } from "./jobs/flakiness-detector.js";
+export {
+	createSignedLicense,
+	validateLicense,
+	LicenseCache,
+	CLOUD_VALIDATION_TTL_MS,
+	SERVER_VALIDATION_TTL_MS,
+} from "./license/license-engine.js";
+export type {
+	LicensePayload,
+	LicenseState,
+	LicenseTier,
+	LicenseValidationResult,
+	SignedLicense,
+} from "./license/license-engine.js";
+export { handleStripeWebhook } from "./stripe/stripe-webhook-handler.js";
+export type {
+	ILicenseStore,
+	IStripeSignatureVerifier,
+	StoredLicense,
+	StripeSubscriptionEvent,
+	StripeWebhookResult,
+} from "./stripe/stripe-webhook-handler.js";
+export { setStripeServices } from "./stripe/functions.js";

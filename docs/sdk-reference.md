@@ -1,7 +1,84 @@
 # TestVault SDK Reference
 
-> Generated from TypeScript types. Updated on each release.
-> Full TypeDoc output will be auto-generated during Phase 4 development.
+> Version: 1.0.0 | Package: `@atconseil/testvault-sdk` (Apache 2.0)
+> Install: `npm install @atconseil/testvault-sdk`
+
+---
+
+## Client setup
+
+```typescript
+import { createAdoClient } from "@atconseil/testvault-sdk";
+
+const client = createAdoClient({
+  baseUrl: "https://dev.azure.com/my-org",
+  project: "MyProject",
+  pat: process.env.ADO_PAT,        // Personal Access Token
+});
+```
+
+`createAdoClient` also accepts an `isHosted` boolean (auto-detected via `detectEnvironment()`) to switch between Cloud and Server REST API paths.
+
+---
+
+## detectEnvironment
+
+```typescript
+import { detectEnvironment } from "@atconseil/testvault-sdk";
+
+const env = await detectEnvironment();
+// { isHosted: true, apiVersion: "7.1" }
+```
+
+Returns `{ isHosted: boolean; apiVersion: string }`. Uses the ADO Extension SDK `isHosted()` API when available; falls back to URL heuristics.
+
+---
+
+## TestCaseService
+
+Factory: `createTestCaseService(adoClient, project)`
+
+### `create(draft): Promise<TestVaultTestCase>`
+
+Creates a new `TestVault.TestCase` WIT. `draft.title` is required; all other fields are optional.
+
+```typescript
+const tc = await tcService.create({
+  title: "Login with valid credentials",
+  status: "Draft",
+  priority: 1,
+  steps: [{ action: "Open login page", expected: "Page loads" }],
+  tags: ["smoke", "auth"],
+});
+```
+
+### `get(id): Promise<TestVaultTestCase>`
+
+Fetches a single Test Case by WIT ID.
+
+### `update(id, patch): Promise<TestVaultTestCase>`
+
+Partially updates a Test Case. Only fields present in `patch` are modified.
+
+### `delete(id): Promise<void>`
+
+Soft-deletes the Test Case (moves to ADO Recycle Bin). Does not remove execution history.
+
+### `list(options?): Promise<TestCasePage>`
+
+Returns a paginated list of Test Cases.
+
+```typescript
+const page = await tcService.list({
+  status: "Ready",
+  areaPath: "MyProject\\QA",
+  tags: ["smoke"],
+  page: 1,
+  pageSize: 50,
+});
+// page.items  → TestVaultTestCase[]
+// page.total  → total matching count
+```
 
 ---
 
@@ -9,37 +86,32 @@
 
 Factory: `createTestExecutionService(adoClient, project)`
 
-Manages `TestVault.TestExecution` Work Items. Executions are **immutable once finalized** — any mutation after `finalizeRun()` throws `TestExecutionImmutableError` (HTTP 403).
+### `startRun(draft): Promise<InProgressExecution>`
 
-### Methods
-
-#### `startRun(draft: ExecutionDraft): Promise<InProgressExecution>`
-
-Creates a new execution in `InProgress` state. Requires `environment` to be non-blank.
+Creates a new execution in `InProgress` state. `environment` is required.
 
 ```typescript
-const run = await executionService.startRun({
+const run = await execService.startRun({
   testPlanId: 10,
   testCaseId: 5,
-  environment: "QA",          // required
-  source: "Manual",           // optional — defaults to "Manual"
-  testCaseVersionId: 42,      // optional — for locked Test Plans
+  environment: "QA",
+  source: "Manual",
 });
 ```
 
-#### `saveStepResult(id, result): Promise<InProgressExecution>`
+### `saveStepResult(id, result): Promise<InProgressExecution>`
 
-Appends a `TestStepResult` to the execution. Throws `TestExecutionImmutableError` if already `Completed`.
+Appends a step result. Throws `TestExecutionImmutableError` (HTTP 403) if execution is `Completed`.
 
-#### `attachEvidence(id, evidence): Promise<InProgressExecution>`
+### `attachEvidence(id, evidence): Promise<InProgressExecution>`
 
-Appends an `EvidenceRef` (already uploaded via the ADO Attachments API) to the execution. Throws `TestExecutionImmutableError` if already `Completed`.
+Appends an `EvidenceRef` to the execution.
 
-#### `finalizeRun(id): Promise<TestVaultTestExecution>`
+### `finalizeRun(id): Promise<TestVaultTestExecution>`
 
-Transitions the execution to `Completed`, calculates `globalStatus` from all step results, and returns the immutable `TestVaultTestExecution`. Throws `TestExecutionImmutableError` if already `Completed`.
+Transitions to `Completed` and calculates `globalStatus` from step results. Immutable afterwards.
 
-**Global status derivation:**
+#### Global status derivation
 
 | Condition | globalStatus |
 | --- | --- |
@@ -49,57 +121,100 @@ Transitions the execution to `Completed`, calculates `globalStatus` from all ste
 | All steps are `Skipped` | `Skipped` |
 | All steps are `Pass` | `Pass` |
 
-#### `linkBug(id, bugId): Promise<TestVaultTestExecution>`
+### `linkBug(id, bugId): Promise<TestVaultTestExecution>`
 
-Appends a Bug Work Item ID to the `bugLinks` array of a **finalized** execution. Throws if the execution is still `InProgress`.
+Appends a Bug WIT ID to a finalized execution's `bugLinks`.
 
-### Error types
+### `listExecutions(options): Promise<ExecutionPage>`
 
-| Error | HTTP | When |
-| --- | --- | --- |
-| `TestExecutionImmutableError` | 403 | Mutation attempted on a `Completed` execution |
-
-#### `listExecutions(options): Promise<ExecutionPage>`
-
-Returns a paginated list of finalized executions for a Test Case.
-
-```typescript
-const page = await executionService.listExecutions({
-    testCaseId: 42,
-    environment: "QA",      // optional
-    status: "Fail",         // optional
-    from: "2026-05-01",     // optional ISO date
-    to: "2026-05-31",       // optional ISO date
-    page: 1,                // default: 1
-    pageSize: 20,           // default: 20
-});
-// page.items  → TestVaultTestExecution[]
-// page.total  → total matching items (for pagination)
-```
+Returns paginated finalized executions for a Test Case.
 
 ---
 
-## Bug creation
+## TestSetService
+
+Factory: `createTestSetService(adoClient, project)`
+
+### `create(draft) / get(id) / update(id, patch) / delete(id) / list(options?)`
+
+Standard CRUD — same signature pattern as TestCaseService.
+
+### `addTestCase(setId, testCaseId): Promise<void>`
+
+Adds a Test Case to a Test Set (creates `TestVault.SetMember` link).
+
+### `removeTestCase(setId, testCaseId): Promise<void>`
+
+Removes the `TestVault.SetMember` link.
+
+---
+
+## TestPlanService
+
+Factory: `createTestPlanService(adoClient, project)`
+
+### `create / get / update / delete / list`
+
+Standard CRUD.
+
+### `addEntry(planId, testCaseId): Promise<void>`
+
+Links a Test Case into the plan via `TestVault.PlanEntry`.
+
+### `removeEntry(planId, testCaseId): Promise<void>`
+
+Removes the `TestVault.PlanEntry` link.
+
+---
+
+## PreconditionService
+
+Factory: `createPreconditionService(adoClient, project)`
+
+### CRUD methods
+
+Standard `create / get / update / delete / list` — same pattern as TestCaseService. The `description` field is HTML.
+
+---
+
+## TestCaseVersionService
+
+Factory: `createTestCaseVersionService(adoClient)`
+
+### `getVersion(testCaseId, versionId): Promise<TestCaseVersion>`
+
+Returns a historical snapshot of a Test Case at a specific revision.
+
+### `listVersions(testCaseId): Promise<TestCaseVersion[]>`
+
+Returns all revisions for a Test Case, ordered newest-first.
+
+---
+
+## Bug creation utilities
 
 ### `buildBugDraft(exec, testCase): BugDraft`
 
-Derives a pre-filled `BugDraft` from a finalized `TestVaultTestExecution` and its `TestVaultTestCase`. Only failed steps are included in `reproSteps`.
+Derives a pre-filled Bug draft from a finalized execution and its Test Case.
 
 ```typescript
 const draft = buildBugDraft(finalizedExec, testCase);
-// draft.title     → "[Fail] {testCase.title} — {environment}"
-// draft.severity  → "2 - High"
-// draft.reproSteps → one block per failed step (action, expected, observed comment)
+// draft.title      → "[Fail] Login with valid credentials — QA"
+// draft.severity   → "2 - High"
+// draft.reproSteps → one block per failed step
 ```
 
 ### `createBugCreationService(adoClient, testExecutionService): IBugCreationService`
 
-Returns an `IBugCreationService` with:
+Returns `{ createBug(draft, executionId): Promise<{ id, url }> }`.
 
-#### `createBug(draft, executionId): Promise<{ id: number; url: string }>`
+---
 
-1. Creates a Bug Work Item via `adoClient.createWorkItem("Bug", patches)`.
-2. Fetches the Test Execution WI (`adoClient.fetchWorkItem(executionId)`) to obtain its URL.
-3. Adds a `System.LinkTypes.Related` relation from Bug → Test Execution.
-4. Calls `testExecutionService.linkBug(executionId, bugId)` for the reverse link.
-5. Returns `{ id, url }` of the created Bug WI.
+## Error types
+
+| Error | HTTP | When |
+| --- | --- | --- |
+| `TestExecutionImmutableError` | 403 | Mutation on a Completed execution |
+| `WorkItemNotFoundError` | 404 | WIT ID does not exist |
+| `AdoAuthError` | 401 | PAT is invalid or expired |
+| `AdoPermissionError` | 403 | User lacks required ADO permission |
