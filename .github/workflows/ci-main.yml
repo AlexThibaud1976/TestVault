@@ -50,3 +50,47 @@ jobs:
           else
             echo "vss-extension.json not yet created (pending T-0.4) — skipping"
           fi
+
+  # ─── T-1.9: E2E against real ADO Cloud instance ─────────────────────────────
+  # Runs only when ADO_CLOUD_PAT secret is configured (skipped on forks/PRs without secrets).
+  # TODO T-1.9: add server job when argos-test-server.atconseil.io instance is ready.
+  e2e-cloud:
+    name: E2E — ADO Cloud
+    runs-on: ubuntu-latest
+    needs: ci
+    if: ${{ secrets.ADO_CLOUD_PAT != '' }}
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build SDK (E2E depends on compiled output)
+        run: pnpm turbo build --filter=@atconseil/testvault-sdk
+
+      - name: Run E2E — Cloud
+        run: pnpm --filter @atconseil/testvault-e2e test:cloud
+        env:
+          ADO_CLOUD_ORG_URL: ${{ secrets.ADO_CLOUD_ORG_URL }}
+          ADO_CLOUD_PAT: ${{ secrets.ADO_CLOUD_PAT }}
+          ADO_CLOUD_PROJECT: ${{ secrets.ADO_CLOUD_PROJECT }}
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-cloud
+          path: tools/e2e/playwright-report/
+          retention-days: 14
