@@ -59,7 +59,6 @@ jobs:
           MARKETPLACE_PAT: ${{ secrets.MARKETPLACE_PAT }}
         run: |
           tfx extension publish \
-            --manifest-globs vss-extension.json \
-            --root apps/argos-extension \
+            --vsix ./dist/argos.vsix \
             --token "$MARKETPLACE_PAT" \
             --no-prompt
