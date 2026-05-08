@@ -2,6 +2,7 @@ import type { ITestCaseService, TestCaseDraft } from "@atconseil/testvault-sdk";
 import type { TestVaultTestCase } from "@atconseil/testvault-types";
 import { Button, Field, Input, Select, Text, Textarea } from "@fluentui/react-components";
 import { useState } from "react";
+import { GherkinEditor } from "./GherkinEditor.js";
 
 type Step = { id: string; action: string; expected: string };
 
@@ -21,6 +22,7 @@ function tcToFormState(tc: TestVaultTestCase): FormState {
 			action: s.action,
 			expected: s.expected,
 		})),
+		gherkin: tc.gherkin,
 	};
 }
 
@@ -30,6 +32,7 @@ type FormState = {
 	priority: 1 | 2 | 3 | 4;
 	automationStatus: "Manual" | "Planned" | "Automated";
 	steps: Step[];
+	gherkin?: string;
 };
 
 export interface TestCaseFormProps {
@@ -52,6 +55,7 @@ export function TestCaseForm({
 			? tcToFormState(initialValue)
 			: { title: "", areaPath: "", priority: 3, automationStatus: "Manual", steps: [] }
 	);
+	const [bddMode, setBddMode] = useState(() => Boolean(initialValue?.gherkin));
 	const [titleError, setTitleError] = useState(false);
 	const [saving, setSaving] = useState(false);
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -117,6 +121,7 @@ export function TestCaseForm({
 				priority: form.priority,
 				automationStatus: form.automationStatus,
 				steps: form.steps.map((s, i) => ({ index: i + 1, action: s.action, expected: s.expected })),
+				gherkin: form.gherkin,
 			};
 			const result = initialValue
 				? await service.update(initialValue.id, draft)
@@ -181,69 +186,90 @@ export function TestCaseForm({
 				</Field>
 			</div>
 
-			<Text weight="semibold" block style={{ marginBottom: "8px" }}>
-				Steps
-			</Text>
-			{form.steps.map((step, i) => (
-				<div
-					key={step.id}
-					style={{
-						border: "1px solid #e0e0e0",
-						borderRadius: "4px",
-						padding: "8px",
-						marginBottom: "8px",
-					}}
+			<div style={{ marginBottom: "12px" }}>
+				<Button
+					data-testid="bdd-mode-toggle"
+					appearance="subtle"
+					onClick={() => setBddMode((prev) => !prev)}
+					style={{ marginBottom: "8px" }}
 				>
-					<Text size={200} block style={{ marginBottom: "4px" }}>
-						Step {i + 1}
+					{bddMode ? "Switch to Manual Steps" : "Switch to BDD / Gherkin"}
+				</Button>
+				{bddMode && (
+					<GherkinEditor
+						value={form.gherkin ?? ""}
+						onChange={(v) => setForm((prev) => ({ ...prev, gherkin: v }))}
+					/>
+				)}
+			</div>
+
+			{!bddMode && (
+				<>
+					<Text weight="semibold" block style={{ marginBottom: "8px" }}>
+						Steps
 					</Text>
-					<Field label="Action" style={{ marginBottom: "4px" }}>
-						<Textarea
-							data-testid={`step-action-${i}`}
-							value={step.action}
-							onChange={(_, d) => updateStep(i, "action", d.value)}
-							resize="vertical"
-						/>
-					</Field>
-					<Field label="Expected result" style={{ marginBottom: "4px" }}>
-						<Textarea
-							data-testid={`step-expected-${i}`}
-							value={step.expected}
-							onChange={(_, d) => updateStep(i, "expected", d.value)}
-							resize="vertical"
-						/>
-					</Field>
-					<div style={{ display: "flex", gap: "4px" }}>
-						<Button
-							size="small"
-							data-testid={`step-up-${i}`}
-							disabled={i === 0}
-							onClick={() => moveStepUp(i)}
+					{form.steps.map((step, i) => (
+						<div
+							key={step.id}
+							style={{
+								border: "1px solid #e0e0e0",
+								borderRadius: "4px",
+								padding: "8px",
+								marginBottom: "8px",
+							}}
 						>
-							↑
-						</Button>
-						<Button
-							size="small"
-							data-testid={`step-down-${i}`}
-							disabled={i === form.steps.length - 1}
-							onClick={() => moveStepDown(i)}
-						>
-							↓
-						</Button>
-						<Button
-							size="small"
-							appearance="subtle"
-							data-testid={`remove-step-${i}`}
-							onClick={() => removeStep(i)}
-						>
-							Remove
-						</Button>
-					</div>
-				</div>
-			))}
-			<Button data-testid="add-step-button" onClick={addStep} style={{ marginBottom: "16px" }}>
-				+ Add Step
-			</Button>
+							<Text size={200} block style={{ marginBottom: "4px" }}>
+								Step {i + 1}
+							</Text>
+							<Field label="Action" style={{ marginBottom: "4px" }}>
+								<Textarea
+									data-testid={`step-action-${i}`}
+									value={step.action}
+									onChange={(_, d) => updateStep(i, "action", d.value)}
+									resize="vertical"
+								/>
+							</Field>
+							<Field label="Expected result" style={{ marginBottom: "4px" }}>
+								<Textarea
+									data-testid={`step-expected-${i}`}
+									value={step.expected}
+									onChange={(_, d) => updateStep(i, "expected", d.value)}
+									resize="vertical"
+								/>
+							</Field>
+							<div style={{ display: "flex", gap: "4px" }}>
+								<Button
+									size="small"
+									data-testid={`step-up-${i}`}
+									disabled={i === 0}
+									onClick={() => moveStepUp(i)}
+								>
+									↑
+								</Button>
+								<Button
+									size="small"
+									data-testid={`step-down-${i}`}
+									disabled={i === form.steps.length - 1}
+									onClick={() => moveStepDown(i)}
+								>
+									↓
+								</Button>
+								<Button
+									size="small"
+									appearance="subtle"
+									data-testid={`remove-step-${i}`}
+									onClick={() => removeStep(i)}
+								>
+									Remove
+								</Button>
+							</div>
+						</div>
+					))}
+					<Button data-testid="add-step-button" onClick={addStep} style={{ marginBottom: "16px" }}>
+						+ Add Step
+					</Button>
+				</>
+			)}
 
 			<div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
 				<Button

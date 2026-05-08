@@ -160,4 +160,36 @@ describe("TestCaseForm", () => {
 		await user.click(screen.getByTestId("save-button"));
 		await waitFor(() => expect(onSaved).toHaveBeenCalledWith(expect.objectContaining({ id: 42 })));
 	});
+
+	it("shows the Gherkin editor when BDD mode toggle is clicked", async () => {
+		const user = userEvent.setup();
+		render(<TestCaseForm service={makeService()} project="MyProject" />);
+		await user.click(screen.getByTestId("bdd-mode-toggle"));
+		expect(screen.getByTestId("gherkin-textarea")).toBeDefined();
+	});
+
+	it("pre-populates Gherkin field when initialValue has gherkin content", () => {
+		const gherkin =
+			"Feature: Login\n  Scenario: User logs in\n    Given I open the app\n    Then I see the login form";
+		const initial = makeTestCase({ gherkin });
+		render(<TestCaseForm service={makeService()} project="MyProject" initialValue={initial} />);
+		const ta = screen.getByTestId("gherkin-textarea") as HTMLTextAreaElement;
+		expect(ta.value).toBe(gherkin);
+	});
+
+	it("includes gherkin in service.update call when gherkin is set", async () => {
+		const service = makeService();
+		const user = userEvent.setup();
+		const gherkin =
+			"Feature: Login\n  Scenario: User logs in\n    Given I open the app\n    Then I see the login form";
+		const initial = makeTestCase({ gherkin });
+		render(<TestCaseForm service={service} project="MyProject" initialValue={initial} />);
+		await user.click(screen.getByTestId("save-button"));
+		await waitFor(() =>
+			expect(vi.mocked(service.update)).toHaveBeenCalledWith(
+				42,
+				expect.objectContaining({ gherkin })
+			)
+		);
+	});
 });
