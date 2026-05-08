@@ -1,0 +1,87 @@
+{
+	"id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+	"name": "ArgosUploadResults",
+	"friendlyName": "TestVault — Upload CI Results",
+	"description": "Upload JUnit/Cucumber/NUnit/xUnit/TestNG test results to TestVault (Argos) in Azure DevOps",
+	"helpMarkDown": "See [documentation](https://github.com/AlexThibaud1976/TestVault/blob/main/docs/integrations/azure-pipelines.md)",
+	"category": "Test",
+	"author": "ATConseil",
+	"version": { "Major": 1, "Minor": 0, "Patch": 0 },
+	"instanceNameFormat": "Upload results to TestVault plan $(planId)",
+	"inputs": [
+		{
+			"name": "pat",
+			"type": "string",
+			"label": "Azure DevOps PAT",
+			"defaultValue": "$(System.AccessToken)",
+			"required": true,
+			"helpMarkDown": "Personal Access Token with work item read/write permissions"
+		},
+		{
+			"name": "orgUrl",
+			"type": "string",
+			"label": "Organisation URL",
+			"defaultValue": "$(System.CollectionUri)",
+			"required": true,
+			"helpMarkDown": "Azure DevOps organisation URL, e.g. https://dev.azure.com/acme"
+		},
+		{
+			"name": "project",
+			"type": "string",
+			"label": "Project",
+			"defaultValue": "$(System.TeamProject)",
+			"required": true,
+			"helpMarkDown": "Azure DevOps project name"
+		},
+		{
+			"name": "planId",
+			"type": "string",
+			"label": "Test Plan ID",
+			"required": true,
+			"helpMarkDown": "TestVault Test Plan work item ID"
+		},
+		{
+			"name": "resultsFile",
+			"type": "filePath",
+			"label": "Results file",
+			"required": true,
+			"helpMarkDown": "Path to the results file (JUnit .xml, Cucumber .json, etc.)"
+		},
+		{
+			"name": "environment",
+			"type": "string",
+			"label": "Environment",
+			"required": true,
+			"helpMarkDown": "Target environment name (e.g. CI, Staging)"
+		},
+		{
+			"name": "autoCreate",
+			"type": "boolean",
+			"label": "Auto-create missing test cases",
+			"defaultValue": "false",
+			"required": false,
+			"helpMarkDown": "Create test cases that have no matching automationKey"
+		},
+		{
+			"name": "strict",
+			"type": "boolean",
+			"label": "Strict mode",
+			"defaultValue": "false",
+			"required": false,
+			"helpMarkDown": "Fail the task if any result has no matching test case"
+		},
+		{
+			"name": "areaPath",
+			"type": "string",
+			"label": "Area path",
+			"defaultValue": "",
+			"required": false,
+			"helpMarkDown": "Area path for auto-created test cases (defaults to project root)"
+		}
+	],
+	"execution": {
+		"Node20": {
+			"target": "dist/index.js"
+		}
+	}
+}

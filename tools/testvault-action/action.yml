@@ -1,0 +1,68 @@
+name: "TestVault — Upload CI Results"
+description: "Upload JUnit/Cucumber/NUnit/xUnit/TestNG test results to TestVault (Argos) in Azure DevOps"
+author: "ATConseil"
+
+branding:
+  icon: "upload-cloud"
+  color: "blue"
+
+inputs:
+  pat:
+    description: "Azure DevOps Personal Access Token with read/write access to work items"
+    required: true
+  org-url:
+    description: "Azure DevOps organisation URL (e.g. https://dev.azure.com/acme)"
+    required: true
+  project:
+    description: "Azure DevOps project name"
+    required: true
+  plan-id:
+    description: "TestVault Test Plan ID to associate results with"
+    required: true
+  results-file:
+    description: "Path to the results file (JUnit .xml, Cucumber .json, NUnit .xml, etc.)"
+    required: true
+  environment:
+    description: "Target environment name (e.g. CI, Staging, Production)"
+    required: true
+  auto-create:
+    description: "Auto-create missing test cases when no match is found by automationKey"
+    required: false
+    default: "false"
+  strict:
+    description: "Fail the action if any result has no matching test case"
+    required: false
+    default: "false"
+  area-path:
+    description: "ADO area path for auto-created test cases (defaults to project name)"
+    required: false
+    default: ""
+  cli-version:
+    description: "Version of @atconseil/testvault-cli to install"
+    required: false
+    default: "latest"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "22"
+
+    - name: Install TestVault CLI
+      shell: bash
+      run: npm install -g @atconseil/testvault-cli@${{ inputs.cli-version }}
+
+    - name: Upload test results
+      shell: bash
+      env:
+        TESTVAULT_PAT: ${{ inputs.pat }}
+        TESTVAULT_ORG_URL: ${{ inputs.org-url }}
+        TESTVAULT_PROJECT: ${{ inputs.project }}
+      run: |
+        ARGS="--file ${{ inputs.results-file }} --plan-id ${{ inputs.plan-id }} --env ${{ inputs.environment }}"
+        if [ "${{ inputs.auto-create }}" = "true" ]; then ARGS="$ARGS --auto-create"; fi
+        if [ "${{ inputs.strict }}" = "true" ]; then ARGS="$ARGS --strict"; fi
+        if [ -n "${{ inputs.area-path }}" ]; then ARGS="$ARGS --area-path ${{ inputs.area-path }}"; fi
+        testvault tc upload-results $ARGS
