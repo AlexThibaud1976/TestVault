@@ -43,6 +43,7 @@ jobs:
           if [ -f apps/argos-extension/vss-extension.json ]; then
             tfx extension create \
               --manifest-globs apps/argos-extension/vss-extension.json \
+              --root apps/argos-extension \
               --output-path ./dist/argos.vsix \
               --no-prompt
           else

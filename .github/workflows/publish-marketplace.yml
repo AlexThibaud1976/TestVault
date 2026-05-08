@@ -39,8 +39,10 @@ jobs:
 
       - name: Package VSIX
         run: |
+          mkdir -p dist
           tfx extension create \
             --manifest-globs apps/argos-extension/vss-extension.json \
+            --root apps/argos-extension \
             --output-path ./dist/argos.vsix \
             --no-prompt
 
@@ -58,5 +60,6 @@ jobs:
         run: |
           tfx extension publish \
             --manifest-globs apps/argos-extension/vss-extension.json \
+            --root apps/argos-extension \
             --token "$MARKETPLACE_PAT" \
             --no-prompt
