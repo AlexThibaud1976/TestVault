@@ -1,0 +1,37 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    groups:
+      security-updates:
+        applies-to: security-updates
+        update-types:
+          - "minor"
+          - "patch"
+      patch-updates:
+        applies-to: version-updates
+        update-types:
+          - "patch"
+    ignore:
+      # Minor and major bumps for key SDK deps require manual review
+      - dependency-name: "azure-devops-extension-sdk"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "azure-devops-extension-api"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "github-actions"

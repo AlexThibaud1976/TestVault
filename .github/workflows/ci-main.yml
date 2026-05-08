@@ -1,0 +1,52 @@
+name: CI — main
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  ci:
+    name: Lint / Typecheck / Test / Build / VSIX
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (Biome)
+        run: pnpm turbo lint
+
+      - name: Typecheck
+        run: pnpm turbo typecheck
+
+      - name: Test (Vitest)
+        run: pnpm turbo test
+
+      - name: Build
+        run: pnpm turbo build
+
+      # Becomes non-optional after T-0.4 (vss-extension.json created)
+      - name: VSIX dry-run packaging
+        run: |
+          npm install -g tfx-cli
+          if [ -f apps/argos-extension/vss-extension.json ]; then
+            tfx extension create \
+              --manifest-globs apps/argos-extension/vss-extension.json \
+              --output-path ./dist/argos.vsix \
+              --no-prompt
+          else
+            echo "vss-extension.json not yet created (pending T-0.4) — skipping"
+          fi
