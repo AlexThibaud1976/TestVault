@@ -113,7 +113,7 @@ describe("LlmProviderSettings", () => {
 		render(<LlmProviderSettings service={service} isAdmin />);
 		await waitFor(() => screen.getByTestId("add-provider-button"));
 		await user.type(screen.getByTestId("provider-label-input"), "New Provider");
-		await user.type(screen.getByTestId("provider-model-input"), "gpt-4.1");
+		await user.type(screen.getByTestId("provider-model-input"), "gpt-5.2");
 		await user.type(screen.getByTestId("provider-api-key-input"), "sk-openai-1234");
 		await user.click(screen.getByTestId("add-provider-button"));
 		await waitFor(() => expect(screen.getByTestId("llm-provider-new-p")).toBeDefined());
