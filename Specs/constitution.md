@@ -115,7 +115,7 @@ Toutes les features AI dépendent d'un fournisseur LLM. **TestVault ne fournit p
 **Paramétrage fin par l'Admin (cf. §6) :**
 
 - Choix du fournisseur par feature (TC generation peut utiliser Anthropic, flakiness detection peut utiliser OpenAI)
-- Choix du modèle (claude-opus-4-7, claude-sonnet-4-6, gpt-4.1, etc.)
+- Choix du modèle (claude-opus-4-7, claude-sonnet-4-6, gpt-5.2, etc.)
 - Édition des paramètres (temperature, max_tokens, top_p)
 - Édition des system prompts par feature
 - Quotas mensuels par utilisateur ou par projet
@@ -339,7 +339,7 @@ Toute publication sur le Marketplace exige que **TOUS** les points suivants soie
 - [ ] Suite de régression complète verte — aucun bug production confirmé à ce stade, suite vide ; **à alimenter dès le premier bug prod**
 - [x] Tests contractuels API publique verts (OpenAPI) — spécification OpenAPI générée dans `docs/openapi.yaml` (5 endpoints documentés) ✓ (2026-05-08)
 - [ ] Vérification des API externes (ADO REST, Entra ID, fournisseurs LLM) passées — **nécessite déploiement Azure Functions** + clés réelles
-- [x] Vérification que les modèles LLM par défaut sont supportés — modèles en code : `claude-sonnet-4-6`, `claude-haiku-4-5`, `gpt-4.1` ; actifs au 2026-05-08 ✓
+- [x] Vérification que les modèles LLM par défaut sont supportés — modèles cités dans la doc : `claude-opus-4-7`, `claude-sonnet-4-6`, `claude-haiku-4-5`, `gpt-5.2` ; tous actifs au 2026-05-09 ✓ (mise à jour suite à retraite du modèle OpenAI précédemment cité, retiré de Microsoft Foundry le 11 avril 2026 ; cf. test régression `tools/regression/LLM-2026-05-09-gpt41-deprecation.test.ts` et CHANGELOG `[Unreleased]`)
 - [x] Documentation README + user guide à jour et relue — `user-guide.md`, `api-reference.md`, `sdk-reference.md`, `operator-guide.md`, `wit-schema.md` tous complétés en T-7.6 ✓
 - [x] `npm audit` sans CVE haute ou critique — passé via `audit-ci` (`.audit-ci.json`) : minimatch patché via `pnpm.overrides`, xlsx CVEs GHSA-4r6h-8v6p-xvw6 + GHSA-5pgg-2g8v-p4x9 allowlistés (aucune version npm patchée disponible, migration exceljs planifiée) ✓ (2026-05-08)
 - [x] SBOM CycloneDX publié — généré via `cdxgen -t pnpm` dans `sbom.json` (813 KB, 690 dépendances) ✓ (2026-05-08)

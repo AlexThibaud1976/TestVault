@@ -36,7 +36,7 @@ describe("LlmProviderService", () => {
 		const result = await svc.add({
 			type: "openai",
 			label: "GPT-4",
-			modelId: "gpt-4.1",
+			modelId: "gpt-5.2",
 			apiKey: "sk-proj-xxxx-WXYZ",
 		});
 		expect(result.maskedKey.endsWith("WXYZ")).toBe(true);
