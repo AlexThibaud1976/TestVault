@@ -1,7 +1,7 @@
 {
 	"name": "argos-extension",
 	"version": "0.3.2",
-	"private": true,
+	"private": false,
 	"type": "module",
 	"scripts": {
 		"build": "node scripts/build.mjs",
