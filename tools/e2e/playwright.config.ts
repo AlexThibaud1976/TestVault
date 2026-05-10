@@ -12,7 +12,6 @@ export default defineConfig({
 				baseURL: process.env.ADO_CLOUD_ORG_URL,
 			},
 		},
-		// TODO T-1.9: ADO Server 2022 instance pending — uncomment when argos-test-server.atconseil.io is ready
-		// { name: "server", use: { baseURL: process.env["ADO_SERVER_ORG_URL"] } },
+		// Cloud-only since v0.2.0 — no self-hosted target
 	],
 });

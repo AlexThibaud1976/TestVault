@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Argos by ATConseil">
+	<title>Argos by ATConseil</title>
+	<rect width="128" height="128" rx="24" ry="24" fill="#E6F1FB"/>
+	<g transform="translate(32 32)" fill="none" stroke="#0C447C" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+		<path d="M32 60s22-11 22-33V13.5L32 5 10 13.5V27c0 22 22 33 22 33z"/>
+		<circle cx="32" cy="29" r="9.5"/>
+		<circle cx="32" cy="29" r="4" fill="#0C447C" stroke="none"/>
+	</g>
+</svg>

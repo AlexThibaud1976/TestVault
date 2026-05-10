@@ -1,17 +1,14 @@
 {
 	"manifestVersion": 1,
 	"id": "argos-testvault",
-	"publisher": "AlexThibaud",
-	"version": "0.1.1",
+	"publisher": "ATConseil",
+	"version": "0.2.0",
 	"name": "Argos",
-	"description": "Xray-class test management for Azure DevOps — native Custom Work Items, AI-assisted, Cloud + Server 2022.",
+	"description": "Xray-class test management for Azure DevOps — native Custom Work Items, AI-assisted, Cloud-only.",
 	"public": true,
-	"targets": [
-		{ "id": "Microsoft.VisualStudio.Services" },
-		{ "id": "Microsoft.TeamFoundation.Server", "version": "[18.0,)" }
-	],
+	"targets": [{ "id": "Microsoft.VisualStudio.Services.Cloud" }],
 	"categories": ["Azure Boards"],
-	"icons": { "default": "images/icon.png" },
+	"icons": { "default": "static/marketplace-icon.png" },
 	"scopes": [
 		"vso.work_full",
 		"vso.profile",
@@ -28,7 +25,8 @@
 			"properties": {
 				"name": "Argos",
 				"order": 80,
-				"uri": "dist/hub/hub.html"
+				"uri": "dist/hub/hub.html",
+				"iconUrl": "static/argos-hub.svg"
 			}
 		},
 		{
@@ -46,5 +44,5 @@
 	"content": {
 		"details": { "path": "overview.md" }
 	},
-	"files": [{ "path": "dist", "addressable": true }]
+	"files": [{ "path": "dist", "addressable": true }, { "path": "static", "addressable": true }]
 }
