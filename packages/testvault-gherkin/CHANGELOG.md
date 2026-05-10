@@ -1,5 +1,11 @@
 # @atconseil/testvault-gherkin
 
+## 0.3.1
+
+### Patch Changes
+
+- Revert publisher to AlexThibaud (Sprint 2 false premise). Fixes v0.3.0 CI publication failure caused by publisher mismatch between manifest and Marketplace account.
+
 ## 0.3.0
 
 ### Minor Changes

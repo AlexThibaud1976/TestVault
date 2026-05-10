@@ -29,6 +29,7 @@ export const SHARED_DOC_ALLOWLIST: ReadonlySet<string> = new Set([
 	"tools/regression/allowlist.ts",
 	"tools/regression/allowlist.cjs",
 	"tools/regression/allowlist.test.ts",
+	"tools/regression/CFG-2026-05-10-publisher-alexthibaud.test.ts",
 	"tools/regression/CFG-2026-05-10-marketplace-private.test.ts",
 	"tools/claude-prompts/README.md",
 	"tools/claude-prompts/CLAUDE_TASK_marketplace-private.md",
@@ -46,6 +47,7 @@ export const SHARED_DOC_ALLOWLIST: ReadonlySet<string> = new Set([
 	"tools/regression/T-0.9-argos-top-level-placement.test.ts",
 	"tools/regression/CFG-2026-05-10-top-level-hub.test.ts",
 	"tools/regression/CFG-2026-05-10-no-xray-references.test.ts",
+	"tools/claude-prompts/CLAUDE_TASK_sprint-3.1.md",
 ]);
 
 /**

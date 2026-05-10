@@ -1,5 +1,17 @@
 # @atconseil/testvault-cli
 
+## 0.3.1
+
+### Patch Changes
+
+- Revert publisher to AlexThibaud (Sprint 2 false premise). Fixes v0.3.0 CI publication failure caused by publisher mismatch between manifest and Marketplace account.
+- Updated dependencies
+  - @atconseil/testvault-exporters@0.3.1
+  - @atconseil/testvault-gherkin@0.3.1
+  - @atconseil/testvault-importers@0.3.1
+  - @atconseil/testvault-sdk@0.3.1
+  - @atconseil/testvault-types@0.3.1
+
 ## 0.3.0
 
 ### Minor Changes

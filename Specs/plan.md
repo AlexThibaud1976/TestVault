@@ -29,7 +29,7 @@
 ```
 testvault/                                  # racine du repo, monorepo
 ├── apps/
-│   ├── argos-extension/                    # VSIX final publié sur Marketplace (publisher: ATConseil, name: Argos)
+│   ├── argos-extension/                    # VSIX final publié sur Marketplace (publisher: AlexThibaud, name: Argos)
 │   │   ├── src/
 │   │   │   ├── hubs/                       # contributions UI (Hub, Plans, Cases, Settings, Reports)
 │   │   │   ├── widgets/                    # widgets Boards (Test Coverage panel sur Work Items)
@@ -107,7 +107,7 @@ testvault/                                  # racine du repo, monorepo
 {
   "manifestVersion": 1,
   "id": "argos",
-  "publisher": "ATConseil",
+  "publisher": "AlexThibaud",
   "name": "Argos",
   "version": "1.0.0",
   "description": "Industrial-grade test management for Azure DevOps, native to ADO Cloud.",
