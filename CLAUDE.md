@@ -239,23 +239,22 @@ Référence d'exemple : `tools/regression/ENC-2026-05-09-spec-mojibake.test.ts`.
 
 ## Marketplace publication strategy
 
-L'extension Argos est publiée sur le Marketplace Visual Studio en mode **privé**.
+L'extension Argos est publiée sur le Marketplace Visual Studio en mode **public** (par défaut Microsoft).
+
+> **Historique** : le Sprint "Marketplace privé" (2026-05-10) avait ajouté `"public": false` sur une fausse prémisse. Argos v0.1.1 étant déjà public, Microsoft interdit le downgrade Public→Privé sans perte de l'extensionId. Revert Sprint 3.2.
 
 ### Configuration
 
-- `apps/argos-extension/vss-extension.json` contient `"public": false` (top-level, syntaxe officielle Microsoft 2026)
-- Distribution accessible uniquement aux organisations Azure DevOps explicitement partagées via le portail Marketplace publisher
-- Organisation cible actuelle : `bcee-qa`
+- `apps/argos-extension/vss-extension.json` ne contient **pas** de champ `"public"` (absence = public par défaut, comportement Marketplace)
+- Publisher : `AlexThibaud` (seul publisher valide pour Argos — voir constitution §6)
 
 ### Workflow de publication (à exécuter manuellement par AT)
 
 1. Build le VSIX : `pnpm --filter argos-extension build` (ou équivalent)
 2. Package : `tfx extension create --manifest-globs vss-extension.json`
 3. Publier : `tfx extension publish --vsix <fichier.vsix> --token <PAT>`
-4. Aller sur <https://marketplace.visualstudio.com/manage/publishers/ATConseil>
-5. Cliquer "Share/Unshare" sur l'extension Argos
-6. Ajouter l'organisation `bcee-qa` dans la liste des partages
+4. Aller sur <https://marketplace.visualstudio.com/manage/publishers/AlexThibaud>
 
 ### Garde-fou anti-régression
 
-Le test `tools/regression/CFG-2026-05-10-marketplace-private.test.ts` empêche que `"public": false` disparaisse silencieusement. **Pour passer en public** (décision produit explicite) : retirer le champ + retirer/désactiver ce test régression dans la même PR, avec justification dans le commit message.
+Le test `tools/regression/CFG-2026-05-10-marketplace-public.test.ts` empêche que `"public": false` soit réintroduit silencieusement. Ce test vérifie également l'absence de `galleryFlags: ["Private"]` (ancienne syntaxe). **Pour passer en privé** (décision produit explicite) : créer une nouvelle extension avec un nouvel extensionId — le downgrade n'est pas possible sur l'existant.

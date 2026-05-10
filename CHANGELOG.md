@@ -9,6 +9,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.2] — 2026-05-10
+
+### Fixed (Sprint 3.2 — fix/revert-marketplace-private-to-public)
+
+- **Revert `"public": false` du manifest Argos**. Le Sprint "Marketplace prive" avait ajoute ce champ sur une fausse premisse :
+  - Argos v0.1.1 etait deja publie en mode Public sur le Marketplace (2026-05-08)
+  - Microsoft interdit le downgrade Public->Prive sur une extension existante sans perte de l'extensionId
+  - La publication v0.3.1 avait echoue avec : `"An extension that was made public can't be changed to private."`
+  - Le champ `"public": false` est retire du manifest ; l'absence du champ = Public par defaut (comportement Marketplace)
+- **Test regression renomme** : `CFG-2026-05-10-marketplace-private.test.ts` -> `CFG-2026-05-10-marketplace-public.test.ts`. Logique inversee : verifie que `"public": false` n'est PAS present et que `galleryFlags: ["Private"]` n'existe pas. En-tete historique preserves la trace du Sprint Marketplace prive et de son revert.
+- **Allowlists ts/cjs** mises a jour pour le nouveau nom.
+- **REGISTRY** : entree retiree pour marketplace-private + nouvelle entree active pour marketplace-public.
+- **Constitution v0.4.1 -> v0.4.2** (correction methodologique tracee).
+- **CLAUDE.md** (root) : section "Marketplace publication strategy" mise a jour — mode public, publisher AlexThibaud, test guard-rail renomme.
+- Bump version 0.3.1 -> 0.3.2 (patch : corrige une publication failed sans changement de feature).
+
+### Backlog (post-Sprint 3.2)
+
+- **TECH-DEBT-011** : si decision produit de restreindre l'acces a une audience specifique, evaluer les options Microsoft (organisation-scoped sharing sans changer la visibilite publique) plutot qu'un downgrade Public->Prive.
+
+### Lessons learned (Sprint 3.2)
+
+- **Microsoft Marketplace est irreversible sur la visibilite** : une extension publiee Public ne peut pas etre passee en Prive sans creer une nouvelle extension avec un nouvel extensionId. Verifier le status courant avant tout changement de visibilite.
+- **Chaine de fausses premises** : Sprint 2 (publisher), Sprint "Marketplace prive" (visibilite), Sprint 3 (publisher + visibilite) ont tous cumule des fausses premises. Pattern : tester manuellement sur Marketplace sandbox avant de coder/locker un test de regression.
+- **Test regression "false-premise"** (meme lecon que Sprint 3.1) : rename + invert + en-tete historique + REGISTRY retire. Ne pas supprimer.
+
+---
+
 ## [0.3.1] — 2026-05-10
 
 ### Fixed (Sprint 3.1 — fix/revert-publisher-to-alexthibaud)
