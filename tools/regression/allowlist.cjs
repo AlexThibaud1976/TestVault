@@ -19,6 +19,10 @@ const SHARED_DOC_ALLOWLIST = new Set([
 	"tools/claude-prompts/CLAUDE_TASK_sprint-2.md",
 	"tools/claude-prompts/CLAUDE_TASK_tech-debt-001.md",
 	"tools/claude-prompts/CLAUDE_TASK_sprint-2.5a.md",
+	"tools/regression/cp1252-mojibake-map.ts",
+	"tools/regression/cp1252-mojibake-map.cjs",
+	"tools/regression/cp1252-mojibake-map.test.ts",
+	"tools/claude-prompts/CLAUDE_TASK_tech-debt-005.md",
 ]);
 
 module.exports = { SHARED_DOC_ALLOWLIST };

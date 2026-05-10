@@ -16,6 +16,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { buildMojibakePatterns } = require("./cp1252-mojibake-map.cjs");
 
 const CP1252_HIGH_REVERSE = {
 	0x20AC: 0x80, 0x201A: 0x82, 0x0192: 0x83, 0x201E: 0x84,
@@ -65,10 +66,13 @@ function recoverMojibake(input) {
 }
 
 function countMojibake(str) {
-	const re = /\u00C3[\u0080-\u00BF]|\u00E2\u20AC[\u0080-\u00BF\u00A6\u201C\u201D\u2018\u2019\u02DC\u2122]|\u00F0\u0178[\u0080-\u00BF\u201C\u201D\u2018\u2019]|\u00E2\u0153[\u0080-\u00BF\u2026\u0152]/g;
-	return (str.match(re) || []).length;
+	let total = 0;
+	for (const p of buildMojibakePatterns()) {
+		const m = str.match(new RegExp(p.source, "g"));
+		if (m) total += m.length;
+	}
+	return total;
 }
-
 const args = process.argv.slice(2);
 if (args.length === 0) {
 	console.error("Usage : node fix-mojibake.cjs <input-file> [output-file]");
