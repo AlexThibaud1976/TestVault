@@ -1,9 +1,9 @@
 {
 	"manifestVersion": 1,
-	"id": "argos-testvault",
+	"id": "ArgosTesting",
 	"publisher": "AlexThibaud",
-	"version": "0.3.2",
-	"name": "Argos",
+	"version": "0.3.4",
+	"name": "ArgosTesting",
 	"description": "Industrial-grade test management for Azure DevOps — native Custom Work Items, AI-assisted, Cloud-only.",
 	"targets": [{ "id": "Microsoft.VisualStudio.Services.Cloud" }],
 	"categories": ["Azure Boards", "Azure Test Plans"],
@@ -22,10 +22,10 @@
 			"description": "Argos Test Management Hub",
 			"targets": ["ms.vss-web.project-hub-group"],
 			"properties": {
-				"name": "Argos",
+				"name": "ArgosTesting",
 				"order": 80,
 				"uri": "dist/hub/hub.html",
-				"iconUrl": "static/argos-hub.svg"
+				"iconUrl": "static/argos-hub.png"
 			}
 		},
 		{

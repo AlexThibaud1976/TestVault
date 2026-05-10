@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+  <Metadata>
+    <Identity Language="en-US" Id="argos-testvault" Publisher="AlexThibaud" Version="0.3.2"/>
+    <DisplayName>Argos</DisplayName>
+    <Description xml:space="preserve">Industrial-grade test management for Azure DevOps — native Custom Work Items, AI-assisted, Cloud-only.</Description>
+    <Categories>Azure Boards,Azure Test Plans</Categories>
+    <Icon>static/marketplace-icon.png</Icon>
+  </Metadata>
+  <Dependencies/>
+  <Installation>
+    <InstallationTarget Id="Microsoft.VisualStudio.Services.Cloud"/>
+  </Installation>
+  <Assets>
+    <Asset Type="dist/hub/hub.html" d:Source="File" Path="dist/hub/hub.html" Addressable="true"/>
+    <Asset Type="dist/hub/hub.js" d:Source="File" Path="dist/hub/hub.js" Addressable="true"/>
+    <Asset Type="dist/index.d.ts" d:Source="File" Path="dist/index.d.ts" Addressable="true"/>
+    <Asset Type="dist/index.d.ts.map" d:Source="File" Path="dist/index.d.ts.map" Addressable="true"/>
+    <Asset Type="dist/index.js" d:Source="File" Path="dist/index.js" Addressable="true"/>
+    <Asset Type="dist/index.js.map" d:Source="File" Path="dist/index.js.map" Addressable="true"/>
+    <Asset Type="dist/widgets/coverage-panel/index.html" d:Source="File" Path="dist/widgets/coverage-panel/index.html" Addressable="true"/>
+    <Asset Type="dist/widgets/coverage-panel/index.js" d:Source="File" Path="dist/widgets/coverage-panel/index.js" Addressable="true"/>
+    <Asset Type="static/argos-hub.svg" d:Source="File" Path="static/argos-hub.svg" Addressable="true"/>
+    <Asset Type="static/marketplace-banner.png" d:Source="File" Path="static/marketplace-banner.png" Addressable="true"/>
+    <Asset Type="static/marketplace-banner.svg" d:Source="File" Path="static/marketplace-banner.svg" Addressable="true"/>
+    <Asset Type="static/marketplace-icon.png" d:Source="File" Path="static/marketplace-icon.png" Addressable="true"/>
+    <Asset Type="Microsoft.VisualStudio.Services.Icons.Default" d:Source="File" Path="static/marketplace-icon.png" Addressable="true"/>
+    <Asset Type="static/marketplace-icon.svg" d:Source="File" Path="static/marketplace-icon.svg" Addressable="true"/>
+    <Asset Type="Microsoft.VisualStudio.Services.Content.Details" d:Source="File" Path="overview.md" Addressable="true"/>
+    <Asset Type="Microsoft.VisualStudio.Services.Manifest" d:Source="File" Path="extension.vsomanifest" Addressable="true"/>
+  </Assets>
+</PackageManifest>
