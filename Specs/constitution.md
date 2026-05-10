@@ -1,9 +1,10 @@
 # Constitution — TestVault
 
-> Version 0.4.1 — 10 mai 2026
+> Version 0.4.2 — 10 mai 2026
 > Principes non-négociables pour le projet TestVault par ATConseil
 > Auteur : Alexandre Thibaud — atconseil.info
 
+> **Changelog v0.4.2** : Sprint 3.2 — revert `"public": false` du manifest Argos (fausse prémisse Sprint Marketplace privé). Argos v0.1.1 était déjà public ; Microsoft interdit le downgrade Public→Privé sans perte de l'extensionId. Test régression CFG-2026-05-10-marketplace-private renommé en marketplace-public + logique inversée. Version packages 0.3.2.
 > **Changelog v0.4.1** : Sprint 3.1 — revert publisher Marketplace `ATConseil` → `AlexThibaud` (fausse prémisse Sprint 2 corrigée). AlexThibaud est le publisher historique d'Argos (v0.1.1 déjà publiée). ATConseil réservé à TestPulse. Publication v0.3.0 avait échoué avec mismatch error. Test régression renommé + logique inversée. Version packages 0.3.1.
 > **Changelog v0.4.0** : Sprint 3 — hub Argos repositionné au niveau projet ADO (`ms.vss-web.project-hub-group`), terminologie concurrentielle retirée de tous les fichiers publics et du spec-kit. Version packages 0.3.0.
 > **Changelog v0.3.0** : **BREAKING** — périmètre réduit à Cloud uniquement (décision 2026-05-10). TestVault devient Cloud-only. Publisher Marketplace changé à `ATConseil` (décision Sprint 2, **rétrospectivement annulée Sprint 3.1** : fausse prémisse). Tests régression `CFG-2026-05-10-*` ajoutés. Voir CHANGELOG `[0.2.0]` et `tools/regression/CFG-2026-05-10-server2022-out-of-scope.test.ts`.

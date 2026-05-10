@@ -1,5 +1,17 @@
 # argos-extension
 
+## 0.3.2
+
+### Patch Changes
+
+- fix(manifest): revert public:false — Marketplace public status locked (Sprint 3.2)
+- Updated dependencies
+  - @atconseil/testvault-exporters@0.3.2
+  - @atconseil/testvault-gherkin@0.3.2
+  - @atconseil/testvault-importers@0.3.2
+  - @atconseil/testvault-sdk@0.3.2
+  - @atconseil/testvault-types@0.3.2
+
 ## 0.3.1
 
 ### Patch Changes
