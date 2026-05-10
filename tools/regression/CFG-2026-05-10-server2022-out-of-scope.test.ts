@@ -19,6 +19,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { SHARED_DOC_ALLOWLIST } from "./allowlist.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -52,16 +53,11 @@ const EXCLUDED_DIRS = new Set([
 	"_archive",
 ]);
 
-const ALLOWED_FILES = new Set([
-	"CHANGELOG.md",
-	"tools/regression/REGISTRY.md",
+const TEST_SPECIFIC_ALLOWLIST = new Set([
 	"tools/regression/CFG-2026-05-10-server2022-out-of-scope.test.ts",
-	"tools/claude-prompts/CLAUDE_TASK.md",
-	"tools/claude-prompts/CLAUDE_TASK_sprint-1.md",
-	"tools/claude-prompts/CLAUDE_TASK_sprint-1.1.md",
-	"tools/claude-prompts/CLAUDE_TASK_sprint-2.md",
-	"tools/claude-prompts/README.md",
 ]);
+
+const ALLOWED_FILES = new Set([...SHARED_DOC_ALLOWLIST, ...TEST_SPECIFIC_ALLOWLIST]);
 
 const FORBIDDEN_PATTERNS: RegExp[] = [
 	/Microsoft\.TeamFoundation\.Server/,

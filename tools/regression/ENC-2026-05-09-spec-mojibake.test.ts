@@ -27,6 +27,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { SHARED_DOC_ALLOWLIST } from "./allowlist.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -60,19 +61,13 @@ const EXCLUDED_DIRS = new Set([
 	"_archive",
 ]);
 
-// Files allowed to contain mojibake patterns for legitimate documentary reasons.
-// Add new prompts/registries here explicitly (no wildcards) so the test stays meaningful.
-const ALLOWED_FILES = new Set([
-	"tools/regression/REGISTRY.md",
+const TEST_SPECIFIC_ALLOWLIST = new Set([
 	"tools/regression/ENC-2026-05-09-spec-mojibake.test.ts",
 	"tools/regression/scan-mojibake.cjs",
 	"tools/regression/fix-mojibake.cjs",
-	"tools/claude-prompts/CLAUDE_TASK.md",
-	"tools/claude-prompts/CLAUDE_TASK_sprint-1.md",
-	"tools/claude-prompts/CLAUDE_TASK_sprint-1.1.md",
-	"tools/claude-prompts/CLAUDE_TASK_sprint-2.md",
-	"tools/claude-prompts/README.md",
 ]);
+
+const ALLOWED_FILES = new Set([...SHARED_DOC_ALLOWLIST, ...TEST_SPECIFIC_ALLOWLIST]);
 
 // Mojibake patterns expressed as Unicode escapes (\uXXXX).
 // Each pattern catches a class of double-encoded characters:
