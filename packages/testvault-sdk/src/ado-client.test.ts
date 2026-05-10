@@ -1,6 +1,6 @@
 import { http, HttpResponse, delay } from "msw";
 import { setupServer } from "msw/node";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import {
 	AdoForbiddenError,
 	AdoNotFoundError,
@@ -300,5 +300,48 @@ describe("deleteWorkItem", () => {
 			http.delete(`${API_BASE}/workitems/42`, () => new HttpResponse(null, { status: 401 }))
 		);
 		await expect(client.deleteWorkItem(42)).rejects.toThrow(AdoUnauthorizedError);
+	});
+});
+
+// ─── tokenFactory ─────────────────────────────────────────────────────────────
+
+describe("tokenFactory (dynamic Bearer auth)", () => {
+	it("uses Bearer token from factory per request, not frozen at creation", async () => {
+		let call = 0;
+		const tokenFactory = vi.fn(async () => `dyn-token-${++call}`);
+
+		const dynamicClient = createAdoClient({
+			baseUrl: BASE_URL,
+			project: PROJECT,
+			tokenFactory,
+			timeoutMs: 500,
+		});
+
+		const headers: string[] = [];
+		server.use(
+			http.get(`${API_BASE}/workitems/1`, ({ request }) => {
+				headers.push(request.headers.get("Authorization") ?? "");
+				return HttpResponse.json({ ...mockWorkItem, id: 1 });
+			})
+		);
+
+		await dynamicClient.fetchWorkItem(1);
+		await dynamicClient.fetchWorkItem(1);
+
+		expect(headers[0]).toBe("Bearer dyn-token-1");
+		expect(headers[1]).toBe("Bearer dyn-token-2");
+		expect(tokenFactory).toHaveBeenCalledTimes(2);
+	});
+
+	it("falls back to Basic auth when only pat is given (backwards compat)", async () => {
+		let capturedAuth = "";
+		server.use(
+			http.get(`${API_BASE}/workitems/1`, ({ request }) => {
+				capturedAuth = request.headers.get("Authorization") ?? "";
+				return HttpResponse.json({ ...mockWorkItem, id: 1 });
+			})
+		);
+		await client.fetchWorkItem(1);
+		expect(capturedAuth).toBe(`Basic ${btoa(":test-pat")}`);
 	});
 });

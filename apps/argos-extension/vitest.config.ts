@@ -1,6 +1,18 @@
+import { resolve } from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+	resolve: {
+		alias: {
+			// azure-devops-extension-api ships as AMD (define/require), which is not
+			// supported in the jsdom test environment. This alias redirects all test
+			// imports to a lightweight stub that exports only what tests need.
+			"azure-devops-extension-api": resolve(
+				__dirname,
+				"src/__mocks__/azure-devops-extension-api.ts"
+			),
+		},
+	},
 	test: {
 		environment: "jsdom",
 		setupFiles: ["./src/test-setup.ts"],
