@@ -36,19 +36,15 @@ const EXCLUDED_DIRS = new Set([
 const MOJIBAKE_PATTERN =
 	/\u00C3[\u0080-\u00BF]|\u00E2\u20AC[\u0080-\u00BF\u00A6\u201C\u201D\u2018\u2019\u02DC\u2122]|\u00F0\u0178[\u0080-\u00BF\u201C\u201D\u2018\u2019]|\u00E2\u0153[\u0080-\u00BF\u2026\u0152]|\u00E2\u02DC|\u00E2\u0160|\u00E2\u0152|\u00E2\u017E[\u0080-\u00BF]/g;
 
-// Allowlist : fichiers où la mention historique de patterns mojibake est légitime
-// (registres de régression, ce script, le test régression encoding).
-const ALLOWED = new Set([
-	"tools/regression/REGISTRY.md",
+const { SHARED_DOC_ALLOWLIST } = require("./allowlist.cjs");
+
+const SCAN_SPECIFIC_ALLOWLIST = new Set([
 	"tools/regression/ENC-2026-05-09-spec-mojibake.test.ts",
 	"tools/regression/scan-mojibake.cjs",
 	"tools/regression/fix-mojibake.cjs",
-	"tools/claude-prompts/CLAUDE_TASK.md",
-	"tools/claude-prompts/CLAUDE_TASK_sprint-1.md",
-	"tools/claude-prompts/CLAUDE_TASK_sprint-1.1.md",
-	"tools/claude-prompts/CLAUDE_TASK_sprint-2.md",
-	"tools/claude-prompts/README.md",
 ]);
+
+const ALLOWED = new Set([...SHARED_DOC_ALLOWLIST, ...SCAN_SPECIFIC_ALLOWLIST]);
 
 function* walk(dir) {
 	let entries;

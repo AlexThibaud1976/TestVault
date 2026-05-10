@@ -22,6 +22,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { SHARED_DOC_ALLOWLIST } from "./allowlist.ts";
 
 const REPO_ROOT = path.resolve(fileURLToPath(import.meta.url), "../../..");
 
@@ -38,14 +39,11 @@ const EXCLUDED_DIRS = new Set([
 	"_archive",
 ]);
 
-// Files allowed to reference gpt-4.1 for documented historical reasons.
-const ALLOWED_FILES = new Set([
-	"CHANGELOG.md",
-	"tools/regression/REGISTRY.md",
+const TEST_SPECIFIC_ALLOWLIST = new Set([
 	"tools/regression/LLM-2026-05-09-gpt41-deprecation.test.ts",
-	"tools/claude-prompts/CLAUDE_TASK_sprint-1.md", // <-- ADD
-	"tools/claude-prompts/CLAUDE_TASK_sprint-1.1.md",
 ]);
+
+const ALLOWED_FILES = new Set([...SHARED_DOC_ALLOWLIST, ...TEST_SPECIFIC_ALLOWLIST]);
 
 const FORBIDDEN_PATTERN = /\bgpt-4\.1(?:-mini|-nano)?\b/g;
 
