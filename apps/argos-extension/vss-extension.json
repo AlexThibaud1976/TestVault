@@ -5,7 +5,7 @@
 	"version": "0.2.0",
 	"name": "Argos",
 	"description": "Xray-class test management for Azure DevOps — native Custom Work Items, AI-assisted, Cloud-only.",
-	"public": true,
+	"public": false,
 	"targets": [{ "id": "Microsoft.VisualStudio.Services.Cloud" }],
 	"categories": ["Azure Boards"],
 	"icons": { "default": "static/marketplace-icon.png" },

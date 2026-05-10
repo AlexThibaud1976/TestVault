@@ -232,3 +232,28 @@ Référence d'exemple : `tools/regression/ENC-2026-05-09-spec-mojibake.test.ts`.
 - `tools/regression/fix-mojibake.cjs` — recovery algorithmique : `node tools/regression/fix-mojibake.cjs <file>` (dry-run) ou `node tools/regression/fix-mojibake.cjs <file> <output>` (apply).
 
 > Update this file (with a PR) when stack, conventions, or hard rules change. Keep spec-kit version numbers cited at the top in sync.
+
+---
+
+## Marketplace publication strategy
+
+L'extension Argos est publiée sur le Marketplace Visual Studio en mode **privé**.
+
+### Configuration
+
+- `apps/argos-extension/vss-extension.json` contient `"public": false` (top-level, syntaxe officielle Microsoft 2026)
+- Distribution accessible uniquement aux organisations Azure DevOps explicitement partagées via le portail Marketplace publisher
+- Organisation cible actuelle : `bcee-qa`
+
+### Workflow de publication (à exécuter manuellement par AT)
+
+1. Build le VSIX : `pnpm --filter argos-extension build` (ou équivalent)
+2. Package : `tfx extension create --manifest-globs vss-extension.json`
+3. Publier : `tfx extension publish --vsix <fichier.vsix> --token <PAT>`
+4. Aller sur <https://marketplace.visualstudio.com/manage/publishers/ATConseil>
+5. Cliquer "Share/Unshare" sur l'extension Argos
+6. Ajouter l'organisation `bcee-qa` dans la liste des partages
+
+### Garde-fou anti-régression
+
+Le test `tools/regression/CFG-2026-05-10-marketplace-private.test.ts` empêche que `"public": false` disparaisse silencieusement. **Pour passer en public** (décision produit explicite) : retirer le champ + retirer/désactiver ce test régression dans la même PR, avec justification dans le commit message.
