@@ -197,4 +197,38 @@ Next phase: **Phase 1** — core WIT CRUD. See `Specs/tasks.md` for T-1.x tasks.
 | Mask API keys (last 4 chars only) in logs/errors | Bypass TDD ("I'll add tests later") |
 | Update docs in the same commit as user-visible changes | Merge with red CI |
 
+---
+## Encoding rules — Avoid Sprint 1 incident regression
+
+Ce repo est strictement UTF-8 (sans BOM préféré, avec BOM toléré sur les fichiers existants).
+
+### Règle absolue
+
+**Ne JAMAIS utiliser `Set-Content` PowerShell sans flag d'encoding explicite.**
+
+Sur PowerShell 5.1 (Windows par défaut), `Set-Content` écrit en cp1252 (Windows-1252), ce qui corrompt les caractères français + emoji par double-encoding. Cette corruption a touché `Specs/spec.md` pendant Sprint 1 et plusieurs fichiers de `tools/regression/` pendant Sprint 1.1 (cf. CHANGELOG `[Unreleased]` Sprint 1.1).
+
+### Outils sûrs pour écrire des fichiers
+
+- **VS Code édition directe** : OK (l'indicateur d'encoding en bas à droite de la statusbar doit afficher `UTF-8`)
+- **Claude Code (`str_replace`, `edit_file`, `write_file`)** : OK (UTF-8 strict, jamais via Set-Content)
+- **Git Bash / WSL** : `cat`, `tee`, `echo` natifs UTF-8
+- **PowerShell 7+ (`pwsh`)** : OK par défaut. Vérifie avec `$PSVersionTable.PSVersion` (Major >= 7)
+- **PowerShell 5.1** : utiliser explicitement
+  - `[IO.File]::WriteAllText($path, $content, [Text.UTF8Encoding]::new($false))` (UTF-8 sans BOM, recommandé)
+  - ou `Out-File -Encoding utf8` (ajoute un BOM mais ne corrompt pas)
+  - **JAMAIS** `Set-Content` ou `Out-File` sans flag
+
+### Convention pour les nouveaux fichiers de `tools/regression/`
+
+**Les fichiers tests/scripts de `tools/regression/` doivent être écrits en source 100% ASCII** : tous les caractères non-ASCII via escapes Unicode (`\u00C3\u00A9` au lieu de `é`). Ça les immunise à la corruption d'encoding qu'ils sont censés détecter.
+
+Référence d'exemple : `tools/regression/ENC-2026-05-09-spec-mojibake.test.ts`.
+
+### Détection automatique
+
+- `tools/regression/ENC-2026-05-09-spec-mojibake.test.ts` — zero-tolerance, exécuté à chaque PR via `pnpm turbo test`. Détecte toute réintroduction de mojibake.
+- `tools/regression/scan-mojibake.cjs` — audit on-demand : `node tools/regression/scan-mojibake.cjs`.
+- `tools/regression/fix-mojibake.cjs` — recovery algorithmique : `node tools/regression/fix-mojibake.cjs <file>` (dry-run) ou `node tools/regression/fix-mojibake.cjs <file> <output>` (apply).
+
 > Update this file (with a PR) when stack, conventions, or hard rules change. Keep spec-kit version numbers cited at the top in sync.
