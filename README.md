@@ -31,7 +31,7 @@ as of v0.3.0 — see CHANGELOG and constitution v0.4.0.
 ```text
 testvault/
 ├── apps/
-│   ├── argos-extension/    # VSIX published on Marketplace (ATConseil/Argos)
+│   ├── argos-extension/    # VSIX published on Marketplace (AlexThibaud/Argos)
 │   ├── argos-functions/    # Azure Functions — Cloud-Plus features (BYOK LLM proxy, webhooks, jobs)
 │   └── docs-site/          # Public documentation site
 ├── packages/

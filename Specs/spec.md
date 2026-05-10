@@ -31,7 +31,7 @@ Conséquence : les équipes ADO sérieuses sur la qualité **migrent vers Jira a
 
 ### Solution
 
-**TestVault** (commercialisé sous le nom **Argos** sur le Visual Studio Marketplace, par le publisher **ATConseil**) est l'extension de test management qui apporte l'expérience de test management professionnel à l'écosystème Azure DevOps Cloud, avec stockage Work Items natif pour la souveraineté des données.
+**TestVault** (commercialisé sous le nom **Argos** sur le Visual Studio Marketplace, par le publisher **AlexThibaud**) est l'extension de test management qui apporte l'expérience de test management professionnel à l'écosystème Azure DevOps Cloud, avec stockage Work Items natif pour la souveraineté des données.
 
 **Promesse de valeur en 4 points :**
 

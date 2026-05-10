@@ -9,6 +9,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.1] — 2026-05-10
+
+### Fixed (Sprint 3.1 — fix/revert-publisher-to-alexthibaud)
+
+- **Revert publisher Marketplace : ATConseil -> AlexThibaud**. Sprint 2 avait change le publisher en pensant que c'etait une "correction", mais la premisse etait fausse :
+  - AlexThibaud est le publisher historique d'Argos (v0.1.1 deja publiee 2 jours avant Sprint 3)
+  - ATConseil est reserve a TestPulse, pas a Argos
+  - Le PAT `MARKETPLACE_PAT` (secret CI) appartient au publisher AlexThibaud
+  - La publication v0.3.0 a echoue avec mismatch error : `Publisher ID 'ATConseil' should match 'AlexThibaud'`
+- **Test regression renomme** : `CFG-2026-05-10-publisher-atconseil.test.ts` -> `CFG-2026-05-10-publisher-alexthibaud.test.ts`. Logique inversee pour locker AlexThibaud. En-tete historique preserve la trace de la decision Sprint 2 et de son revert.
+- **Allowlists ts/cjs** mises a jour pour le nouveau nom.
+- **REGISTRY** : entree retiree pour publisher-atconseil + nouvelle entree active pour publisher-alexthibaud.
+- **Constitution v0.4.0 -> v0.4.1** (correction methodologique tracee).
+- **Spec-kit** (constitution, plan, spec) : toutes les occurrences du publisher Marketplace corrigees en `AlexThibaud`. Les references ATConseil non liees au publisher (marque, Azure Functions, portail) restent inchangees.
+- Bump version 0.3.0 -> 0.3.1 (patch : corrige une publication failed sans changement de feature).
+
+### Backlog (post-Sprint 3.1)
+
+- **TECH-DEBT-010** : si decision portfolio future de migrer Argos vers le publisher ATConseil, projet separe necessitant creation publisher cote Marketplace + verification Microsoft + transfert/republication. Pas urgent.
+
+### Lessons learned (Sprint 3.1)
+
+- **Avant tout changement de publisher Marketplace**, verifier que le publisher cible existe cote Marketplace ET que le PAT CI a les droits. Sprint 2 a manque cette verification.
+- **Test regression "false-premise"** : un test peut locker une mauvaise decision avec autant de rigueur qu'une bonne. Pattern de revert : rename + invert logic + en-tete historique enrichi. Ne pas supprimer le test, sinon perte de la lecon.
+- **Banniere et publisher peuvent diverger** : "by ATConseil" sur la banniere + publisher Marketplace AlexThibaud = pattern legitime quand la marque commerciale et le publisher technique sont distincts.
+
+---
+
 ## [0.3.0] — 2026-05-10
 
 ### Added (Sprint 3 — 2026-05-10 — feat/top-level-hub-v0.3.0)
