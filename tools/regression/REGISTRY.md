@@ -27,6 +27,8 @@ Format : `<TYPE>-<DATE-OU-TASK>-<short-slug>`
 | TECH-2026-05-10-allowlist-sync | 2026-05-10 | Tooling | allowlist-sync | Empêche la divergence entre `tools/regression/allowlist.ts` et `tools/regression/allowlist.cjs` (dual-source-of-truth temporaire pour bridge ts/cjs). Le test cross-check `allowlist.test.ts` échoue si les deux listes ne sont pas identiques. | Refactor TECH-DEBT-001 / tools/regression/allowlist.test.ts | AT |
 | CFG-2026-05-10-marketplace-private | 2026-05-10 | Configuration | marketplace-private | Empêche que `vss-extension.json` soit accidentellement publié en mode public. `"public": false` doit être présent et valoir exactement `false`. Décision 2026-05-10 : Argos est privée, accessible uniquement à l'org `bcee-qa`. | vss-extension.json `public` field | AT |
 
+| WIRING-2026-05-10-foundations | 2026-05-10 | Wiring | foundations-core | Empeche que App.tsx revienne aux placeholders pour Plans/Cases/Sets/Preconditions/Settings-LLM. Smoke tests verifient que les composants riches (TestPlanForm, TestCaseForm, TestSetForm, PreconditionForm, LlmProviderSettings) sont effectivement rendus. | apps/argos-extension/src/hub/wiring/ | AT |
+
 ## Tests retirés
 
 _(à remplir au cas par cas, avec date de retrait et justification)_

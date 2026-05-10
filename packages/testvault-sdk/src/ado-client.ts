@@ -90,7 +90,10 @@ export interface AdoClientConfig {
 	/** e.g. "https://dev.azure.com/myorg" (cloud) or "https://server/collection" (server) */
 	baseUrl: string;
 	project: string;
-	pat: string;
+	/** Static PAT for Basic auth — used when tokenFactory is not provided. */
+	pat?: string;
+	/** Per-request token factory for Bearer auth (ADO extension OAuth tokens). Takes precedence over pat. */
+	tokenFactory?: () => Promise<string>;
 	timeoutMs?: number;
 }
 
@@ -133,19 +136,27 @@ async function parseJsonBody(response: Response): Promise<RawWorkItem> {
 // ─── Factory ──────────────────────────────────────────────────────────────────
 
 export function createAdoClient(config: AdoClientConfig): IAdoClient {
-	const { baseUrl, project, pat, timeoutMs = DEFAULT_TIMEOUT_MS } = config;
+	const { baseUrl, project, pat, tokenFactory, timeoutMs = DEFAULT_TIMEOUT_MS } = config;
 	const baseApiUrl = `${baseUrl}/${encodeURIComponent(project)}/_apis/wit`;
-	const defaultHeaders: Record<string, string> = {
-		Authorization: buildAuthHeader(pat),
-		Accept: "application/json",
-	};
+
+	async function getAuthHeader(): Promise<string> {
+		if (tokenFactory) {
+			return `Bearer ${await tokenFactory()}`;
+		}
+		return buildAuthHeader(pat ?? "");
+	}
 
 	async function doFetch(url: string, init?: RequestInit): Promise<Response> {
 		const signal = AbortSignal.timeout(timeoutMs);
+		const authHeader = await getAuthHeader();
 		return fetch(url, {
 			...init,
 			signal,
-			headers: { ...defaultHeaders, ...(init?.headers as Record<string, string> | undefined) },
+			headers: {
+				Authorization: authHeader,
+				Accept: "application/json",
+				...(init?.headers as Record<string, string> | undefined),
+			},
 		});
 	}
 
