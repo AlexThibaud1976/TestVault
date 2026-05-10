@@ -41,9 +41,10 @@ const EXCLUDED_DIRS = new Set([
 // Files allowed to reference gpt-4.1 for documented historical reasons.
 const ALLOWED_FILES = new Set([
 	"CHANGELOG.md",
-	"Specs/CLAUDE_TASK_sprint-1.md",
 	"tools/regression/REGISTRY.md",
 	"tools/regression/LLM-2026-05-09-gpt41-deprecation.test.ts",
+	"tools/claude-prompts/CLAUDE_TASK_sprint-1.md", // <-- ADD
+	"tools/claude-prompts/CLAUDE_TASK_sprint-1.1.md",
 ]);
 
 const FORBIDDEN_PATTERN = /\bgpt-4\.1(?:-mini|-nano)?\b/g;
