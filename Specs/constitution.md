@@ -1,9 +1,10 @@
 # Constitution — TestVault
 
-> Version 0.3.0 — 10 mai 2026
+> Version 0.4.0 — 10 mai 2026
 > Principes non-négociables pour le projet TestVault par ATConseil
 > Auteur : Alexandre Thibaud — atconseil.info
 
+> **Changelog v0.4.0** : Sprint 3 — hub Argos repositionné au niveau projet ADO (`ms.vss-web.project-hub-group`), terminologie concurrentielle retirée de tous les fichiers publics et du spec-kit. Version packages 0.3.0.
 > **Changelog v0.3.0** : **BREAKING** — périmètre réduit à Cloud uniquement (décision 2026-05-10). Justification : absence d'environnement testable pour respecter §10 TDD. TestVault devient Cloud-only. Publisher Marketplace fixé à `ATConseil` (correction `AlexThibaud`). Tests régression `CFG-2026-05-10-*` ajoutés. Voir CHANGELOG `[0.2.0]` et `tools/regression/CFG-2026-05-10-server2022-out-of-scope.test.ts`.
 > **Changelog v0.2.4** : adoption de Biome (lint + format unifiés) en remplacement de ESLint + Prettier. Justification : performance significativement supérieure sur monorepo, configuration unique, ESM-natif. Le choix est figé pour v1.
 > **Changelog v0.2.3** : correction technique — SDK ADO v5 → v4 (la v5 n'existe pas, le SDK reste sur la branche 4.x) ; Node.js 20 LTS → Node.js 22 LTS (Node 20 EOL avril 2026 ; Azure SDK JS impose Node 22 minimum dès juillet 2026).
@@ -15,7 +16,7 @@
 
 ## Mission
 
-TestVault est l'extension de test management pour Azure DevOps qui apporte aux équipes QA une parité fonctionnelle stricte avec Xray (Jira), sur Azure DevOps Services (Cloud). Elle s'appuie sur le stockage Work Items natif d'ADO pour garantir la souveraineté des données du client, et alimente l'extension de reporting TestPulse via un schéma documenté.
+TestVault est l'extension de test management pour Azure DevOps qui apporte aux équipes QA une parité fonctionnelle stricte avec les meilleurs outils de test management Jira-natifs, sur Azure DevOps Services (Cloud). Elle s'appuie sur le stockage Work Items natif d'ADO pour garantir la souveraineté des données du client, et alimente l'extension de reporting TestPulse via un schéma documenté.
 
 ---
 
@@ -244,7 +245,7 @@ Les opérations suivantes sont **strictement réservées au rôle Admin TestVaul
 | Tier | Cloud |
 |---|---|
 | **Free** | ≤ 5 users actifs, ≤ 500 Test Cases / projet, pas de features Cloud-Plus |
-| **Pro** | ~18 €/user/mois (objectif ~30% sous Xray Cloud) |
+| **Pro** | ~18 €/user/mois (objectif ~30% sous les extensions test management Jira Cloud) |
 | **Enterprise** | Sur devis (SLA, SSO custom, support prioritaire, accompagnement) |
 
 **Justification résumée :** le marché ADO est moins monétisé que Jira sur le test management ; le freemium réduit la friction d'adoption ; le per-user mensuel sur Cloud aligne avec les attentes SaaS modernes ; les features Cloud-Plus (webhooks CI externes, jobs planifiés, agrégations, AI BYOK) justifient le différentiel Free/Pro.
@@ -261,7 +262,7 @@ Les opérations suivantes sont **strictement réservées au rôle Admin TestVaul
 
 ## 8. Versioning des Test Cases — Snapshots taggés
 
-**Modèle retenu : Snapshots taggés** (équivalent fonctionnel des *Test Versions* de Xray).
+**Modèle retenu : Snapshots taggés** (équivalent fonctionnel des versions de test dans les outils Jira-natifs).
 
 - Un Test Case peut être figé à tout moment via un snapshot nommé (ex : `v1.0`, `Sprint-12`, `Release-2025-Q4`).
 - Un snapshot = Custom Work Item de type `TestCaseVersion`, immutable, lié au Test Case parent.
