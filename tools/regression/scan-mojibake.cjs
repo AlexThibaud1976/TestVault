@@ -23,19 +23,11 @@ const EXCLUDED_DIRS = new Set([
 	".turbo", ".pnpm-store", ".next", ".nuxt", "_archive",
 ]);
 
-// Patterns mojibake en codepoints :
-// \u00C3 = Ã   (préfixe latin accentué corrompu)
-// \u00E2 = â   (préfixe punctuation/symbole corrompu)
-// \u20AC = €   (suit â pour — ' " etc.)
-// \u00F0 = ð   (préfixe emoji 4 bytes corrompu)
-// \u0178 = Ÿ   (suit ð pour les emojis)
-// \u0153 = œ   (suit â pour ✅ ❌)
-// \u02DC = ˜   (suit â)
-// \u0160 = Š
-// \u0152 = Œ
-const MOJIBAKE_PATTERN =
-	/\u00C3[\u0080-\u00BF]|\u00E2\u20AC[\u0080-\u00BF\u00A6\u201C\u201D\u2018\u2019\u02DC\u2122]|\u00F0\u0178[\u0080-\u00BF\u201C\u201D\u2018\u2019]|\u00E2\u0153[\u0080-\u00BF\u2026\u0152]|\u00E2\u02DC|\u00E2\u0160|\u00E2\u0152|\u00E2\u017E[\u0080-\u00BF]/g;
-
+// Patterns built from the complete cp1252 -> Unicode mapping table (59 codepoints).
+// See cp1252-mojibake-map.cjs for the full table and rationale.
+const { buildMojibakePatterns } = require("./cp1252-mojibake-map.cjs");
+const PATTERNS = buildMojibakePatterns();
+const MOJIBAKE_PATTERN = new RegExp(PATTERNS.map((p) => p.source).join("|"), "g");
 const { SHARED_DOC_ALLOWLIST } = require("./allowlist.cjs");
 
 const SCAN_SPECIFIC_ALLOWLIST = new Set([

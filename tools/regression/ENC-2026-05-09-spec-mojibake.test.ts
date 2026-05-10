@@ -28,6 +28,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { SHARED_DOC_ALLOWLIST } from "./allowlist.ts";
+import { buildMojibakePatterns } from "./cp1252-mojibake-map.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -69,25 +70,10 @@ const TEST_SPECIFIC_ALLOWLIST = new Set([
 
 const ALLOWED_FILES = new Set([...SHARED_DOC_ALLOWLIST, ...TEST_SPECIFIC_ALLOWLIST]);
 
-// Mojibake patterns expressed as Unicode escapes (\uXXXX).
-// Each pattern catches a class of double-encoded characters:
-//
-//   \u00C3 = "A-tilde"    : prefix for accented Latin chars
-//   \u00E2 = "a-circ"     : prefix for punctuation
-//   \u00F0 = "eth"        : prefix for emoji 4-byte sequences
-//   \u20AC = "euro"       : second byte after \u00E2
-//   \u0178 = "Y-diaeresis": second byte after \u00F0
-//   \u0153 = "oe-ligature": second byte after \u00E2 for emojis like checkmark
-const MOJIBAKE_PATTERNS: RegExp[] = [
-	// Accented Latin (e-acute, e-grave, a-grave, e-circ, a-circ, etc.)
-	/\u00C3[\u0080-\u00BF]/,
-	// Punctuation (em-dash, en-dash, smart quotes, ellipsis, bullet)
-	/\u00E2\u20AC[\u0080-\u00BF\u00A6\u201C\u201D\u2018\u2019\u02DC\u2122]/,
-	// Emoji 4-byte sequences
-	/\u00F0\u0178[\u0080-\u00BF\u201C\u201D\u2018\u2019]/,
-	// Checkmark / X-mark emojis
-	/\u00E2\u0153[\u0080-\u00BF\u2026\u0152]/,
-];
+// Mojibake patterns built from the complete cp1252 -> Unicode mapping table.
+// Covers all 59 codepoints that can appear at any continuation-byte position
+// in a double-encoded UTF-8 sequence. See cp1252-mojibake-map.ts for details.
+const MOJIBAKE_PATTERNS: RegExp[] = buildMojibakePatterns();
 
 interface MojibakeMatch {
 	file: string;
@@ -184,6 +170,31 @@ describe("ENC-2026-05-09-spec-mojibake regression", () => {
 		const mojibakeCheckmark = "\u00E2\u0153\u2026 valide";
 		expect(MOJIBAKE_PATTERNS.some((p) => p.test(mojibakeCheckmark))).toBe(true);
 
+		// Mojibake for trademark sign (originally U+2122, UTF-8 bytes E2 84 A2):
+		//   0xE2 -> \u00E2, 0x84 -> \u201E (cp1252), 0xA2 -> \u00A2 (Latin-1)
+		const mojibakeTrademark = "Product\u00E2\u201E\u00A2";
+		expect(MOJIBAKE_PATTERNS.some((p) => p.test(mojibakeTrademark))).toBe(true);
+
+		// Mojibake for euro sign (originally U+20AC, UTF-8 bytes E2 82 AC):
+		//   0xE2 -> \u00E2, 0x82 -> \u201A (cp1252), 0xAC -> \u00AC (Latin-1)
+		const mojibakeEuro = "Price 10\u00E2\u201A\u00AC";
+		expect(MOJIBAKE_PATTERNS.some((p) => p.test(mojibakeEuro))).toBe(true);
+
+		// Mojibake for en-dash (originally U+2013, UTF-8 bytes E2 80 93):
+		//   0xE2 -> \u00E2, 0x80 -> \u20AC (cp1252), 0x93 -> \u201C (cp1252)
+		const mojibakeEnDash = "Range 1\u00E2\u20AC\u201C10";
+		expect(MOJIBAKE_PATTERNS.some((p) => p.test(mojibakeEnDash))).toBe(true);
+
+		// Mojibake for dagger (originally U+2020, UTF-8 bytes E2 80 A0):
+		//   0xE2 -> \u00E2, 0x80 -> \u20AC (cp1252), 0xA0 -> \u00A0 (Latin-1 NBSP)
+		const mojibakeDagger = "Note\u00E2\u20AC\u00A0 see below";
+		expect(MOJIBAKE_PATTERNS.some((p) => p.test(mojibakeDagger))).toBe(true);
+
+		// Mojibake for grinning face emoji (originally U+1F600, UTF-8 bytes F0 9F 98 80):
+		//   0xF0 -> \u00F0, 0x9F -> \u0178 (cp1252), 0x98 -> \u02DC (cp1252), 0x80 -> \u20AC (cp1252)
+		const mojibakeGrin = "Launch\u00F0\u0178\u02DC\u20AC";
+		expect(MOJIBAKE_PATTERNS.some((p) => p.test(mojibakeGrin))).toBe(true);
+
 		// Sanity inverse: clean text (with \uXXXX escapes) must NOT match any mojibake pattern.
 		// "Specification detaillee" with proper accents: \u00E9 = e-acute, no mojibake.
 		const cleanFrenchAccents = "Sp\u00E9cification d\u00E9taill\u00E9e";
@@ -196,5 +207,10 @@ describe("ENC-2026-05-09-spec-mojibake regression", () => {
 		// Clean em-dash (U+2014), no mojibake.
 		const cleanEmDash = "Description \u2014 auteur";
 		expect(MOJIBAKE_PATTERNS.some((p) => p.test(cleanEmDash))).toBe(false);
+
+		// Inverse for new cases: clean trademark, euro, rocket must NOT match.
+		expect(MOJIBAKE_PATTERNS.some((p) => p.test("Product\u2122"))).toBe(false);
+		expect(MOJIBAKE_PATTERNS.some((p) => p.test("Price 10\u20AC"))).toBe(false);
+		expect(MOJIBAKE_PATTERNS.some((p) => p.test("\uD83D\uDE00 grinning face"))).toBe(false);
 	});
 });
