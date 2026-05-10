@@ -2,13 +2,13 @@
 
 > This file is automatically read by Claude Code at the start of every session in this repo. It is **not** a substitute for the spec-kit files in `Specs/` — those remain the source of truth. This file is a fast-access summary.
 >
-> Last updated: 2026-05-08 — Phase 0 complete. Aligned with constitution v0.2.4, spec v0.1.0, plan v0.1.0, tasks v0.1.0.
+> Last updated: 2026-05-10 — Sprint 3 complete. Aligned with constitution v0.4.0, spec v0.1.0, plan v0.1.0, tasks v0.1.0.
 
 ---
 
 ## What this project is
 
-**TestVault** (commercial name on Visual Studio Marketplace: **Argos**, publisher: **ATConseil**) is a test management extension for Azure DevOps Services (Cloud). It targets feature parity with Xray (Jira) on ADO Cloud. It uses native Custom Work Items for storage to guarantee customer data sovereignty, and feeds the standalone TestPulse extension via a documented WIT schema contract.
+**TestVault** (commercial name on Visual Studio Marketplace: **Argos**, publisher: **ATConseil**) is a test management extension for Azure DevOps Services (Cloud). It targets industrial-grade test management capabilities on ADO Cloud, at parity with leading Jira-native test management tools. It uses native Custom Work Items for storage to guarantee customer data sovereignty, and feeds the standalone TestPulse extension via a documented WIT schema contract.
 
 - **Project name (technical)**: `TestVault`
 - **Marketplace name**: `Argos`
@@ -170,6 +170,8 @@ pnpm --filter @atconseil/testvault-types test        # Test a single package
 | T-0.5 | ✅ | `testvault-sdk`: `detectEnvironment()` — ADO Cloud vs Server detection via `isHosted` |
 | T-0.6 | ✅ | Marketplace publish workflow: `workflow_dispatch` + semver tag trigger, `MARKETPLACE_PAT` secret |
 | T-0.7 | ✅ | This file |
+| T-0.8 | ✅ | ADO-compliant manifest, hub group & coverage-panel widget |
+| T-0.9 | ✅ | Argos hub repositionné `ms.vss-web.project-hub-group`, banner Marketplace, branding cleanup, v0.3.0 |
 
 Next phase: **Phase 1** — core WIT CRUD. See `Specs/tasks.md` for T-1.x tasks.
 

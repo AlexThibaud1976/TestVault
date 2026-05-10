@@ -28,6 +28,9 @@ Format : `<TYPE>-<DATE-OU-TASK>-<short-slug>`
 | CFG-2026-05-10-marketplace-private | 2026-05-10 | Configuration | marketplace-private | Empêche que `vss-extension.json` soit accidentellement publié en mode public. `"public": false` doit être présent et valoir exactement `false`. Décision 2026-05-10 : Argos est privée, accessible uniquement à l'org `bcee-qa`. | vss-extension.json `public` field | AT |
 
 | WIRING-2026-05-10-foundations | 2026-05-10 | Wiring | foundations-core | Empeche que App.tsx revienne aux placeholders pour Plans/Cases/Sets/Preconditions/Settings-LLM. Smoke tests verifient que les composants riches (TestPlanForm, TestCaseForm, TestSetForm, PreconditionForm, LlmProviderSettings) sont effectivement rendus. | apps/argos-extension/src/hub/wiring/ | AT |
+| T-0.9-argos-top-level-placement | 2026-05-10 | T-task | top-level-placement | Empeche une regression sur le placement du hub Argos : la contribution `argos-hub` doit exister, cibler `ms.vss-web.project-hub-group`, et ne PAS cibler `ms.vss-work-web.work-hub-group`. Regression introduite en [0.1.1] (hub mal place sous Boards au lieu du niveau projet). | vss-extension.json / Sprint 3 decision 2026-05-10 | AT |
+| CFG-2026-05-10-top-level-hub | 2026-05-10 | CFG-config | top-level-hub | Verifie que (1) aucune contribution ne cible `ms.vss-work-web.work-hub-group`, (2) la version >= 0.3.0, (3) les categories incluent `Azure Boards` et `Azure Test Plans`. | vss-extension.json / Sprint 3 v0.3.0 | AT |
+| CFG-2026-05-10-no-xray-references | 2026-05-10 | CFG-branding | no-xray-references | Empeche la reintroduction de references a la marque Xray dans les fichiers publics et le spec-kit. Decision 2026-05-10 : la terminologie "Xray-class" est remplacee par "industrial-grade test management". | Sprint 3 branding cleanup | AT |
 
 ## Tests retirés
 

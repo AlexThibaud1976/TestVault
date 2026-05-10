@@ -23,6 +23,10 @@ const SHARED_DOC_ALLOWLIST = new Set([
 	"tools/regression/cp1252-mojibake-map.cjs",
 	"tools/regression/cp1252-mojibake-map.test.ts",
 	"tools/claude-prompts/CLAUDE_TASK_tech-debt-005.md",
+	"tools/claude-prompts/CLAUDE_TASK_sprint-3.md",
+	"tools/regression/T-0.9-argos-top-level-placement.test.ts",
+	"tools/regression/CFG-2026-05-10-top-level-hub.test.ts",
+	"tools/regression/CFG-2026-05-10-no-xray-references.test.ts",
 ]);
 
 module.exports = { SHARED_DOC_ALLOWLIST };

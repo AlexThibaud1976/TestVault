@@ -1,7 +1,7 @@
 {
 	"name": "@atconseil/testvault-e2e",
 	"private": true,
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"type": "module",
 	"description": "Playwright E2E suite against real ADO instances",
 	"scripts": {

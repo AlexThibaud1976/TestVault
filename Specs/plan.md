@@ -110,9 +110,9 @@ testvault/                                  # racine du repo, monorepo
   "publisher": "ATConseil",
   "name": "Argos",
   "version": "1.0.0",
-  "description": "Test management for Azure DevOps. The Xray-class experience, native to ADO Cloud.",
+  "description": "Industrial-grade test management for Azure DevOps, native to ADO Cloud.",
   "categories": ["Azure Boards"],
-  "tags": ["test", "qa", "test management", "xray", "testing", "BDD", "cucumber"],
+  "tags": ["test", "qa", "test management", "testing", "BDD", "cucumber"],
   "targets": [
     { "id": "Microsoft.VisualStudio.Services.Cloud" }
   ],

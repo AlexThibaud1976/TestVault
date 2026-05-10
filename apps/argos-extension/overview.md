@@ -1,6 +1,6 @@
 # Argos — Test Management for Azure DevOps
 
-The Xray experience, native to ADO. Cases, Plans, Coverage, AI BYOK.
+Industrial-grade test management, native to ADO. Cases, Plans, Coverage, AI BYOK.
 
 ## Features
 

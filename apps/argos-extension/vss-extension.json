@@ -2,12 +2,12 @@
 	"manifestVersion": 1,
 	"id": "argos-testvault",
 	"publisher": "ATConseil",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"name": "Argos",
-	"description": "Xray-class test management for Azure DevOps — native Custom Work Items, AI-assisted, Cloud-only.",
+	"description": "Industrial-grade test management for Azure DevOps — native Custom Work Items, AI-assisted, Cloud-only.",
 	"public": false,
 	"targets": [{ "id": "Microsoft.VisualStudio.Services.Cloud" }],
-	"categories": ["Azure Boards"],
+	"categories": ["Azure Boards", "Azure Test Plans"],
 	"icons": { "default": "static/marketplace-icon.png" },
 	"scopes": [
 		"vso.work_full",
@@ -21,7 +21,7 @@
 			"id": "argos-hub",
 			"type": "ms.vss-web.hub",
 			"description": "Argos Test Management Hub",
-			"targets": ["ms.vss-work-web.work-hub-group"],
+			"targets": ["ms.vss-web.project-hub-group"],
 			"properties": {
 				"name": "Argos",
 				"order": 80,
@@ -42,7 +42,8 @@
 		}
 	],
 	"content": {
-		"details": { "path": "overview.md" }
+		"details": { "path": "overview.md" },
+		"screenshots": [{ "path": "static/marketplace-banner.png" }]
 	},
 	"files": [{ "path": "dist", "addressable": true }, { "path": "static", "addressable": true }]
 }
