@@ -27,19 +27,18 @@
 
 Les équipes QA sur Azure DevOps disposent aujourd'hui de **Microsoft Test Plans natifs** (rudimentaire pour la gestion sérieuse) ou doivent recourir à **Azure Test Plans** (licence dédiée, ~52 €/user/mois, fonctionnellement limité face à Xray sur Jira). Aucune extension du Marketplace ne couvre aujourd'hui le périmètre complet de Xray (référentiel, exécution, traçabilité, BDD, versioning, intégration CI/CD, reporting) avec une vraie expérience moderne.
 
-Conséquence : les équipes ADO sérieuses sur la qualité **migrent vers Jira+Xray** (perte d'intégration native ADO + Repos + Pipelines) ou bricolent avec des Excel partagés et des outils tiers non intégrés. Les organisations ayant choisi ADO Server pour des raisons de souveraineté sont d'autant plus pénalisées car peu d'outils QA modernes supportent l'on-premises.
+Conséquence : les équipes ADO sérieuses sur la qualité **migrent vers Jira+Xray** (perte d'intégration native ADO + Repos + Pipelines) ou bricolent avec des Excel partagés et des outils tiers non intégrés.
 
 ### Solution
 
-**TestVault** (commercialisé sous le nom **Argos** sur le Visual Studio Marketplace, par le publisher **ATConseil**) est l'extension de test management qui apporte l'expérience Xray à l'écosystème Azure DevOps, avec parité fonctionnelle stricte Cloud / Server 2022 et stockage Work Items natif pour la souveraineté des données.
+**TestVault** (commercialisé sous le nom **Argos** sur le Visual Studio Marketplace, par le publisher **ATConseil**) est l'extension de test management qui apporte l'expérience Xray à l'écosystème Azure DevOps Cloud, avec stockage Work Items natif pour la souveraineté des données.
 
-**Promesse de valeur en 5 points :**
+**Promesse de valeur en 4 points :**
 
 1. **Référence ouverte** : Custom Work Items lisibles même sans l'extension installée.
-2. **Parité Cloud/Server** : aucune fonctionnalité cœur n'est exclusive à un environnement.
-3. **Pricing -30% vs Xray Cloud** + Free tier sans CB pour évaluation sérieuse.
-4. **AI BYOK** : les features AI utilisent les clés LLM du client, jamais les nôtres.
-5. **Reporting riche** via TestPulse co-installable, déjà éprouvé sur le marché.
+2. **Pricing -30% vs Xray Cloud** + Free tier sans CB pour évaluation sérieuse.
+3. **AI BYOK** : les features AI utilisent les clés LLM du client, jamais les nôtres.
+4. **Reporting riche** via TestPulse co-installable, déjà éprouvé sur le marché.
 
 ### Périmètre
 
@@ -66,7 +65,7 @@ Conséquence : les équipes ADO sérieuses sur la qualité **migrent vers Jira+X
 - Performance / load testing (Microsoft Azure Load Testing reste l'option)
 - Test mobile cross-device (App Center, BrowserStack restent les options)
 - Custom dashboards Argos (déléguer à TestPulse)
-- ADO Server 2020 (fin de mainstream, hors scope par décision constitution §1)
+- Versions ADO hors Cloud (hors scope depuis v0.2.0 — Cloud-only, cf. constitution v0.3.0 §1)
 
 ---
 
@@ -76,9 +75,9 @@ Conséquence : les équipes ADO sérieuses sur la qualité **migrent vers Jira+X
 
 | | |
 |---|---|
-| **Profil** | 38 ans, 12 ans d'XP en QA dont 5 en management. Travaille pour une banque européenne avec ADO Server 2022 on-prem (souveraineté réglementaire). Manage une équipe de 8 testeurs (2 SDET, 6 manuels). Fluent en SQL, à l'aise avec WIQL, allergique au code TypeScript. |
+| **Profil** | 38 ans, 12 ans d'XP en QA dont 5 en management. Travaille pour une banque européenne sur ADO Cloud (région UE). Manage une équipe de 8 testeurs (2 SDET, 6 manuels). Fluent en SQL, à l'aise avec WIQL, allergique au code TypeScript. |
 | **Besoin principal** | Avoir une vue consolidée et fiable de l'état de couverture qualité de chaque release, pouvoir réorganiser rapidement les Test Plans selon les sprints. |
-| **Frustration** | Microsoft Test Plans natifs sont visuellement datés et limités sur la traçabilité. Les Excel partagés deviennent ingérables au-delà de 200 Test Cases. La banque a refusé Xray Cloud (données hors UE), Xray DC est cher et non intégré ADO. |
+| **Frustration** | Microsoft Test Plans natifs sont visuellement datés et limités sur la traçabilité. Les Excel partagés deviennent ingérables au-delà de 200 Test Cases. Xray Cloud est cher et hors écosystème ADO. |
 | **Objectif** | Maintenir une matrice de couverture vivante des exigences réglementaires, exporter des rapports de release-readiness pour le COMEX, garantir la traçabilité auditable. |
 | **Fréquence d'usage** | Quotidienne (3-5h/jour pendant les phases de release) |
 | **Rôle TestVault** | Admin TestVault (Project Administrator dans ADO) |
@@ -931,9 +930,9 @@ interface UserPreferences {
 
 | Critère | **TestVault (Argos)** | **Xray (Jira)** | **Microsoft Test Plans natifs** | **Azure Test Plans (premium)** |
 |---|---|---|---|---|
-| Plateforme | ADO Cloud + Server 2022 | Jira Cloud + DC | ADO Cloud + Server (rudimentaire) | ADO Cloud uniquement |
+| Plateforme | ADO Cloud | Jira Cloud + DC | ADO Cloud + Server (rudimentaire) | ADO Cloud uniquement |
 | Stockage des données | Work Items natifs ADO (souverain) | Custom Jira issues | Test Plans natifs ADO | Test Plans natifs ADO |
-| Souveraineté Server on-prem | ✅ | ✅ Xray DC (~très cher) | ✅ | ❌ |
+| Souveraineté données | ✅ Work Items ADO | ✅ Xray DC (~très cher) | ✅ | ❌ |
 | Référentiel TC / Plans / Sets | ✅ Complet | ✅ Référence | ⚠️ Limité (pas de Sets) | ✅ |
 | Versioning par snapshots | ✅ Snapshots taggés | ✅ Test Versions | ❌ | ❌ |
 | BDD / Gherkin natif + sync repo | ✅ | ✅ | ❌ | ❌ |
@@ -944,16 +943,15 @@ interface UserPreferences {
 | AI flakiness detection | ✅ BYOK | ❌ | ❌ | ❌ |
 | Reporting riche | ✅ via TestPulse | ✅ Dashboards Xray | ⚠️ Basique | ⚠️ Basique |
 | Pricing Cloud (1 user) | ~18 €/mois Pro + Free tier | ~25-30 $/mois Cloud | inclus ADO Basic | ~52 €/mois |
-| Pricing Server (1 user, perpétuel) | ~250 € + 20%/an | Xray DC ~très cher | inclus ADO Server | n/a |
+| Pricing Server (1 user, perpétuel) | n/a (Cloud-only) | Xray DC ~très cher | inclus ADO Server | n/a |
 | Free tier | ✅ 5 users / 500 TC | ❌ | ✅ inclus ADO | ❌ |
 
 **Différenciateurs majeurs de TestVault (Argos) :**
 
-1. **Le seul** qui couvre Cloud ET Server 2022 avec un VSIX unique, parité fonctionnelle stricte sur le cœur.
-2. **Le seul** ADO-native avec versioning par snapshots et BDD/Gherkin natif synchronisé.
-3. **Le seul** avec AI BYOK sur ADO (souveraineté des clés, pas de coût LLM mutualisé).
-4. **Pricing Cloud -30% vs Xray** + Free tier sans CB pour évaluation sérieuse.
-5. **Reporting via TestPulse** déjà publié et éprouvé sur le marché ADO.
+1. **Le seul** ADO-native Cloud avec versioning par snapshots et BDD/Gherkin natif synchronisé.
+2. **Le seul** avec AI BYOK sur ADO (souveraineté des clés, pas de coût LLM mutualisé).
+3. **Pricing Cloud -30% vs Xray** + Free tier sans CB pour évaluation sérieuse.
+4. **Reporting via TestPulse** déjà publié et éprouvé sur le marché ADO.
 
 ---
 

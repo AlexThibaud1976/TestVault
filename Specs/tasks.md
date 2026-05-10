@@ -1,10 +1,14 @@
 # Tasks — TestVault (Argos) v1.0
 
-> Version 0.1.0 — 8 mai 2026
+> Version 0.1.1 — 10 mai 2026 (resync Sprint 2)
 > Découpage actionnable des phases d'implémentation
 > Auteur : Alexandre Thibaud — atconseil.info
-> Réfs : `constitution.md` v0.2.3, `spec.md` v0.1.0, `plan.md` v0.1.0
+> Réfs : `constitution.md` v0.3.0, `spec.md` v0.1.0, `plan.md` v0.1.0
 > Contexte : développement solo en duo avec Claude Code
+
+> **Resync 2026-05-10 (Sprint 2)** : Cette liste a été déchekée pour refléter l'état réel du
+> projet, qui est en Phase 0 (bootstrap + tooling). Les composants UI riches existent en code
+> mais ne sont pas intégrés dans `App.tsx` (Phase 0.5). Décision Cloud-only effective (v0.2.0).
 
 ---
 
@@ -34,7 +38,7 @@ Ce document liste les tâches d'implémentation par phase. Chaque tâche est **a
 ## Phase 0 — Scaffolding & infrastructure de base
 
 > **Objectif :** disposer d'un monorepo opérationnel, d'une CI verte, d'une extension Argos minimale publiée en preview privée sur le Marketplace.
-> **Done quand :** `pnpm install && pnpm turbo build && pnpm test` passe vert, et un VSIX est installé sur l'org de test ADO Cloud + l'instance ADO Server 2022.
+> **Done quand :** `pnpm install && pnpm turbo build && pnpm test` passe vert, et un VSIX est installé sur l'org de test ADO Cloud.
 
 ### T-0.1 — Initialiser le monorepo 🔴
 
@@ -84,7 +88,7 @@ Ce document liste les tâches d'implémentation par phase. Chaque tâche est **a
 
 📚 `plan.md` §2.1
 
-- [x] Créer `apps/argos-extension/` avec `vss-extension.json` configuré : publisher=`ATConseil`, name=`Argos`, targets Cloud + Server `[18.0,)`
+- [x] Créer `apps/argos-extension/` avec `vss-extension.json` configuré : publisher=`ATConseil`, name=`Argos`, target Cloud (`Microsoft.VisualStudio.Services.Cloud`)
 - [x] Implémenter un Hub minimal qui dit juste "Argos — Coming soon" avec layout Fluent UI 2
 - [x] Configurer webpack/vite pour le bundle
 - [x] Tester l'init du SDK : `SDK.init()` puis `SDK.notifyLoadSucceeded()`
@@ -93,7 +97,7 @@ Ce document liste les tâches d'implémentation par phase. Chaque tâche est **a
 **Done quand :**
 - [x] Le VSIX est généré sans erreur
 - [x] Le Hub s'affiche correctement dans une org de test ADO Cloud (installation manuelle preview privée)
-- [x] Le Hub s'affiche aussi dans une instance ADO Server 2022 self-hosted (validation manuelle)
+- [x] Le Hub s'affiche correctement sur instance ADO Cloud (validation manuelle)
 
 ### T-0.5 — Détection runtime Cloud vs Server 🟡
 
@@ -137,7 +141,7 @@ Ce document liste les tâches d'implémentation par phase. Chaque tâche est **a
 📚 `plan.md` �2.1 � alignement du manifest `vss-extension.json` avec l'architecture cible
 
 - [x] `scopes` → `[�vso.work_full�, �vso.profile�, �vso.code�, �vso.extension.data_write�, �vso.identity�]`
-- [x] `targets` → ajouter `{ �id�: �Microsoft.TeamFoundation.Server�, �version�: �[18.0,)� }` (ADO Server 2022)
+- [x] `targets` → `[{ "id": "Microsoft.VisualStudio.Services.Cloud" }]` (Cloud-only, v0.2.0)
 - [x] Hub contribution target → `ms.vss-work-web.work-hub-group` (Boards tab, pas Project hub group)
 - [x] Coverage panel `uri` → `dist/widgets/coverage-panel/index.html`
 - [x] `files` → `{ �path�: �dist�, �addressable�: true }` (packager dist compl�te, y compris widgets/)
@@ -155,132 +159,146 @@ Ce document liste les tâches d'implémentation par phase. Chaque tâche est **a
 
 ---
 
+## Phase 0.5 — Dette d'intégration (Sprint 2.5 ?)
+
+Conséquence de l'audit 2026-05-09 : les composants UI riches existent (40+ fichiers
+React + .test.tsx) mais ne sont pas wirés dans . La Phase 0.5 corrige
+ça avant de poursuivre les développements neufs de Phase 1.
+
+- [ ] T-0.5.1 — Inventaire des composants riches non-wirés
+- [ ] T-0.5.2 —  : remplacer les stubs par les composants riches existants (Plans, Cases, Sets, Preconditions, Reports, AI-Config, Audit log, Settings)
+- [ ] T-0.5.3 — Tests de wiring (composant rendu réellement vs stub)
+- [ ] T-0.5.4 — Vérifier accessibility (aria-* sur la sidebar, focus management)
+- [ ] T-0.5.5 — Mettre à jour  avec screenshots du hub réel
+
+---
+
 ## Phase 1 — Custom WIT et CRUD référentiel
 
 > **Objectif :** créer le Custom Process Inheritance, installer les Custom WIT, et permettre le CRUD complet de `TestCase`, `TestPlan`, `TestSet`, `Precondition` via l'UI Argos.
-> **Done quand :** un User TestVault peut créer, lister, modifier, supprimer ces 4 types de WI dans l'UI Argos, sur Cloud ET Server 2022.
+> **Done quand :** un User TestVault peut créer, lister, modifier, supprimer ces 4 types de WI dans l'UI Argos sur Cloud.
 
 ### T-1.1 — Schéma WIT formalisé en code 🔴
 
 📚 `plan.md` §3.2, §3.3, §3.5
 
-- [x] Créer `packages/testvault-wit-schema/` avec les définitions JSON de chaque Custom WIT
-- [x] Inclure les champs (référence, type, contraintes), états et transitions, picklists
-- [x] Générer un fichier `schema.json` exhaustif consommable par le wizard d'installation
-- [x] Tests : validation que le schéma respecte le format attendu par l'API Process ADO
+- [ ] Créer `packages/testvault-wit-schema/` avec les définitions JSON de chaque Custom WIT
+- [ ] Inclure les champs (référence, type, contraintes), états et transitions, picklists
+- [ ] Générer un fichier `schema.json` exhaustif consommable par le wizard d'installation
+- [ ] Tests : validation que le schéma respecte le format attendu par l'API Process ADO
 
 **Done quand :**
-- [x] Tous les 7 Custom WIT sont définis
-- [x] Le `schema.json` est exporté
-- [x] Tests unitaires couvrent la validité du schéma
+- [ ] Tous les 7 Custom WIT sont définis
+- [ ] Le `schema.json` est exporté
+- [ ] Tests unitaires couvrent la validité du schéma
 
 ### T-1.2 — Adapter ADO (`IAdoClient`) — opérations CRUD WI 🔴
 
 📚 `plan.md` §2.3
 
-- [x] Créer `packages/testvault-sdk/src/ado-client.ts` avec interface `IAdoClient`
-- [x] Implémenter `fetchWorkItem(id)`, `createWorkItem(type, fields)`, `updateWorkItem(id, fields)`, `deleteWorkItem(id)`
-- [x] Gestion des erreurs ADO standardisée (401, 403, 404, 429, 500) avec mapping vers exceptions typées
-- [x] Tests d'intégration via msw : tous les codes d'erreur, payload malformé, timeout
+- [ ] Créer `packages/testvault-sdk/src/ado-client.ts` avec interface `IAdoClient`
+- [ ] Implémenter `fetchWorkItem(id)`, `createWorkItem(type, fields)`, `updateWorkItem(id, fields)`, `deleteWorkItem(id)`
+- [ ] Gestion des erreurs ADO standardisée (401, 403, 404, 429, 500) avec mapping vers exceptions typées
+- [ ] Tests d'intégration via msw : tous les codes d'erreur, payload malformé, timeout
 
 **Done quand :**
-- [x] Toutes les opérations CRUD passent les tests msw
-- [x] Couverture ≥ 90%
+- [ ] Toutes les opérations CRUD passent les tests msw
+- [ ] Couverture ≥ 90%
 
 ### T-1.3 — Wizard d'installation du Custom Process 🔴
 
 📚 `spec.md` US-6.1, `plan.md` §3.1
 
-- [x] UI du wizard : étapes de détection permissions, choix process, preview, exécution, vérification
-- [x] Implémentation des appels API Process ADO pour créer/modifier le process
-- [x] Détection idempotente : un process avec schema TestVault existant n'est pas re-créé
-- [x] Gestion des erreurs (permissions insuffisantes, conflit de nom, etc.)
-- [x] Tests E2E sur instance Cloud et Server
+- [ ] UI du wizard : étapes de détection permissions, choix process, preview, exécution, vérification
+- [ ] Implémentation des appels API Process ADO pour créer/modifier le process
+- [ ] Détection idempotente : un process avec schema TestVault existant n'est pas re-créé
+- [ ] Gestion des erreurs (permissions insuffisantes, conflit de nom, etc.)
+- [ ] Tests E2E sur instance Cloud
 
 **Done quand :**
-- [x] L'installation depuis zéro fonctionne sur Cloud
-- [x] L'installation depuis zéro fonctionne sur Server 2022
-- [x] La réinstallation détecte le schéma existant et propose la bonne action
-- [x] L'utilisateur sans droits voit un message clair sans tentative d'opération qui échouerait
+- [ ] L'installation depuis zéro fonctionne sur Cloud
+- [ ] L'installation depuis zéro fonctionne sur Cloud
+- [ ] La réinstallation détecte le schéma existant et propose la bonne action
+- [ ] L'utilisateur sans droits voit un message clair sans tentative d'opération qui échouerait
 
 ### T-1.4 — CRUD Test Case (UI + service) 🟡
 
 📚 `spec.md` US-1.1, `plan.md` §3.3
 
-- [x] Service `TestCaseService` avec : `create`, `read`, `update`, `delete`, `list`
-- [x] UI : formulaire de création/édition (Fluent UI 2)
-- [x] Editeur de Steps avec drag & drop, markdown
-- [x] Validation côté UI : Title obligatoire, Steps array, etc.
-- [x] Tests unitaires (service) et tests E2E (UI complète)
+- [ ] Service `TestCaseService` avec : `create`, `read`, `update`, `delete`, `list`
+- [ ] UI : formulaire de création/édition (Fluent UI 2)
+- [ ] Editeur de Steps avec drag & drop, markdown
+- [ ] Validation côté UI : Title obligatoire, Steps array, etc.
+- [ ] Tests unitaires (service) et tests E2E (UI complète)
 
 **Done quand :**
-- [x] Création d'un TC complet sauvegarde correctement dans ADO
-- [x] Édition d'un TC existant fonctionne, History ADO préservé
-- [x] Suppression demande confirmation
-- [x] Couverture service ≥ 90%
+- [ ] Création d'un TC complet sauvegarde correctement dans ADO
+- [ ] Édition d'un TC existant fonctionne, History ADO préservé
+- [ ] Suppression demande confirmation
+- [ ] Couverture service ≥ 90%
 
 ### T-1.5 — CRUD Test Set 🟡
 
 📚 `spec.md` US-1.2
 
-- [x] Service `TestSetService` (composition statique + composition dynamique via WIQL sauvegardée)
-- [x] UI : ajout par sélection multiple, drag-and-drop, query WIQL
-- [x] Lien `contains` Test Set ↔ Test Case (n-n)
-- [x] Tests
+- [ ] Service `TestSetService` (composition statique + composition dynamique via WIQL sauvegardée)
+- [ ] UI : ajout par sélection multiple, drag-and-drop, query WIQL
+- [ ] Lien `contains` Test Set ↔ Test Case (n-n)
+- [ ] Tests
 
 **Done quand :**
-- [x] Composition statique fonctionne
-- [x] Composition dynamique via WIQL fonctionne
-- [x] La suppression d'un Set ne supprime pas les TC contenus
+- [ ] Composition statique fonctionne
+- [ ] Composition dynamique via WIQL fonctionne
+- [ ] La suppression d'un Set ne supprime pas les TC contenus
 
 ### T-1.6 — CRUD Test Plan 🟡
 
 📚 `spec.md` US-1.3
 
-- [x] Service `TestPlanService`
-- [x] UI : formulaire avec Test Sets + TC supplémentaires + Environments
-- [x] État `Draft` initial, transition vers `Locked` (cf. T-3.x pour le snapshot auto au lock)
-- [x] Tests
+- [ ] Service `TestPlanService`
+- [ ] UI : formulaire avec Test Sets + TC supplémentaires + Environments
+- [ ] État `Draft` initial, transition vers `Locked` (cf. T-3.x pour le snapshot auto au lock)
+- [ ] Tests
 
 **Done quand :**
-- [x] Création de plan avec mix Test Sets + TC fonctionne
-- [x] L'état `Locked` est implémenté (snapshot auto déférré à la phase 3)
+- [ ] Création de plan avec mix Test Sets + TC fonctionne
+- [ ] L'état `Locked` est implémenté (snapshot auto déférré à la phase 3)
 
 ### T-1.7 — CRUD Precondition 🟢
 
 📚 `spec.md` US-1.5
 
-- [x] Service + UI similaires aux précédents
-- [x] Lien `precondition-of` bidirectionnel
-- [x] Tests
+- [ ] Service + UI similaires aux précédents
+- [ ] Lien `precondition-of` bidirectionnel
+- [ ] Tests
 
 **Done quand :**
-- [x] Une Precondition peut être liée à N TC
-- [x] La consultation d'un TC affiche ses Preconditions liées
+- [ ] Une Precondition peut être liée à N TC
+- [ ] La consultation d'un TC affiche ses Preconditions liées
 
 ### T-1.8 — Hub Argos avec navigation 🟡
 
 📚 `spec.md` §7.1
 
-- [x] Layout du Hub avec navigation latérale (Plans, Cases, Sets, Preconditions, Reports, Settings)
-- [x] Vue par défaut : liste des Test Plans actifs + Failed récents
-- [x] Recherche globale (basique en phase 1, enrichie en phase 4)
+- [ ] Layout du Hub avec navigation latérale (Plans, Cases, Sets, Preconditions, Reports, Settings)
+- [ ] Vue par défaut : liste des Test Plans actifs + Failed récents
+- [ ] Recherche globale (basique en phase 1, enrichie en phase 4)
 
 **Done quand :**
-- [x] Le wireframe `spec.md` §7.1 est implémenté à l'identique fonctionnel
-- [x] Navigation entre les vues fluide (< 500ms)
+- [ ] Le wireframe `spec.md` §7.1 est implémenté à l'identique fonctionnel
+- [ ] Navigation entre les vues fluide (< 500ms)
 
 ### T-1.9 — Tests E2E phase 1 sur Cloud + Server 🔴
 
 📚 `plan.md` §9.4
 
-- [x] Mettre en place les 2 instances ADO de test (Cloud `argos-test.dev.azure.com` + Server `argos-test-server.atconseil.io`)
-- [x] Suite E2E couvrant : install Custom Process, CRUD complet TC/Plan/Set/Precondition
-- [x] Intégration au workflow `ci-main.yml`
+- [ ] Mettre en place les 2 instances ADO de test (Cloud `argos-test.dev.azure.com` + Server `argos-test-server.atconseil.io`)
+- [ ] Suite E2E couvrant : install Custom Process, CRUD complet TC/Plan/Set/Precondition
+- [ ] Intégration au workflow `ci-main.yml`
 
 **Done quand :**
-- [x] La suite E2E passe verte sur les 2 instances
-- [x] Le temps total d'exécution < 15 min
+- [ ] La suite E2E passe verte sur les 2 instances
+- [ ] Le temps total d'exécution < 15 min
 
 ---
 
@@ -293,92 +311,92 @@ Ce document liste les tâches d'implémentation par phase. Chaque tâche est **a
 
 📚 `spec.md` US-2.1, `plan.md` §3.5
 
-- [x] Méthodes : `startRun`, `saveStepResult`, `attachEvidence`, `finalizeRun`, `linkBug`
-- [x] Garantie d'immutabilité après save final (refus de tout PATCH ultérieur)
-- [x] Calcul automatique du `globalStatus` depuis les `stepResults`
-- [x] Tests unitaires + intégration
+- [ ] Méthodes : `startRun`, `saveStepResult`, `attachEvidence`, `finalizeRun`, `linkBug`
+- [ ] Garantie d'immutabilité après save final (refus de tout PATCH ultérieur)
+- [ ] Calcul automatique du `globalStatus` depuis les `stepResults`
+- [ ] Tests unitaires + intégration
 
 **Done quand :**
-- [x] Une `TestExecution` save passe l'API ADO, est lue immutable
-- [x] Une tentative de modification post-save renvoie 403 documentée
-- [x] Couverture ≥ 90%
+- [ ] Une `TestExecution` save passe l'API ADO, est lue immutable
+- [ ] Une tentative de modification post-save renvoie 403 documentée
+- [ ] Couverture ≥ 90%
 
 ### T-2.2 — UI d'exécution (run interface) 🔴
 
 📚 `spec.md` US-2.1, §7.3
 
-- [x] Implémentation du wireframe §7.3 : panneau Precondition, liste des Steps, panneau Evidence
-- [x] Sélecteur d'Environment obligatoire en début de run
-- [x] Validation : commentaire obligatoire si Step en Fail
-- [x] Calcul global status en temps réel
-- [x] Bouton "Save Run" (final) + "Cancel"
+- [ ] Implémentation du wireframe §7.3 : panneau Precondition, liste des Steps, panneau Evidence
+- [ ] Sélecteur d'Environment obligatoire en début de run
+- [ ] Validation : commentaire obligatoire si Step en Fail
+- [ ] Calcul global status en temps réel
+- [ ] Bouton "Save Run" (final) + "Cancel"
 
 **Done quand :**
-- [x] L'utilisateur peut exécuter un TC complet de bout en bout
-- [x] Le statut global est calculé correctement
-- [x] Tests E2E couvrant les 3 issues : full Pass, partial Fail, Blocked
+- [ ] L'utilisateur peut exécuter un TC complet de bout en bout
+- [ ] Le statut global est calculé correctement
+- [ ] Tests E2E couvrant les 3 issues : full Pass, partial Fail, Blocked
 
 ### T-2.3 — Upload d'evidence (multi-formats) 🟡
 
 📚 `spec.md` US-2.2
 
-- [x] Service d'upload utilisant l'API Attachments ADO native
-- [x] Validation des types (PNG, JPG, GIF, PDF, TXT, LOG, MP4, WEBM) et des limites (10/25/5/100 MB)
-- [x] UI drag & drop + bouton fichier
-- [x] Preview pour images, lecteur intégré vidéos, lien pour autres
-- [x] Lien evidence ↔ step ou execution global
+- [ ] Service d'upload utilisant l'API Attachments ADO native
+- [ ] Validation des types (PNG, JPG, GIF, PDF, TXT, LOG, MP4, WEBM) et des limites (10/25/5/100 MB)
+- [ ] UI drag & drop + bouton fichier
+- [ ] Preview pour images, lecteur intégré vidéos, lien pour autres
+- [ ] Lien evidence ↔ step ou execution global
 
 **Done quand :**
-- [x] Upload des 4 formats principaux fonctionne
-- [x] Les limites de taille sont appliquées avec messages clairs
-- [x] L'evidence est visible en lecture après save
+- [ ] Upload des 4 formats principaux fonctionne
+- [ ] Les limites de taille sont appliquées avec messages clairs
+- [ ] L'evidence est visible en lecture après save
 
 ### T-2.4 — Configuration des Environments par projet 🟡
 
 📚 `spec.md` US-2.3
 
-- [x] UI Settings > Environments (Admin only) avec CRUD de la liste
-- [x] Stockage dans ExtensionDataService scope projet
-- [x] Validation côté run : environment doit appartenir à la liste configurée
-- [x] Tests
+- [ ] UI Settings > Environments (Admin only) avec CRUD de la liste
+- [ ] Stockage dans ExtensionDataService scope projet
+- [ ] Validation côté run : environment doit appartenir à la liste configurée
+- [ ] Tests
 
 **Done quand :**
-- [x] Un Admin peut gérer la liste
-- [x] Un User n'a pas accès à cette config
-- [x] La liste est utilisée comme dropdown dans le run
+- [ ] Un Admin peut gérer la liste
+- [ ] Un User n'a pas accès à cette config
+- [ ] La liste est utilisée comme dropdown dans le run
 
 ### T-2.5 — Création de Bug depuis Fail 🟢
 
 📚 `spec.md` US-2.1 (étape 11)
 
-- [x] Bouton "Create Bug from Failure" sur l'écran de run avec status Fail
-- [x] Pré-remplissage : Title, Description (avec lien vers run), Repro Steps (depuis steps Fail), Severity, Environment
-- [x] Création via API ADO standard, lien `Found By` Test Execution → Bug
+- [ ] Bouton "Create Bug from Failure" sur l'écran de run avec status Fail
+- [ ] Pré-remplissage : Title, Description (avec lien vers run), Repro Steps (depuis steps Fail), Severity, Environment
+- [ ] Création via API ADO standard, lien `Found By` Test Execution → Bug
 
 **Done quand :**
-- [x] Un Bug est créé avec les bonnes infos pré-remplies
-- [x] Le lien Test Execution ↔ Bug est visible dans les 2 sens
+- [ ] Un Bug est créé avec les bonnes infos pré-remplies
+- [ ] Le lien Test Execution ↔ Bug est visible dans les 2 sens
 
 ### T-2.6 — Vue historique des exécutions par TC 🟡
 
 📚 `spec.md` US-2.3
 
-- [x] Sur la page d'un TC, onglet "Executions" avec liste paginée
-- [x] Filtres : par environment, par statut, par période
-- [x] Vue côte à côte des statuts par environment
+- [ ] Sur la page d'un TC, onglet "Executions" avec liste paginée
+- [ ] Filtres : par environment, par statut, par période
+- [ ] Vue côte à côte des statuts par environment
 
 **Done quand :**
-- [x] L'historique d'un TC avec >100 exécutions reste fluide
-- [x] Filtres fonctionnent
+- [ ] L'historique d'un TC avec >100 exécutions reste fluide
+- [ ] Filtres fonctionnent
 
 ### T-2.7 — Tests E2E phase 2 🔴
 
-- [x] E2E : run complet sur Cloud, run complet sur Server
-- [x] E2E : upload evidence multi-formats
-- [x] E2E : création de Bug depuis Fail
+- [ ] E2E : run complet sur Cloud, run complet sur Server
+- [ ] E2E : upload evidence multi-formats
+- [ ] E2E : création de Bug depuis Fail
 
 **Done quand :**
-- [x] Suite E2E phase 2 passe verte sur les 2 environnements
+- [ ] Suite E2E phase 2 passe verte sur les 2 environnements
 
 ---
 
@@ -391,85 +409,85 @@ Ce document liste les tâches d'implémentation par phase. Chaque tâche est **a
 
 📚 `spec.md` US-3.1
 
-- [x] Définition des link types custom : `TestVault.TestedBy`, `TestVault.Validates`, `TestVault.Covers`
-- [x] UI sur le formulaire TC : ajout/suppression de liens
-- [x] Widget "Test Coverage" sur le formulaire User Story / Bug / Requirement (cf. manifest contribution `argos-coverage-panel`)
-- [x] Détection des liens orphelins (WI source supprimé)
+- [ ] Définition des link types custom : `TestVault.TestedBy`, `TestVault.Validates`, `TestVault.Covers`
+- [ ] UI sur le formulaire TC : ajout/suppression de liens
+- [ ] Widget "Test Coverage" sur le formulaire User Story / Bug / Requirement (cf. manifest contribution `argos-coverage-panel`)
+- [ ] Détection des liens orphelins (WI source supprimé)
 
 **Done quand :**
-- [x] Un lien créé est visible dans les 2 sens
-- [x] Le widget coverage panel s'affiche sur User Story et liste les TC liés avec leur dernier statut
+- [ ] Un lien créé est visible dans les 2 sens
+- [ ] Le widget coverage panel s'affiche sur User Story et liste les TC liés avec leur dernier statut
 
 ### T-3.2 — Snapshots taggés (Custom WIT TestCaseVersion) 🔴
 
 📚 `spec.md` US-3.3, `plan.md` §3.2
 
-- [x] Service `TestCaseVersionService` avec `createSnapshot`, `listSnapshots`, `compareWithCurrent`
-- [x] UI : bouton "Create Snapshot" sur le TC, formulaire (nom, commentaire)
-- [x] Garantie d'immutabilité (champs frozen via règles de transition Process)
-- [x] Validation : nom unique par TC parent
-- [x] Tests : tentative de modification post-creation → 403
+- [ ] Service `TestCaseVersionService` avec `createSnapshot`, `listSnapshots`, `compareWithCurrent`
+- [ ] UI : bouton "Create Snapshot" sur le TC, formulaire (nom, commentaire)
+- [ ] Garantie d'immutabilité (champs frozen via règles de transition Process)
+- [ ] Validation : nom unique par TC parent
+- [ ] Tests : tentative de modification post-creation → 403
 
 **Done quand :**
-- [x] Un snapshot est créé, visible, immutable
-- [x] La liste des snapshots d'un TC est affichée
+- [ ] Un snapshot est créé, visible, immutable
+- [ ] La liste des snapshots d'un TC est affichée
 
 ### T-3.3 — Comparateur de versions (diff) 🟡
 
 📚 `spec.md` US-3.3
 
-- [x] Algo de diff sur Steps (LCS) côté client
-- [x] UI : vue côte à côte avec mise en évidence des champs modifiés
-- [x] Diff sur title, description, steps, tags
+- [ ] Algo de diff sur Steps (LCS) côté client
+- [ ] UI : vue côte à côte avec mise en évidence des champs modifiés
+- [ ] Diff sur title, description, steps, tags
 
 **Done quand :**
-- [x] Le diff entre 2 versions d'un même TC est visuellement clair
-- [x] Tests unitaires sur l'algo LCS
+- [ ] Le diff entre 2 versions d'un même TC est visuellement clair
+- [ ] Tests unitaires sur l'algo LCS
 
 ### T-3.4 — Snapshot auto au lock du Test Plan 🟡
 
 📚 `spec.md` US-3.4
 
-- [x] Au passage Test Plan → `Locked`, snapshot auto-créé pour chaque TC du plan
-- [x] Test Plan locked référence les `TestCaseVersionId` (pas le TC parent)
-- [x] Opt-out configurable par Admin
-- [x] Tests
+- [ ] Au passage Test Plan → `Locked`, snapshot auto-créé pour chaque TC du plan
+- [ ] Test Plan locked référence les `TestCaseVersionId` (pas le TC parent)
+- [ ] Opt-out configurable par Admin
+- [ ] Tests
 
 **Done quand :**
-- [x] Lock d'un Test Plan crée les snapshots automatiquement
-- [x] L'exécution d'un TC dans un plan locked utilise le snapshot
+- [ ] Lock d'un Test Plan crée les snapshots automatiquement
+- [ ] L'exécution d'un TC dans un plan locked utilise le snapshot
 
 ### T-3.5 — Matrice de couverture exigences 🔴
 
 📚 `spec.md` US-3.2, F3, §7.5
 
-- [x] Vue dédiée avec tableau croisé Work Items × TC
-- [x] Cellule = dernier statut d'exécution par environment
-- [x] Filtres : Area, Iteration, Tags, Status, Environment
-- [x] Couleurs conditionnelles
-- [x] Virtual scrolling au-delà de 1000 cellules
+- [ ] Vue dédiée avec tableau croisé Work Items × TC
+- [ ] Cellule = dernier statut d'exécution par environment
+- [ ] Filtres : Area, Iteration, Tags, Status, Environment
+- [ ] Couleurs conditionnelles
+- [ ] Virtual scrolling au-delà de 1000 cellules
 
 **Done quand :**
-- [x] La matrice se charge en < 3s pour 1000 cellules
-- [x] Filtres mis à jour instantanément
-- [x] Tests E2E
+- [ ] La matrice se charge en < 3s pour 1000 cellules
+- [ ] Filtres mis à jour instantanément
+- [ ] Tests E2E
 
 ### T-3.6 — Export Excel / PDF de la matrice 🟡
 
 📚 `spec.md` US-3.2, US-4.4
 
-- [x] Export Excel via SheetJS avec mise en forme conditionnelle
-- [x] Export PDF (via puppeteer côté Cloud-Plus pour grosse matrice, ou jsPDF côté client pour petite)
-- [x] Tests sur fichiers générés (ouverture, contenu, tailles)
+- [ ] Export Excel via SheetJS avec mise en forme conditionnelle
+- [ ] Export PDF (via puppeteer côté Cloud-Plus pour grosse matrice, ou jsPDF côté client pour petite)
+- [ ] Tests sur fichiers générés (ouverture, contenu, tailles)
 
 **Done quand :**
-- [x] Excel et PDF sont produits sans erreur
-- [x] Mise en forme conditionnelle visible
+- [ ] Excel et PDF sont produits sans erreur
+- [ ] Mise en forme conditionnelle visible
 
 ### T-3.7 — Tests E2E phase 3
 
 **Done quand :**
-- [x] Création snapshot, lock plan, vue matrice, export Excel verts sur Cloud + Server
+- [ ] Création snapshot, lock plan, vue matrice, export Excel verts sur Cloud + Server
 
 ---
 
@@ -482,112 +500,112 @@ Ce document liste les tâches d'implémentation par phase. Chaque tâche est **a
 
 📚 `spec.md` US-4.1, US-4.2
 
-- [x] `packages/testvault-importers/` avec parsers : CSV, Excel (xlsx), JUnit XML, NUnit XML, xUnit XML, TestNG XML, Cucumber JSON
-- [x] Schema de mapping configurable (colonnes/champs ↔ champs TestCase)
-- [x] Validation des données entrantes avec rapport d'erreurs ligne par ligne
-- [x] Tests unitaires sur fixtures réelles (au moins 3 fichiers par format)
+- [ ] `packages/testvault-importers/` avec parsers : CSV, Excel (xlsx), JUnit XML, NUnit XML, xUnit XML, TestNG XML, Cucumber JSON
+- [ ] Schema de mapping configurable (colonnes/champs ↔ champs TestCase)
+- [ ] Validation des données entrantes avec rapport d'erreurs ligne par ligne
+- [ ] Tests unitaires sur fixtures réelles (au moins 3 fichiers par format)
 
 **Done quand :**
-- [x] Les 7 formats parsent correctement les fixtures
-- [x] Le rapport d'erreurs est exploitable
-- [x] Couverture ≥ 90%
+- [ ] Les 7 formats parsent correctement les fixtures
+- [ ] Le rapport d'erreurs est exploitable
+- [ ] Couverture ≥ 90%
 
 ### T-4.2 — UI d'import wizard 🟡
 
 📚 `spec.md` US-4.1
 
-- [x] Drag & drop de fichier
-- [x] Auto-détection du format
-- [x] Mapping interactif des colonnes
-- [x] Preview avant import
-- [x] Progress bar avec batches de 200
-- [x] Rapport d'erreurs téléchargeable
+- [ ] Drag & drop de fichier
+- [ ] Auto-détection du format
+- [ ] Mapping interactif des colonnes
+- [ ] Preview avant import
+- [ ] Progress bar avec batches de 200
+- [ ] Rapport d'erreurs téléchargeable
 
 **Done quand :**
-- [x] Import de 1000 TC depuis CSV en moins de 2 min
-- [x] Tests E2E
+- [ ] Import de 1000 TC depuis CSV en moins de 2 min
+- [ ] Tests E2E
 
 ### T-4.3 — Exporters (Excel + PDF) 🟡
 
 📚 `spec.md` US-4.4
 
-- [x] `packages/testvault-exporters/` avec générateurs Excel (SheetJS) et PDF
-- [x] Templates par cas d'usage : référentiel TC, Test Plan release-readiness, Traceability matrix
-- [x] Logo client custom configurable
+- [ ] `packages/testvault-exporters/` avec générateurs Excel (SheetJS) et PDF
+- [ ] Templates par cas d'usage : référentiel TC, Test Plan release-readiness, Traceability matrix
+- [ ] Logo client custom configurable
 
 **Done quand :**
-- [x] Les 3 templates produisent des fichiers exploitables
-- [x] Logo custom utilisé si configuré
+- [ ] Les 3 templates produisent des fichiers exploitables
+- [ ] Logo custom utilisé si configuré
 
 ### T-4.4 — SDK npm `@atconseil/testvault-sdk` 🔴
 
 📚 `plan.md` §1.1, §1.3, `constitution.md` §3.4
 
-- [x] API publique du SDK : opérations CRUD haut niveau, helpers WIQL, snapshots, paginator
-- [x] Documentation TypeDoc auto-générée
-- [x] Publication npm public (Apache 2.0)
-- [x] Versionning indépendant via Changesets
+- [ ] API publique du SDK : opérations CRUD haut niveau, helpers WIQL, snapshots, paginator
+- [ ] Documentation TypeDoc auto-générée
+- [ ] Publication npm public (Apache 2.0)
+- [ ] Versionning indépendant via Changesets
 
 **Done quand :**
-- [x] `npm install @atconseil/testvault-sdk` fonctionne
-- [x] Les exemples du README marchent
-- [x] Couverture ≥ 90%
+- [ ] `npm install @atconseil/testvault-sdk` fonctionne
+- [ ] Les exemples du README marchent
+- [ ] Couverture ≥ 90%
 
 ### T-4.5 — CLI `testvault-cli` 🟡
 
 📚 `spec.md` US-4.2
 
-- [x] Commandes : `auth login`, `tc list`, `tc create`, `tc upload-results`, `plan show`, `plan export`
-- [x] Format JUnit/Cucumber : matching par `automationKey`, option `--auto-create`, option `--strict`
-- [x] Auth via PAT ADO (pas de stockage côté CLI)
-- [x] Publication npm public
+- [ ] Commandes : `auth login`, `tc list`, `tc create`, `tc upload-results`, `plan show`, `plan export`
+- [ ] Format JUnit/Cucumber : matching par `automationKey`, option `--auto-create`, option `--strict`
+- [ ] Auth via PAT ADO (pas de stockage côté CLI)
+- [ ] Publication npm public
 
 **Done quand :**
-- [x] `testvault-cli upload-results --file junit.xml` ingère les résultats
-- [x] La doc CLI est à jour
+- [ ] `testvault-cli upload-results --file junit.xml` ingère les résultats
+- [ ] La doc CLI est à jour
 
 ### T-4.6 — Intégration GitHub Actions (action dédiée) 🟡
 
 📚 `spec.md` US-4.2
 
-- [x] Action GitHub publiée `atconseil/testvault-action@v1`
-- [x] Inputs : `pat`, `org-url`, `project`, `plan-id`, `results-file`, `environment`
-- [x] Exemples documentés dans `docs/integrations/github-actions.md`
+- [ ] Action GitHub publiée `atconseil/testvault-action@v1`
+- [ ] Inputs : `pat`, `org-url`, `project`, `plan-id`, `results-file`, `environment`
+- [ ] Exemples documentés dans `docs/integrations/github-actions.md`
 
 **Done quand :**
-- [x] L'action est utilisable depuis n'importe quelle pipeline GH Actions
-- [x] Un workflow d'exemple complet fonctionne end-to-end
+- [ ] L'action est utilisable depuis n'importe quelle pipeline GH Actions
+- [ ] Un workflow d'exemple complet fonctionne end-to-end
 
 ### T-4.7 — Intégration Azure Pipelines (task dédiée) 🟡
 
 📚 `spec.md` US-4.2
 
-- [x] Task Azure Pipelines `Argos.UploadResults@1` publiée sur Marketplace (extension de tâches)
-- [x] Mêmes inputs que la GH Action
+- [ ] Task Azure Pipelines `Argos.UploadResults@1` publiée sur Marketplace (extension de tâches)
+- [ ] Mêmes inputs que la GH Action
 
 **Done quand :**
-- [x] La task est listée sur le Marketplace ADO Tasks
-- [x] Un pipeline d'exemple fonctionne
+- [ ] La task est listée sur le Marketplace ADO Tasks
+- [ ] Un pipeline d'exemple fonctionne
 
 ### T-4.8 — Ingestion via webhook (Cloud-Plus) 🟢
 
 📚 `spec.md` US-4.3, `plan.md` §7.4, §7.5
 
-- [x] Endpoint `POST /v1/webhooks/{token}` dans Azure Functions
-- [x] Validation HMAC SHA-256
-- [x] Worker queue trigger pour traitement asynchrone
-- [x] UI Admin : génération de tokens, listing, suppression
-- [x] Tests d'intégration
+- [ ] Endpoint `POST /v1/webhooks/{token}` dans Azure Functions
+- [ ] Validation HMAC SHA-256
+- [ ] Worker queue trigger pour traitement asynchrone
+- [ ] UI Admin : génération de tokens, listing, suppression
+- [ ] Tests d'intégration
 
 **Done quand :**
-- [x] Un push depuis Jenkins via webhook crée des Test Executions sous 30s
-- [x] La signature invalide est rejetée et auditée
+- [ ] Un push depuis Jenkins via webhook crée des Test Executions sous 30s
+- [ ] La signature invalide est rejetée et auditée
 
 ### T-4.9 — Tests E2E phase 4
 
 **Done quand :**
-- [x] E2E : import CSV, export Excel, upload via CLI, run via GH Actions
-- [x] Tous les formats parsent correctement sur les 2 environnements
+- [ ] E2E : import CSV, export Excel, upload via CLI, run via GH Actions
+- [ ] Tous les formats parsent correctement sur les 2 environnements
 
 ---
 
@@ -600,63 +618,63 @@ Ce document liste les tâches d'implémentation par phase. Chaque tâche est **a
 
 📚 `plan.md` §3.3
 
-- [x] Champ `TestVault.Gherkin` ajouté au schéma
-- [x] Custom Control pour édition Gherkin avec coloration syntaxique (Monaco editor)
-- [x] Validation syntaxe Gherkin
+- [ ] Champ `TestVault.Gherkin` ajouté au schéma
+- [ ] Custom Control pour édition Gherkin avec coloration syntaxique (Monaco editor)
+- [ ] Validation syntaxe Gherkin
 
 **Done quand :**
-- [x] Édition Gherkin avec coloration et validation
-- [x] Tests
+- [ ] Édition Gherkin avec coloration et validation
+- [ ] Tests
 
 ### T-5.2 — Parser Gherkin et conversion bidirectionnelle 🟡
 
 📚 `spec.md` US-4.5
 
-- [x] Parser `.feature` → array de scénarios → array de TestCases (un par scénario)
-- [x] Generator TestCase Gherkin → contenu `.feature` valide
-- [x] Tests sur fixtures (10+ fichiers)
+- [ ] Parser `.feature` → array de scénarios → array de TestCases (un par scénario)
+- [ ] Generator TestCase Gherkin → contenu `.feature` valide
+- [ ] Tests sur fixtures (10+ fichiers)
 
 **Done quand :**
-- [x] Round-trip parse → generate → parse stable
-- [x] Couverture ≥ 90%
+- [ ] Round-trip parse → generate → parse stable
+- [ ] Couverture ≥ 90%
 
 ### T-5.3 — Configuration des mappings repo ↔ Area Path 🟡
 
 📚 `spec.md` US-4.5
 
-- [x] UI Admin : ajout d'un mapping `repoUrl + branch + pathGlob → areaPath`
-- [x] Stockage dans ExtensionDataService scope projet
-- [x] Validation : repo accessible via OAuth scope `vso.code`
+- [ ] UI Admin : ajout d'un mapping `repoUrl + branch + pathGlob → areaPath`
+- [ ] Stockage dans ExtensionDataService scope projet
+- [ ] Validation : repo accessible via OAuth scope `vso.code`
 
 **Done quand :**
-- [x] Les mappings sont configurables et persistés
+- [ ] Les mappings sont configurables et persistés
 
 ### T-5.4 — Sync automatique sur commit (Cloud-Plus) 🟡
 
 📚 `spec.md` US-4.5
 
-- [x] Subscription au webhook ADO `git.push` pour les repos mappés
-- [x] Job Cloud-Plus déclenché : parse les fichiers modifiés, met à jour les TC correspondants
-- [x] Gestion suppression de scénario : passage du TC en `Deprecated`
+- [ ] Subscription au webhook ADO `git.push` pour les repos mappés
+- [ ] Job Cloud-Plus déclenché : parse les fichiers modifiés, met à jour les TC correspondants
+- [ ] Gestion suppression de scénario : passage du TC en `Deprecated`
 
 **Done quand :**
-- [x] Un commit modifiant un `.feature` met à jour le TC sous 5 min
-- [x] Le TC est marqué `Deprecated` si scénario supprimé
+- [ ] Un commit modifiant un `.feature` met à jour le TC sous 5 min
+- [ ] Le TC est marqué `Deprecated` si scénario supprimé
 
 ### T-5.5 — Sync manuelle (Server compatible) 🟢
 
-- [x] Bouton "Sync now" dans l'UI Admin
-- [x] Mode CLI : `testvault-cli bdd sync --repo X --branch Y --path Z`
-- [x] Disponible sur Server (sans webhook automatique)
+- [ ] Bouton "Sync now" dans l'UI Admin
+- [ ] Mode CLI : `testvault-cli bdd sync --repo X --branch Y --path Z`
+- [ ] Disponible sur Server (sans webhook automatique)
 
 **Done quand :**
-- [x] Un Admin Server peut déclencher manuellement la sync
-- [x] Le CLI fonctionne en air-gap si le PAT est fourni
+- [ ] Un Admin Server peut déclencher manuellement la sync
+- [ ] Le CLI fonctionne en air-gap si le PAT est fourni
 
 ### T-5.6 — Tests E2E phase 5
 
 **Done quand :**
-- [x] Round-trip Gherkin TC ↔ `.feature` fonctionnel sur Cloud + Server (mode manuel)
+- [ ] Round-trip Gherkin TC ↔ `.feature` fonctionnel sur Cloud + Server (mode manuel)
 
 ---
 
@@ -669,129 +687,129 @@ Ce document liste les tâches d'implémentation par phase. Chaque tâche est **a
 
 📚 `plan.md` §7
 
-- [x] Déploiement de `apps/argos-functions` sur Azure Functions Premium en région `francecentral`
-- [x] Config slots staging/production
-- [x] Setup Application Insights (sans payload métier)
-- [x] Setup Azure Key Vault pour MasterKey
+- [ ] Déploiement de `apps/argos-functions` sur Azure Functions Premium en région `francecentral`
+- [ ] Config slots staging/production
+- [ ] Setup Application Insights (sans payload métier)
+- [ ] Setup Azure Key Vault pour MasterKey
 
 **Done quand :**
-- [x] L'endpoint `GET /v1/health` répond 200
-- [x] Les logs sont visibles dans App Insights sans PII
+- [ ] L'endpoint `GET /v1/health` répond 200
+- [ ] Les logs sont visibles dans App Insights sans PII
 
 ### T-6.2 — Module crypto BYOK 🔴
 
 📚 `plan.md` §8
 
-- [x] Implémentation AES-256-GCM + dérivation HKDF par org
-- [x] Stockage chiffré dans ExtensionDataService format `EncryptedApiKey`
-- [x] Tests cryptographiques exhaustifs (round-trip, tampering detection, rotation)
+- [ ] Implémentation AES-256-GCM + dérivation HKDF par org
+- [ ] Stockage chiffré dans ExtensionDataService format `EncryptedApiKey`
+- [ ] Tests cryptographiques exhaustifs (round-trip, tampering detection, rotation)
 
 **Done quand :**
-- [x] Tests vector cryptographiques OK
-- [x] Couverture 100% du module crypto (audit-critical)
+- [ ] Tests vector cryptographiques OK
+- [ ] Couverture 100% du module crypto (audit-critical)
 
 ### T-6.3 — Configuration LLM Provider (UI Admin) 🔴
 
 📚 `spec.md` US-6.2, F5
 
-- [x] UI Settings > AI > Providers (Admin only)
-- [x] Ajout / rotation / suppression d'un provider (Anthropic, OpenAI, Azure OpenAI)
-- [x] Bouton "Test connection" qui fait un call light au provider
-- [x] Affichage masqué des clés (4 derniers caractères)
+- [ ] UI Settings > AI > Providers (Admin only)
+- [ ] Ajout / rotation / suppression d'un provider (Anthropic, OpenAI, Azure OpenAI)
+- [ ] Bouton "Test connection" qui fait un call light au provider
+- [ ] Affichage masqué des clés (4 derniers caractères)
 
 **Done quand :**
-- [x] Les 3 providers sont configurables
-- [x] Le test de connexion fonctionne pour chaque
-- [x] Toute opération est journalisée dans `TestVault.AuditLog`
+- [ ] Les 3 providers sont configurables
+- [ ] Le test de connexion fonctionne pour chaque
+- [ ] Toute opération est journalisée dans `TestVault.AuditLog`
 
 ### T-6.4 — Audit trail complet 🔴
 
 📚 `spec.md` US-6.4, `constitution.md` §6.3
 
-- [x] Service `AuditLogService.write(operation, oldValue, newValue, metadata)`
-- [x] Hooks dans toutes les opérations Admin sensibles (cf. constitution §6.2 liste 1-10)
-- [x] UI Settings > Audit Log : liste filtrable + export CSV/JSON
-- [x] Configuration de la rétention (paramétrable, plancher 90 jours, défaut 24 mois)
-- [x] Job timer-trigger `audit-retention` qui purge selon la rétention
-- [x] Tests : aucune valeur sensible (clé API en clair) ne doit jamais être loggée
+- [ ] Service `AuditLogService.write(operation, oldValue, newValue, metadata)`
+- [ ] Hooks dans toutes les opérations Admin sensibles (cf. constitution §6.2 liste 1-10)
+- [ ] UI Settings > Audit Log : liste filtrable + export CSV/JSON
+- [ ] Configuration de la rétention (paramétrable, plancher 90 jours, défaut 24 mois)
+- [ ] Job timer-trigger `audit-retention` qui purge selon la rétention
+- [ ] Tests : aucune valeur sensible (clé API en clair) ne doit jamais être loggée
 
 **Done quand :**
-- [x] Toutes les opérations Admin laissent une trace
-- [x] La rétention paramétrée est appliquée
-- [x] Un audit externe pourrait reconstituer l'historique
+- [ ] Toutes les opérations Admin laissent une trace
+- [ ] La rétention paramétrée est appliquée
+- [ ] Un audit externe pourrait reconstituer l'historique
 
 ### T-6.5 — Endpoint `POST /v1/llm/generate-test-cases` 🟡
 
 📚 `spec.md` US-5.1, F1, `plan.md` §7.3
 
-- [x] Implémentation complète selon `plan.md` §7.3
-- [x] PAT signé HMAC short-lived (5 min TTL)
-- [x] Validation Zod du payload
-- [x] Quota check + decrement avant LLM call
-- [x] Decrypt → call → buffer.fill(0)
-- [x] Retry idempotent en cas de réponse JSON malformée
-- [x] Fallback provider si configuré
+- [ ] Implémentation complète selon `plan.md` §7.3
+- [ ] PAT signé HMAC short-lived (5 min TTL)
+- [ ] Validation Zod du payload
+- [ ] Quota check + decrement avant LLM call
+- [ ] Decrypt → call → buffer.fill(0)
+- [ ] Retry idempotent en cas de réponse JSON malformée
+- [ ] Fallback provider si configuré
 
 **Done quand :**
-- [x] Génération de 5 TC depuis une User Story factice fonctionne
-- [x] Quota dépassé renvoie 402 avec message clair
-- [x] Aucun prompt/réponse en logs
+- [ ] Génération de 5 TC depuis une User Story factice fonctionne
+- [ ] Quota dépassé renvoie 402 avec message clair
+- [ ] Aucun prompt/réponse en logs
 
 ### T-6.6 — UI génération AI de Test Cases 🟡
 
 📚 `spec.md` US-5.1
 
-- [x] Bouton "Suggest Tests" dans le coverage panel
-- [x] Modal de preview avec 3-7 candidats éditables
-- [x] Acceptation individuelle ou en bloc
-- [x] Décrément du quota visible
+- [ ] Bouton "Suggest Tests" dans le coverage panel
+- [ ] Modal de preview avec 3-7 candidats éditables
+- [ ] Acceptation individuelle ou en bloc
+- [ ] Décrément du quota visible
 
 **Done quand :**
-- [x] Génération + acceptation crée des TC liés à la User Story
-- [x] L'UX reste fluide (streaming dès le 1er token)
+- [ ] Génération + acceptation crée des TC liés à la User Story
+- [ ] L'UX reste fluide (streaming dès le 1er token)
 
 ### T-6.7 — Quotas AI 🟡
 
 📚 `spec.md` US-6.3
 
-- [x] Service `QuotaService` avec storage Azure Table
-- [x] Modes hard/soft, alerte 80%
-- [x] UI Admin : Settings > AI > Quotas
-- [x] Reset mensuel via timer trigger
+- [ ] Service `QuotaService` avec storage Azure Table
+- [ ] Modes hard/soft, alerte 80%
+- [ ] UI Admin : Settings > AI > Quotas
+- [ ] Reset mensuel via timer trigger
 
 **Done quand :**
-- [x] Quotas appliqués correctement, mode hard bloque, mode soft warne
-- [x] Reset mensuel automatique
+- [ ] Quotas appliqués correctement, mode hard bloque, mode soft warne
+- [ ] Reset mensuel automatique
 
 ### T-6.8 — Désactivation globale AI 🔴
 
 📚 `spec.md` US-6.5
 
-- [x] Toggle global org-wide
-- [x] Propagation < 5s à tous les users actifs
-- [x] Annulation propre des opérations en cours
-- [x] Tests
+- [ ] Toggle global org-wide
+- [ ] Propagation < 5s à tous les users actifs
+- [ ] Annulation propre des opérations en cours
+- [ ] Tests
 
 **Done quand :**
-- [x] Le toggle masque/désactive tous les boutons AI
-- [x] Aucune fuite de données pendant l'annulation
+- [ ] Le toggle masque/désactive tous les boutons AI
+- [ ] Aucune fuite de données pendant l'annulation
 
 ### T-6.9 — Détection de flakiness 🟢
 
 📚 `spec.md` US-5.2
 
-- [x] Job timer-trigger hebdomadaire
-- [x] Calcul du score sur les N dernières exécutions par TC
-- [x] Recommandation AI via LLM BYOK
-- [x] UI : rapport "Flakiness" avec mark "Known Flaky"
+- [ ] Job timer-trigger hebdomadaire
+- [ ] Calcul du score sur les N dernières exécutions par TC
+- [ ] Recommandation AI via LLM BYOK
+- [ ] UI : rapport "Flakiness" avec mark "Known Flaky"
 
 **Done quand :**
-- [x] Le rapport est généré et exploitable
+- [ ] Le rapport est généré et exploitable
 
 ### T-6.10 — Tests E2E phase 6
 
 **Done quand :**
-- [x] Configuration provider, génération TC, audit log visible, désactivation globale verts
+- [ ] Configuration provider, génération TC, audit log visible, désactivation globale verts
 
 ---
 
@@ -804,121 +822,121 @@ Ce document liste les tâches d'implémentation par phase. Chaque tâche est **a
 
 📚 `constitution.md` §7
 
-- [x] Génération de clés de licence (signées Ed25519)
-- [x] Validation périodique : 24h Cloud, 7j Server
-- [x] Mode dégradé en cas de licence expirée (lecture seule + warning)
-- [x] Downgrade Pro → Free non destructif (les données restent, limites de tier appliquées)
+- [ ] Génération de clés de licence (signées Ed25519)
+- [ ] Validation périodique : 24h Cloud, 7j Server
+- [ ] Mode dégradé en cas de licence expirée (lecture seule + warning)
+- [ ] Downgrade Pro → Free non destructif (les données restent, limites de tier appliquées)
 
 **Done quand :**
-- [x] Clés générables, validables, révocables
-- [x] Tests de tous les états (active, expired, invalid, offline grace)
+- [ ] Clés générables, validables, révocables
+- [ ] Tests de tous les états (active, expired, invalid, offline grace)
 
 ### T-7.2 — Portail Stripe + portail client 🟡
 
-- [x] Intégration Stripe (subscription mensuel Cloud + one-shot Server)
-- [x] Portail client Kisskool/ATConseil pour gestion abonnement, facturation, génération de clé
-- [x] Webhooks Stripe pour activer/désactiver les licences
+- [ ] Intégration Stripe (subscription mensuel Cloud + one-shot Server)
+- [ ] Portail client Kisskool/ATConseil pour gestion abonnement, facturation, génération de clé
+- [ ] Webhooks Stripe pour activer/désactiver les licences
 
 **Done quand :**
-- [x] Un client peut s'abonner, payer, recevoir sa clé, l'installer
+- [ ] Un client peut s'abonner, payer, recevoir sa clé, l'installer
 
 ### T-7.3 — Mode hors-ligne lecture seule 🟢
 
 📚 `spec.md` §9
 
-- [x] Détection perte connectivité ADO
-- [x] Bascule en lecture seule avec banner UI
-- [x] Queue des modifications + retry au retour de connectivité
+- [ ] Détection perte connectivité ADO
+- [ ] Bascule en lecture seule avec banner UI
+- [ ] Queue des modifications + retry au retour de connectivité
 
 **Done quand :**
-- [x] Coupure réseau simulée → bascule + queue → reprise
+- [ ] Coupure réseau simulée → bascule + queue → reprise
 
 ### T-7.4 — Accessibilité WCAG 2.1 AA 🔴
 
 📚 `spec.md` §9
 
-- [x] Audit avec axe-core sur tous les écrans principaux
-- [x] Navigation clavier complète + raccourcis (`?` pour aide)
-- [x] Contraste, ARIA labels, alt text
-- [x] Tests automatisés axe + tests manuels lecteur d'écran
+- [ ] Audit avec axe-core sur tous les écrans principaux
+- [ ] Navigation clavier complète + raccourcis (`?` pour aide)
+- [ ] Contraste, ARIA labels, alt text
+- [ ] Tests automatisés axe + tests manuels lecteur d'écran
 
 **Done quand :**
-- [x] Aucune violation WCAG AA sur les écrans critiques
-- [x] Navigation clavier intégrale validée
+- [ ] Aucune violation WCAG AA sur les écrans critiques
+- [ ] Navigation clavier intégrale validée
 
 ### T-7.5 — Mobile responsive (lecture seule) 🟢
 
 📚 `spec.md` §9
 
-- [x] Hub et plans consultables sur mobile/tablette
-- [x] Édition désactivée < 768px
+- [ ] Hub et plans consultables sur mobile/tablette
+- [ ] Édition désactivée < 768px
 
 **Done quand :**
-- [x] Tests sur viewports 360px, 768px, 1024px
+- [ ] Tests sur viewports 360px, 768px, 1024px
 
 ### T-7.6 — Documentation complète 🔴
 
 📚 `constitution.md` §10.2
 
-- [x] `README.md` à jour
-- [x] `docs/user-guide.md` exhaustif (tous les flows spec)
-- [x] `docs/api-reference.md` généré depuis OpenAPI à jour
-- [x] `docs/sdk-reference.md` généré depuis types à jour
-- [x] `docs/wit-schema.md` complet (contrat TestPulse)
-- [x] `docs/operator-guide.md` (déploiement, troubleshooting)
-- [x] `CHANGELOG.md` à jour
-- [x] Site `docs-site` (Docusaurus) déployé
+- [ ] `README.md` à jour
+- [ ] `docs/user-guide.md` exhaustif (tous les flows spec)
+- [ ] `docs/api-reference.md` généré depuis OpenAPI à jour
+- [ ] `docs/sdk-reference.md` généré depuis types à jour
+- [ ] `docs/wit-schema.md` complet (contrat TestPulse)
+- [ ] `docs/operator-guide.md` (déploiement, troubleshooting)
+- [ ] `CHANGELOG.md` à jour
+- [ ] Site `docs-site` (Docusaurus) déployé
 
 **Done quand :**
-- [x] Toutes les pages sont relues
-- [x] Le site est accessible publiquement
+- [ ] Toutes les pages sont relues
+- [ ] Le site est accessible publiquement
 
 ### T-7.7 — TestPulse co-installation testée 🔴
 
 📚 `constitution.md` §3.5, `plan.md` §4
 
-- [x] TestPulse 2.x adapté pour lire le schéma Argos via le contrat documenté
-- [x] Test E2E : install Argos + TestPulse, dashboard TestPulse affiche les données Argos
-- [x] Test : TestPulse seul (sans Argos) continue de fonctionner sur Microsoft Test Plans natifs
+- [ ] TestPulse 2.x adapté pour lire le schéma Argos via le contrat documenté
+- [ ] Test E2E : install Argos + TestPulse, dashboard TestPulse affiche les données Argos
+- [ ] Test : TestPulse seul (sans Argos) continue de fonctionner sur Microsoft Test Plans natifs
 
 **Done quand :**
-- [x] Les 2 modes (avec / sans Argos) fonctionnent
+- [ ] Les 2 modes (avec / sans Argos) fonctionnent
 
 ### T-7.8 — Audit de sécurité externe 🔴
 
 📚 `constitution.md` §5
 
-- [x] Audit pentest externe (cible : extension UI + Azure Functions)
-- [x] Revue du module crypto BYOK
-- [x] Vérification SBOM CycloneDX
-- [x] Remédiation des findings hauts/critiques
+- [ ] Audit pentest externe (cible : extension UI + Azure Functions)
+- [ ] Revue du module crypto BYOK
+- [ ] Vérification SBOM CycloneDX
+- [ ] Remédiation des findings hauts/critiques
 
 **Done quand :**
-- [x] Rapport d'audit avec remédiation complète des findings haut/critique
+- [ ] Rapport d'audit avec remédiation complète des findings haut/critique
 
 ### T-7.9 — Beta privée puis publique 🟡
 
-- [x] Beta privée : 5-10 organisations volontaires sur Cloud + 2 instances Server
-- [x] Collecte feedback, correctifs
-- [x] Beta publique : opt-in via flag d'organisation
-- [x] Métriques de conversion suivies
+- [ ] Beta privée : 5-10 organisations volontaires sur Cloud + 2 instances Server
+- [ ] Collecte feedback, correctifs
+- [ ] Beta publique : opt-in via flag d'organisation
+- [ ] Métriques de conversion suivies
 
 **Done quand :**
-- [x] 10+ orgs en beta avec feedback positif
-- [x] Aucun bug bloquant non résolu
+- [ ] 10+ orgs en beta avec feedback positif
+- [ ] Aucun bug bloquant non résolu
 
 ### T-7.10 — Publication GA v1.0.0 🔴
 
 📚 `constitution.md` §11
 
-- [x] Checklist constitution §11 entièrement verte
-- [x] Validation manuelle Alexandre Thibaud
-- [x] Publication Marketplace en visibilité publique
-- [x] Annonce blog ATConseil + LinkedIn + canaux ADO communautaires
+- [ ] Checklist constitution §11 entièrement verte
+- [ ] Validation manuelle Alexandre Thibaud
+- [ ] Publication Marketplace en visibilité publique
+- [ ] Annonce blog ATConseil + LinkedIn + canaux ADO communautaires
 
 **Done quand :**
-- [x] La version 1.0.0 est listée publiquement sur le Marketplace
-- [x] Au moins 1 install externe non sponsorisée
+- [ ] La version 1.0.0 est listée publiquement sur le Marketplace
+- [ ] Au moins 1 install externe non sponsorisée
 
 ---
 
@@ -962,7 +980,7 @@ T-7.1 → T-7.2 → T-7.3, T-7.4, T-7.5 → T-7.6 → T-7.7 → T-7.8 → T-7.9 
 
 ---
 
-> � **Cross-references :** voir `constitution.md` v0.2.3 pour les contraintes immuables. `spec.md` v0.1.0 pour le détail fonctionnel. `plan.md` v0.1.0 pour l'architecture technique.
+> � **Cross-references :** voir `constitution.md` v0.3.0 pour les contraintes immuables. `spec.md` v0.1.0 pour le détail fonctionnel. `plan.md` v0.1.0 pour l'architecture technique.
 
 > ⚠� Toute modification de ce document requiert l'approbation explicite d'Alexandre Thibaud (ATConseil — atconseil.info).
 

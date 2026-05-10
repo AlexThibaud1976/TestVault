@@ -8,7 +8,7 @@
 
 ## What this project is
 
-**TestVault** (commercial name on Visual Studio Marketplace: **Argos**, publisher: **ATConseil**) is a test management extension for Azure DevOps. It targets feature parity with Xray (Jira) on both ADO Cloud and ADO Server 2022. It uses native Custom Work Items for storage to guarantee customer data sovereignty, and feeds the standalone TestPulse extension via a documented WIT schema contract.
+**TestVault** (commercial name on Visual Studio Marketplace: **Argos**, publisher: **ATConseil**) is a test management extension for Azure DevOps Services (Cloud). It targets feature parity with Xray (Jira) on ADO Cloud. It uses native Custom Work Items for storage to guarantee customer data sovereignty, and feeds the standalone TestPulse extension via a documented WIT schema contract.
 
 - **Project name (technical)**: `TestVault`
 - **Marketplace name**: `Argos`
@@ -126,7 +126,7 @@ testvault/
 | ADO SDK | `azure-devops-extension-sdk` v4.x + `azure-devops-extension-api` v4.x | No v5 exists yet |
 | Linter / formatter | Biome | Unified lint + format, single `biome.json` config, ESM-native, blocking in CI (constitution §2) |
 | Test runner | Vitest | Faster than Jest, ESM-native |
-| E2E | Playwright | Two real instances: Cloud (`argos-test.dev.azure.com`) + Server 2022 |
+| E2E | Playwright | Cloud instance (`argos-test.dev.azure.com`) |
 | Validation | Zod | OpenAPI generation via `@anatine/zod-openapi` |
 | Build | tfx-cli | For VSIX packaging |
 | Hosting | Azure Functions Premium plan, region `francecentral` | |

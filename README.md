@@ -1,6 +1,6 @@
 # TestVault (Argos)
 
-> **Argos** — Test management for Azure DevOps. The Xray-class experience, native to ADO Cloud and Server 2022.
+> **Argos** — Test management for Azure DevOps. The Xray-class experience, native to ADO Cloud.
 >
 > Publisher: **ATConseil** | Author: Alexandre Thibaud — atconseil.info
 
@@ -11,16 +11,20 @@
 ## What is TestVault / Argos?
 
 **TestVault** (commercial name **Argos** on the Visual Studio Marketplace) is a test management
-extension for Azure DevOps that delivers Xray-class capabilities on both ADO Cloud and ADO
-Server 2022. It stores all data as native Custom Work Items, guaranteeing full customer data sovereignty.
+extension for Azure DevOps Services (Cloud) that delivers Xray-class capabilities. It stores all
+data as native Custom Work Items, guaranteeing full customer data sovereignty.
 
 Key differentiators:
 
-- Single VSIX supporting ADO Cloud + Server 2022 with strict feature parity on core functionality
 - Custom Work Items readable even without the extension installed
 - AI-assisted test case generation and flakiness detection — BYOK (Bring Your Own Key)
 - Rich reporting via co-installable TestPulse extension
 - Pricing ~30% below Xray Cloud + generous Free tier
+
+## Compatibility
+
+**Argos targets Azure DevOps Services (Cloud) only.** Self-hosted ADO variants are out of scope
+as of v0.2.0 — see CHANGELOG and constitution v0.3.0.
 
 ## Repository structure
 

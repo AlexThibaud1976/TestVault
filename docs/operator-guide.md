@@ -1,6 +1,6 @@
 # Argos Operator Guide
 
-> For administrators deploying Argos Cloud-Plus (Azure Functions) and managing ADO Server 2022 instances.
+> For administrators deploying Argos Cloud-Plus (Azure Functions) on Azure DevOps Services.
 > Version: 1.0.0
 
 ---
@@ -29,13 +29,6 @@
 2. In your ADO organization, go to **Organization Settings → Extensions → Browse Marketplace** and search for **Argos** (publisher: ATConseil), or upload the VSIX manually under **Manage Extensions → Upload**.
 
 3. Grant access to projects where Argos should be active.
-
-### ADO Server 2022
-
-1. Download or build the VSIX as above.
-2. Navigate to your TFS/ADO Server Collection Admin → **Extensions → Manage Extensions**.
-3. Upload the `.vsix` file. The extension is installed at collection level.
-4. The Cloud-Plus Azure Functions tier is not available on Server — only the core VSIX features apply.
 
 ---
 
@@ -135,13 +128,6 @@ To change retention:
 
 ---
 
-## ADO Server 2022 — specific notes
-
-- Process install: follow the Process Template install guide in `docs/user-guide.md`.
-- No Azure Functions are required; all data lives in ADO WITs.
-- AI features (BYOK LLM, flakiness detection) are **Cloud-Plus only** and will not appear in the Server UI.
-- Offline mode and BDD sync are fully supported on Server.
-
 ---
 
 ## Troubleshooting
@@ -221,6 +207,6 @@ Pointing this contribution at `dist/hub/hub.html` (the main hub bundle) would lo
 | `vso.extension.data_write` | ExtensionDataService — stores lightweight config (LLM provider, quota, repo mappings) at org scope |
 | `vso.identity` | Resolve ADO groups for role derivation (Admin / Contributor / Reader) |
 
-### ADO Server 2022 target version
+### Manifest targets
 
-The `Microsoft.TeamFoundation.Server` target uses version `[18.0,)`. ADO Server 2022 reports its internal version as `18.x`. This excludes Server 2020 (17.x) and older, per the compatibility contract in `Specs/constitution.md §1`.
+`vss-extension.json` declares `Microsoft.VisualStudio.Services.Cloud` as the sole target. This restricts the extension to Azure DevOps Services (Cloud) only, per constitution v0.3.0 §1.

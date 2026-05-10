@@ -67,8 +67,10 @@ const ALLOWED_FILES = new Set([
 	"tools/regression/ENC-2026-05-09-spec-mojibake.test.ts",
 	"tools/regression/scan-mojibake.cjs",
 	"tools/regression/fix-mojibake.cjs",
+	"tools/claude-prompts/CLAUDE_TASK.md",
 	"tools/claude-prompts/CLAUDE_TASK_sprint-1.md",
 	"tools/claude-prompts/CLAUDE_TASK_sprint-1.1.md",
+	"tools/claude-prompts/CLAUDE_TASK_sprint-2.md",
 	"tools/claude-prompts/README.md",
 ]);
 

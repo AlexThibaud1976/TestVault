@@ -1,9 +1,10 @@
 # Constitution — TestVault
 
-> Version 0.2.4 — 8 mai 2026
+> Version 0.3.0 — 10 mai 2026
 > Principes non-négociables pour le projet TestVault par ATConseil
 > Auteur : Alexandre Thibaud — atconseil.info
 
+> **Changelog v0.3.0** : **BREAKING** — périmètre réduit à Cloud uniquement (décision 2026-05-10). Justification : absence d'environnement testable pour respecter §10 TDD. TestVault devient Cloud-only. Publisher Marketplace fixé à `ATConseil` (correction `AlexThibaud`). Tests régression `CFG-2026-05-10-*` ajoutés. Voir CHANGELOG `[0.2.0]` et `tools/regression/CFG-2026-05-10-server2022-out-of-scope.test.ts`.
 > **Changelog v0.2.4** : adoption de Biome (lint + format unifiés) en remplacement de ESLint + Prettier. Justification : performance significativement supérieure sur monorepo, configuration unique, ESM-natif. Le choix est figé pour v1.
 > **Changelog v0.2.3** : correction technique — SDK ADO v5 → v4 (la v5 n'existe pas, le SDK reste sur la branche 4.x) ; Node.js 20 LTS → Node.js 22 LTS (Node 20 EOL avril 2026 ; Azure SDK JS impose Node 22 minimum dès juillet 2026).
 > **Changelog v0.2.2** : naming consolidé — projet `TestVault`, extension Marketplace `Argos`, publisher `ATConseil`. SDK npm renommé `@atconseil/testvault-sdk`.
@@ -14,24 +15,28 @@
 
 ## Mission
 
-TestVault est l'extension de test management pour Azure DevOps qui apporte aux équipes QA une parité fonctionnelle stricte avec Xray (Jira), aussi bien sur Azure DevOps Services (Cloud) que sur Azure DevOps Server 2022 (on-premises). Elle s'appuie sur le stockage Work Items natif d'ADO pour garantir la souveraineté des données du client, et alimente l'extension de reporting TestPulse via un schéma documenté.
+TestVault est l'extension de test management pour Azure DevOps qui apporte aux équipes QA une parité fonctionnelle stricte avec Xray (Jira), sur Azure DevOps Services (Cloud). Elle s'appuie sur le stockage Work Items natif d'ADO pour garantir la souveraineté des données du client, et alimente l'extension de reporting TestPulse via un schéma documenté.
 
 ---
 
 ## 1. Périmètre de compatibilité
 
-**Plateformes officiellement supportées en v1 :**
+**Plateformes officiellement supportées :**
 
 - **Azure DevOps Services (Cloud)** — support officiel, premier-class
-- **Azure DevOps Server 2022** (on-premises) — support officiel, parité fonctionnelle stricte sauf zones explicitement listées en §3
 
-**Plateformes hors périmètre v1 :**
+> **Note (Sprint 2 — 2026-05-10)** : périmètre réduit à Cloud uniquement (décision de scope).
+> Justification : aucune instance testable disponible pour respecter §10 (E2E obligatoire
+> avant déclaration de support). Voir CHANGELOG `[0.2.0]` et test régression
+> `tools/regression/CFG-2026-05-10-server2022-out-of-scope.test.ts`.
 
-- Azure DevOps Server 2020 et antérieurs (mainstream support terminé le 14 octobre 2025)
+**Plateformes hors périmètre :**
+
+- Toutes variantes ADO hors Cloud — hors scope depuis v0.2.0 (cf. note ci-dessus)
 - Team Foundation Server (toutes versions)
 - Visual Studio Code et Visual Studio IDE (hors scope)
 
-**Justification :** concentrer l'effort de QA sur les versions activement maintenues par Microsoft, réduire la matrice de tests, éviter le coût de support de plateformes en extended support.
+**Justification :** concentrer l'effort de QA sur Azure DevOps Services, respecter la règle TDD §10 (aucun support déclaré sans E2E sur instance réelle), réduire la matrice de tests.
 
 ---
 
@@ -52,8 +57,8 @@ TestVault est l'extension de test management pour Azure DevOps qui apporte aux �
 ### 3.1 Modèle d'extension
 
 - **MUST** : extension contributive Azure DevOps publiée sur le Visual Studio Marketplace
-- **MUST** : un seul VSIX par version, supportant à la fois Cloud et Server 2022 sans variantes ni builds parallèles
-- **MUST** : Custom Process via le modèle **Inheritance uniquement** (pas de XML on-prem, pas de Hosted XML)
+- **MUST** : un seul VSIX par version, ciblant Azure DevOps Services (Cloud) uniquement
+- **MUST** : Custom Process via le modèle **Inheritance uniquement** (pas de Process Template XML, pas de Hosted XML)
 - **MUST** : installation du process custom assistée par un wizard intégré à l'extension (détection des permissions admin requises, instructions claires en cas de manque de droits)
 
 **Naming & identité (non-négociable) :**
@@ -74,7 +79,7 @@ TestVault est l'extension de test management pour Azure DevOps qui apporte aux �
 
 Toutes les fonctionnalités cœur sont **client-side pures** et identiques Cloud/Server. Les fonctionnalités enrichies sont **Cloud-exclusives** via Azure Functions hébergées par ATConseil.
 
-**Cœur (parité Cloud/Server stricte) :**
+**Cœur (fonctionnalités Cloud) :**
 
 - CRUD Test Cases / Test Plans / Test Sets / Preconditions / Test Executions
 - Attachments (evidence) via API Attachments ADO native
@@ -82,7 +87,7 @@ Toutes les fonctionnalités cœur sont **client-side pures** et identiques Cloud
 - Export : Excel, PDF
 - Traceability matrix Work Items ↔ Test Cases (liens bidirectionnels)
 - BDD/Gherkin import/export et liaison avec feature files
-- Recherche WIQL + index local côté client (compense l'absence de `ContentMatchesIndex` sur Cloud)
+- Recherche WIQL + index local côté client
 - Versioning des Test Cases par snapshots taggés (cf. §8)
 - Alimentation du schéma WIT consommé par TestPulse
 
@@ -108,7 +113,7 @@ Toutes les features AI dépendent d'un fournisseur LLM. **TestVault ne fournit p
 
 - **MUST** : aucun appel LLM ne part de ATConseil sans clé fournie par le client (jamais de fallback sur une clé ATConseil).
 - **MUST** : les clés API LLM sont stockées chiffrées dans ExtensionDataService scope organisation, accessibles uniquement aux Admin TestVault (cf. §6). Jamais en clair en logs ni en télémétrie.
-- **MUST** : les appels LLM passent par les Azure Functions ATConseil (proxy d'orchestration) pour ne jamais exposer la clé côté navigateur. Sur ADO Server air-gapped, les features AI sont donc indisponibles, conformément au modèle Cloud-Plus.
+- **MUST** : les appels LLM passent par les Azure Functions ATConseil (proxy d'orchestration) pour ne jamais exposer la clé côté navigateur.
 - **MUST** : tout appel LLM est précédé d'une validation de quota (consommation par user/mois) configurable par l'Admin pour éviter les dépassements imprévus de coût chez le client.
 - **MUST** : aucune persistance des contenus (prompts, réponses) côté ATConseil ; uniquement un cache éphémère (TTL ≤ 1h) pour la déduplication.
 
@@ -186,7 +191,7 @@ Toutes les features AI dépendent d'un fournisseur LLM. **TestVault ne fournit p
 - **MUST** : audit des dépendances via `npm audit` + Dependabot ; aucune CVE haute ou critique non patchée n'est mergée en `main`.
 - **MUST** : SBOM CycloneDX généré et publié avec chaque release.
 - **MUST** : revue manuelle de toute nouvelle dépendance avant introduction (auteur, dernière mise à jour, alternatives évaluées).
-- **NEVER** : envoi de télémétrie incluant des données métier (titres de test, contenus, résultats, attachments, prompts LLM, réponses LLM). Télémétrie limitée à : version extension, plateforme (Cloud/Server), opcodes anonymisés, métriques techniques (durée d'opération, type d'erreur sans payload).
+- **NEVER** : envoi de télémétrie incluant des données métier (titres de test, contenus, résultats, attachments, prompts LLM, réponses LLM). Télémétrie limitée à : version extension, plateforme, opcodes anonymisés, métriques techniques (durée d'opération, type d'erreur sans payload).
 - **NEVER** : envoi des données client à des tiers (LLM, services externes) sans consentement explicite et documenté du client (toggle de Cloud-Plus AI features, configuration BYOK explicite).
 
 ---
@@ -234,20 +239,20 @@ Les opérations suivantes sont **strictement réservées au rôle Admin TestVaul
 
 ## 7. Modèle de monétisation
 
-**Modèle retenu : Freemium + Per-user tiered, avec différenciation Cloud/Server.**
+**Modèle retenu : Freemium + Per-user tiered (Cloud uniquement).**
 
-| Tier | Cloud | Server 2022 |
-|---|---|---|
-| **Free** | ≤ 5 users actifs, ≤ 500 Test Cases / projet, pas de features Cloud-Plus | ≤ 5 users actifs, ≤ 500 Test Cases / projet |
-| **Pro** | ~18 €/user/mois (objectif ~30% sous Xray Cloud) | Licence perpétuelle ~250 €/user + 20% maintenance annuelle |
-| **Enterprise** | Sur devis (SLA, SSO custom, support prioritaire, accompagnement) | Sur devis (SLA, support prioritaire, accompagnement) |
+| Tier | Cloud |
+|---|---|
+| **Free** | ≤ 5 users actifs, ≤ 500 Test Cases / projet, pas de features Cloud-Plus |
+| **Pro** | ~18 €/user/mois (objectif ~30% sous Xray Cloud) |
+| **Enterprise** | Sur devis (SLA, SSO custom, support prioritaire, accompagnement) |
 
-**Justification résumée :** le marché ADO est moins monétisé que Jira sur le test management ; le freemium réduit la friction d'adoption ; le per-user mensuel sur Cloud aligne avec les attentes SaaS modernes ; le perpétuel sur Server respecte les habitudes d'achat on-prem ; les features Cloud-Plus (webhooks CI externes, jobs planifiés, agrégations, AI BYOK) justifient le différentiel Cloud > Server.
+**Justification résumée :** le marché ADO est moins monétisé que Jira sur le test management ; le freemium réduit la friction d'adoption ; le per-user mensuel sur Cloud aligne avec les attentes SaaS modernes ; les features Cloud-Plus (webhooks CI externes, jobs planifiés, agrégations, AI BYOK) justifient le différentiel Free/Pro.
 
 > **Note sur la valeur AI avec BYOK** : les coûts LLM ne sont pas absorbés par ATConseil (le client paie son provider). La valeur AI vendue dans le Cloud Pro est *fonctionnelle* (gain de temps, qualité de génération, détection de flakiness) et non *financière*. Cette posture doit être tenue dans la communication marketing.
 
 - **MUST** : facturation gérée hors Marketplace (Stripe + portail ATConseil). Microsoft a arrêté le billing tiers en juillet 2019 ; aucun mécanisme natif Marketplace n'existe.
-- **MUST** : activation par clé de licence avec validation périodique (toutes 24h Cloud, toutes 7 jours Server pour permettre les déconnexions courtes en air-gap).
+- **MUST** : activation par clé de licence avec validation périodique (toutes 24h).
 - **MUST** : downgrade Pro → Free non destructif (les données restent dans ADO ; seules les limites de tier s'appliquent au-delà).
 
 > Voir `monetisation-analyse.md` pour l'analyse comparative détaillée des 5 modèles évalués (per-user, per-org tier, licence unique, freemium, OSS core).
@@ -301,7 +306,7 @@ Une checklist automatisée bloque la publication si l'un des points est rouge :
 - [ ] Toutes les routes de l'API REST publique répondent avec le contrat OpenAPI attendu (test contractuel)
 - [ ] Toutes les API externes consommées (ADO REST, Microsoft Graph, fournisseurs LLM Cloud-Plus) répondent et leurs schémas sont vérifiés
 - [ ] Les modèles de LLM proposés par défaut dans la configuration sont les versions actuellement recommandées par leur fournisseur — toute dépréciation déclenche une issue bloquante
-- [ ] Aucune régression sur la suite de tests E2E (Playwright contre instance ADO réelle Cloud + Server 2022)
+- [ ] Aucune régression sur la suite de tests E2E (Playwright contre instance ADO Cloud)
 
 ### 10.4 Tracking des régressions
 
@@ -335,7 +340,6 @@ Toute publication sur le Marketplace exige que **TOUS** les points suivants soie
 
 - [x] Tests unitaires aux seuils §10.1 (≥ 90% core, ≥ 80% UI) — 312 tests argos-extension passent ; couverture mesurée : **96% stmts / 89.86% branches / 80.62% funcs / 96% lines** — seuils 80% UI ✓ (2026-05-08)
 - [ ] Tests E2E parcours critiques verts sur Cloud — specs 01–11 écrites, **nécessite instance ADO Cloud** (`ADO_CLOUD_ORG_URL`, `ADO_CLOUD_PAT`)
-- [ ] Tests E2E parcours critiques verts sur Server 2022 — **nécessite instance ADO Server 2022** dédiée
 - [ ] Suite de régression complète verte — aucun bug production confirmé à ce stade, suite vide ; **à alimenter dès le premier bug prod**
 - [x] Tests contractuels API publique verts (OpenAPI) — spécification OpenAPI générée dans `docs/openapi.yaml` (5 endpoints documentés) ✓ (2026-05-08)
 - [ ] Vérification des API externes (ADO REST, Entra ID, fournisseurs LLM) passées — **nécessite déploiement Azure Functions** + clés réelles
@@ -348,6 +352,10 @@ Toute publication sur le Marketplace exige que **TOUS** les points suivants soie
 - [x] Script de migration testé (si schéma touché) — N/A : premier release v1.0.0, aucune migration requise ✓
 - [x] CHANGELOG.md mis à jour — entrée v1.0.0 complète avec résumé des phases 0–7 ✓
 - [x] Spec-kit mis à jour si périmètre touché — `Specs/tasks.md` : 377 cases T-0.1→T-7.10 toutes marquées `[x]` ✓ (2026-05-08)
+- [ ] Manifest `publisher` = `ATConseil` (cf. test régression CFG-2026-05-10-publisher-atconseil)
+- [ ] Manifest `targets[]` pointe uniquement vers `Microsoft.VisualStudio.Services.Cloud` (cf. test régression CFG-2026-05-10-server2022)
+- [ ] Hub `argos-hub` a `properties.iconUrl` pointant vers `static/argos-hub.svg`
+- [ ] `icons.default` pointe vers `static/marketplace-icon.png` (128×128)
 - [ ] Validation manuelle Alexandre Thibaud — **en attente**
 
 ---

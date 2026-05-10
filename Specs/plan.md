@@ -110,12 +110,11 @@ testvault/                                  # racine du repo, monorepo
   "publisher": "ATConseil",
   "name": "Argos",
   "version": "1.0.0",
-  "description": "Test management for Azure DevOps. The Xray-class experience, native to ADO Cloud and Server 2022.",
+  "description": "Test management for Azure DevOps. The Xray-class experience, native to ADO Cloud.",
   "categories": ["Azure Boards"],
   "tags": ["test", "qa", "test management", "xray", "testing", "BDD", "cucumber"],
   "targets": [
-    { "id": "Microsoft.VisualStudio.Services" },
-    { "id": "Microsoft.TeamFoundation.Server", "version": "[18.0,)" }
+    { "id": "Microsoft.VisualStudio.Services.Cloud" }
   ],
   "scopes": [
     "vso.work_full",
@@ -164,7 +163,7 @@ testvault/                                  # racine du repo, monorepo
 }
 ```
 
-**Targets.** `Microsoft.VisualStudio.Services` couvre ADO Cloud. `Microsoft.TeamFoundation.Server` avec version `[18.0,)` cible **ADO Server 2022 et supérieurs uniquement** — la version interne d'ADO Server 2022 est 18.0.x (cf. release notes Microsoft). Cela exclut nativement Server 2020 (17.x) et antérieurs, conformément à la constitution §1.
+**Targets.** `Microsoft.VisualStudio.Services.Cloud` cible Azure DevOps Services (Cloud) uniquement, conformément à la décision Cloud-only de v0.2.0 (constitution v0.3.0 §1).
 
 **Scopes.** Minimum nécessaire :
 - `vso.work_full` : CRUD Work Items (Test Cases, Plans, etc.) + Attachments
@@ -495,18 +494,9 @@ WHERE [System.WorkItemType] = 'TestVault.TestExecution'
 ORDER BY [System.ChangedDate] DESC
 ```
 
-### 5.4 Recherche full-text — adaptation Cloud/Server
+### 5.4 Recherche full-text — Cloud
 
-**Server 2022** (full-text natif disponible) :
-```sql
-SELECT [System.Id]
-FROM workitems
-WHERE [System.WorkItemType] = 'TestVault.TestCase'
-  AND [System.AreaPath] UNDER @areaPath
-  AND ([System.Title] CONTAINS @term OR [TestVault.Steps] CONTAINS @term)
-```
-
-**Cloud** (pas de full-text natif) :
+**Cloud** (pas de full-text natif WIQL) :
 ```sql
 -- Étape 1 : récupérer un set candidat large
 SELECT [System.Id], [System.Title], [TestVault.Steps]
@@ -936,14 +926,13 @@ Cibles de couverture : **90% core / 80% UI** (constitution §10.1), bloquant en 
 
 ### 9.4 Tests E2E
 
-**Outils :** Playwright. **Deux instances cibles maintenues** par ATConseil :
+**Outils :** Playwright. **Instance cible maintenue** par ATConseil :
 
 - `argos-test.dev.azure.com` (ADO Cloud, organisation de test dédiée, données reset chaque nuit)
-- `argos-test-server.atconseil.io` (ADO Server 2022 self-hosted Azure VM, snapshot quotidien)
 
 **Parcours critiques couverts :**
 
-1. Install Custom Process via wizard (Cloud + Server)
+1. Install Custom Process via wizard (Cloud)
 2. Création d'un Test Case complet, sauvegarde, relecture
 3. Création d'un Test Plan, lock avec snapshot, exécution manuelle d'un TC, attachement d'evidence, save run
 4. Import CSV de 1000 Test Cases, vérification de la pagination
