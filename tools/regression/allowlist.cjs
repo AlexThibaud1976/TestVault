@@ -31,6 +31,8 @@ const SHARED_DOC_ALLOWLIST = new Set([
 	"tools/claude-prompts/CLAUDE_TASK_sprint-3.1.md",
 	"tools/claude-prompts/CLAUDE_TASK_sprint-3.2.md",
 	"tools/claude-prompts/CLAUDE_TASK_sprint-3.4.md",
+	"tools/claude-prompts/CLAUDE_TASK_sprint-4.md",
+	"tools/regression/T-1.0-argos-multi-hubs-architecture.test.ts",
 ]);
 
 module.exports = { SHARED_DOC_ALLOWLIST };

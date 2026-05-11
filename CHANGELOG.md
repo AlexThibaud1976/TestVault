@@ -9,6 +9,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0] - 2026-05-11
+
+### Added (Sprint 4 - feat/multi-hubs-architecture)
+
+- **Architecture multi-hubs native ADO (TECH-DEBT-013 resolu).** Le hub monolithique `argos-hub` est eclate en 6 hubs ADO independants :
+  - `argos-hub-plans` — Test Plans (icone BulletedList, order 10)
+  - `argos-hub-cases` — Test Cases (icone TestBeaker, order 20)
+  - `argos-hub-sets` — Test Sets (icone FolderList, order 30)
+  - `argos-hub-preconditions` — Preconditions (icone Important, order 40)
+  - `argos-hub-reports` — Reports (icone ReportDocument, order 50)
+  - `argos-hub-settings` — Settings (icone Settings, order 60)
+- **Routing via `SDK.getContributionId()`** (pattern officiel Microsoft) : chaque hub partage `dist/hub/hub.html` et App.tsx choisit la vue a rendre selon le contributionId retourne par le SDK. Tableau `CONTRIBUTION_ID_TO_SECTION` avec full IDs (`AlexThibaud.ArgosTesting.argos-hub-*`) case-sensitive.
+- **Test regression `T-1.0-argos-multi-hubs-architecture.test.ts`** : 9 assertions verifiant la presence des 6 hubs, leur type, leur target, leurs noms, l'absence du legacy `argos-hub`, le count exact de 6 hubs `ms.vss-web.hub`.
+- **App.tsx refactored** : suppression sidebar nav (NAV_ITEMS, MainContent), ajout `HubContent` switch + 6 view components exportes (`PlansView`, `CasesView`, `SetsView`, `PreconditionsView`, `ReportsView`, `SettingsView`), loading state `hub-loading` preserve.
+- **WIRING tests mis a jour** : les 5 tests importaient `MainContent` + cliquaient sur `nav-*`. Migres vers import direct du view component correspondant, sans interaction nav.
+- **App.test.tsx** : 8 tests (6 routing + 1 fallback + 1 loading), SDK mock complet (`init`, `ready`, `getContributionId`, `getHost`, `getService`, `getAccessToken`, `getExtensionContext`, `notifyLoadSucceeded`, `notifyLoadFailed`), mock `getService` discriminant par serviceId pour supporter `IExtensionDataService`.
+
+### Changed
+
+- `vss-extension.json` : version 0.3.5 -> 0.4.0, contribution `argos-hub` (singulier) remplacee par 6 contributions.
+- `apps/argos-extension/src/hub/index.tsx` : simplification (SDK.init retire, App gere l'initialisation).
+- **T-0.9-argos-top-level-placement** : mise a jour assertions (pattern multi-hubs).
+- **CFG-2026-05-10-top-level-hub** : ajout assertion "au moins 1 hub dans argos-hub-group".
+- **Constitution v0.4.3 -> v0.5.0** avec Sprint 4 section.
+
+### Backlog (post-Sprint 4)
+
+- **Reports hub** : placeholder actuel ("requires backend service not yet implemented"). Implementation complete FlakinessReportService (WIRING-CLOUD-PLUS backlog).
+- **Settings hub** : Audit Log, Repo Mapping, Quotas, Webhooks, Beta opt-in (Sprint 2.5b backlog).
+- **E2E validation** sur instance ADO Cloud reelle : verifier que les 6 hubs apparaissent bien dans la nav Argos (T-e2e-1.0).
+- (autres items backlog inchanges : TECH-DEBT-007, TECH-DEBT-010, TECH-DEBT-012, scopes ADO audit)
+
+### Lessons learned (Sprint 4)
+
+- **Mock complet obligatoire** : quand un composant React utilise `ServicesProvider` (qui cree de vrais services), tous les SDK calls effectues par ces services doivent etre mockes, pas seulement les calls directs dans la suite de test. La chaine `SettingsView -> LlmProviderSettings -> llmProviderService.list() -> SDK.getExtensionContext()` l'illustre.
+- **WIRING tests = contrat architecture** : ces tests ont revele exactement ce qui changeait (MainContent -> views independantes, nav supprimee). Les mettre a jour avant de toucher App.tsx aurait ete le flow TDD ideal.
+- **`iconName` vs `icon`** : confirme que `iconName` (FluentUI icon name) est la syntaxe correcte pour les hubs dans `vss-extension.json` (utilisee ici pour les 6 hubs).
+
+---
+
 ## [0.3.5] - 2026-05-11
 
 ### Fixed (Sprint 3.4 - fix/hub-group-architecture)
