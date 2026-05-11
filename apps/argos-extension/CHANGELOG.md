@@ -1,5 +1,11 @@
 # argos-extension
 
+## 1.0.0
+
+### Major Changes
+
+- Try AnalyticsReport iconName for Reports hub (BarChart4 didnt render)
+
 ## 0.4.1
 
 ### Patch Changes
