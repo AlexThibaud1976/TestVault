@@ -9,6 +9,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.8] - 2026-05-12
+
+### Added (TECH-DEBT-015C - docs/phase-0-gaps)
+
+- **`Specs/PHASE-0-GAPS.md`** : Document analytique honnete des ecarts entre `Specs/spec.md` Phase 0
+  et la realite du code. Constat principal : `apps/argos-functions` (8 modules, ~25 fichiers TS) contient
+  du code anticipe en avance sur le plan -- tous les modules sont references dans le spec-kit mais en
+  Phases 4, 6 et 7, alors que le projet est en Phase 0/1. Le backend n'est pas deploye en production au
+  2026-05-12. Le module Stripe est un spike (confirmation utilisateur).
+
+- **`Specs/MONOREPO.md`** (TECH-DEBT-015A) : Inventaire factuel du monorepo (9 packages, 3 apps,
+  carte des dependances, statut npm).
+
+- **`Specs/MIGRATION-PLAN.md`** (TECH-DEBT-015B) : Decisions architecturales validees + plan de
+  migration (renaming testvault-\* -> argos-\*, versioning hybride, sprints 5a-9).
+
+### Backlog enrichi (TECH-DEBT-015C)
+
+- **TECH-DEBT-017 NEW** : Plan de deploiement argos-functions (decision a/b/c sur le sort du
+  backend ; conditionne par TECH-DEBT-016 pricing et TECH-DEBT-018 Stripe)
+- **TECH-DEBT-018 NEW** : Decision Stripe -- garder spike / supprimer / refondre proprement Phase 7
+- **TECH-DEBT-019 NEW** : Statut apps/docs-site -- placeholder vide a clarifier (supprimer ou implementer)
+- Rappel **TECH-DEBT-016** : Strategie pricing Argos (conditionne 017 et 018)
+
+### Lessons learned (015A + 015B + 015C)
+
+- **Code anticipe non documente = dette latente** : le backend argos-functions est un effort R&D
+  solide mais en avance sur les phases spec-kit, ce qui rend le repo visuellement plus avance qu'il
+  n'est fonctionnellement. La lecon : tout nouveau module ajoute (meme experimental) merite une
+  mention dans spec.md, meme juste "exploration Phase X, non-deploye".
+- **La triade 015A+015B+015C** livre une vision claire et honnete du monorepo : inventaire factuel
+  (015A) + decisions architecturales (015B) + reconnaissance gaps (015C). Base solide pour les
+  sprints d'execution.
+
+---
+
 ## [0.4.7] - 2026-05-12
 
 ### Added (TECH-DEBT-011 v3 - feat/preflight-manifest-check)
