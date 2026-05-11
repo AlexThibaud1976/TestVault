@@ -1,5 +1,11 @@
 # argos-extension
 
+## 0.4.0
+
+### Minor Changes
+
+- Sprint 4: multi-hubs native ADO architecture (6 separate hubs via SDK.getContributionId() routing)
+
 ## 0.3.5
 
 ### Patch Changes

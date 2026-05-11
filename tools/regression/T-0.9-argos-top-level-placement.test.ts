@@ -17,13 +17,15 @@
  *                        conteneur Microsoft "ms.vss-web.project-hub-groups-collection".
  *                        Le hub interne (argos-hub) cible le hub-group via
  *                        reference relative ".argos-hub-group".
+ *   2026-05-11 (T-0.9 v3, Sprint 4) - Architecture multi-hubs. Argos-hub
+ *                        singulier supprime au profit de 6 hubs internes.
+ *                        Voir T-1.0-argos-multi-hubs-architecture.
  *
- * What this test guards (Sprint 3.4 version):
+ * What this test guards (Sprint 4 version):
  *   - vss-extension.json must declare an "argos-hub-group" contribution
  *   - That contribution must be of type "ms.vss-web.hub-group"
  *   - Its targets[] must include "ms.vss-web.project-hub-groups-collection"
- *   - vss-extension.json must declare an "argos-hub" contribution
- *   - That contribution must target ".argos-hub-group" (relative reference)
+ *   - At least one hub must target ".argos-hub-group" (relative reference)
  *   - No contribution must target the invalid "ms.vss-web.project-hub-group"
  *     (Sprint 3 false premise guard)
  *
@@ -59,7 +61,7 @@ interface Manifest {
 	contributions: Contribution[];
 }
 
-describe("T-0.9-argos-top-level-placement regression (Sprint 3.4 architecture)", () => {
+describe("T-0.9-argos-top-level-placement regression (Sprint 4 architecture)", () => {
 	const manifest: Manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"));
 
 	it("must declare an argos-hub-group contribution", () => {
@@ -77,14 +79,9 @@ describe("T-0.9-argos-top-level-placement regression (Sprint 3.4 architecture)",
 		expect(hubGroup?.targets).toContain("ms.vss-web.project-hub-groups-collection");
 	});
 
-	it("must declare an argos-hub contribution", () => {
-		const hub = manifest.contributions.find((c) => c.id === "argos-hub");
-		expect(hub).toBeDefined();
-	});
-
-	it("argos-hub must target .argos-hub-group (relative reference)", () => {
-		const hub = manifest.contributions.find((c) => c.id === "argos-hub");
-		expect(hub?.targets).toContain(".argos-hub-group");
+	it("at least one hub must target .argos-hub-group (relative reference, Sprint 4 multi-hubs)", () => {
+		const hubs = manifest.contributions.filter((c) => c.targets?.includes(".argos-hub-group"));
+		expect(hubs.length).toBeGreaterThanOrEqual(1);
 	});
 
 	it("no contribution must target the invalid ms.vss-web.project-hub-group (Sprint 3 false premise guard)", () => {

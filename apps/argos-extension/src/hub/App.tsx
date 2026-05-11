@@ -1,5 +1,6 @@
 import { FluentProvider, Text, webLightTheme } from "@fluentui/react-components";
-import { useState } from "react";
+import * as SDK from "azure-devops-extension-sdk";
+import { useEffect, useState } from "react";
 import { LlmProviderSettings } from "./LlmProviderSettings.js";
 import { PreconditionForm } from "./PreconditionForm.js";
 import { TestCaseForm } from "./TestCaseForm.js";
@@ -7,51 +8,26 @@ import { TestPlanForm } from "./TestPlanForm.js";
 import { TestSetForm } from "./TestSetForm.js";
 import { ServicesProvider, useServices } from "./services-context.js";
 
-type View = "plans" | "cases" | "sets" | "preconditions" | "reports" | "settings";
+type Section = "plans" | "cases" | "sets" | "preconditions" | "reports" | "settings";
 
-const NAV_ITEMS: Array<{ id: View; label: string; testId: string }> = [
-	{ id: "plans", label: "Plans", testId: "nav-plans" },
-	{ id: "cases", label: "Cases", testId: "nav-cases" },
-	{ id: "sets", label: "Sets", testId: "nav-sets" },
-	{ id: "preconditions", label: "Precond.", testId: "nav-preconditions" },
-	{ id: "reports", label: "Reports", testId: "nav-reports" },
-];
+// Full contribution IDs (publisher.extension.contribution-id format, case-sensitive)
+const CONTRIBUTION_ID_TO_SECTION: Record<string, Section> = {
+	"AlexThibaud.ArgosTesting.argos-hub-plans": "plans",
+	"AlexThibaud.ArgosTesting.argos-hub-cases": "cases",
+	"AlexThibaud.ArgosTesting.argos-hub-sets": "sets",
+	"AlexThibaud.ArgosTesting.argos-hub-preconditions": "preconditions",
+	"AlexThibaud.ArgosTesting.argos-hub-reports": "reports",
+	"AlexThibaud.ArgosTesting.argos-hub-settings": "settings",
+};
 
-function NavItem({
-	label,
-	testId,
-	active,
-	onClick,
-}: {
-	label: string;
-	testId: string;
-	active: boolean;
-	onClick: () => void;
-}) {
-	return (
-		<button
-			type="button"
-			data-testid={testId}
-			onClick={onClick}
-			style={{
-				display: "block",
-				width: "100%",
-				textAlign: "left",
-				padding: "6px 12px",
-				border: "none",
-				background: active ? "#e8f0fe" : "transparent",
-				cursor: "pointer",
-				fontWeight: active ? 600 : 400,
-				borderLeft: active ? "3px solid #0078d4" : "3px solid transparent",
-				fontSize: "14px",
-			}}
-		>
-			{label}
-		</button>
-	);
+const DEFAULT_SECTION: Section = "plans";
+
+function resolveSection(contributionId: string | undefined): Section {
+	if (!contributionId) return DEFAULT_SECTION;
+	return CONTRIBUTION_ID_TO_SECTION[contributionId] ?? DEFAULT_SECTION;
 }
 
-function PlansView() {
+export function PlansView() {
 	const { testPlanService, project } = useServices();
 	return (
 		<div data-testid="view-plans">
@@ -63,7 +39,7 @@ function PlansView() {
 	);
 }
 
-function CasesView() {
+export function CasesView() {
 	const { testCaseService, project } = useServices();
 	return (
 		<div data-testid="view-cases">
@@ -75,7 +51,7 @@ function CasesView() {
 	);
 }
 
-function SetsView() {
+export function SetsView() {
 	const { testSetService, project } = useServices();
 	return (
 		<div data-testid="view-sets">
@@ -87,7 +63,7 @@ function SetsView() {
 	);
 }
 
-function PreconditionsView() {
+export function PreconditionsView() {
 	const { preconditionService, project } = useServices();
 	return (
 		<div data-testid="view-preconditions">
@@ -99,7 +75,7 @@ function PreconditionsView() {
 	);
 }
 
-function ReportsView() {
+export function ReportsView() {
 	return (
 		<div data-testid="view-reports" style={{ padding: 16 }}>
 			<Text as="h2" size={500} weight="semibold" block style={{ marginBottom: "12px" }}>
@@ -115,7 +91,7 @@ function ReportsView() {
 	);
 }
 
-function SettingsView() {
+export function SettingsView() {
 	const { llmProviderService } = useServices();
 	return (
 		<div data-testid="view-settings">
@@ -133,84 +109,50 @@ function SettingsView() {
 	);
 }
 
-export function MainContent() {
-	const [currentView, setCurrentView] = useState<View>("plans");
-
-	function renderMain() {
-		switch (currentView) {
-			case "plans":
-				return <PlansView />;
-			case "cases":
-				return <CasesView />;
-			case "sets":
-				return <SetsView />;
-			case "preconditions":
-				return <PreconditionsView />;
-			case "reports":
-				return <ReportsView />;
-			case "settings":
-				return <SettingsView />;
-		}
+function HubContent({ section }: { section: Section }) {
+	switch (section) {
+		case "plans":
+			return <PlansView />;
+		case "cases":
+			return <CasesView />;
+		case "sets":
+			return <SetsView />;
+		case "preconditions":
+			return <PreconditionsView />;
+		case "reports":
+			return <ReportsView />;
+		case "settings":
+			return <SettingsView />;
 	}
-
-	return (
-		<div style={{ display: "flex", height: "100vh", fontFamily: "Segoe UI, sans-serif" }}>
-			<div
-				style={{
-					width: "180px",
-					borderRight: "1px solid #e0e0e0",
-					paddingTop: "16px",
-					flexShrink: 0,
-				}}
-			>
-				<div
-					style={{
-						padding: "0 12px 8px",
-						fontSize: "12px",
-						color: "#666",
-						fontWeight: 600,
-						textTransform: "uppercase",
-					}}
-				>
-					Argos
-				</div>
-				{NAV_ITEMS.map((item) => (
-					<NavItem
-						key={item.id}
-						label={item.label}
-						testId={item.testId}
-						active={currentView === item.id}
-						onClick={() => setCurrentView(item.id)}
-					/>
-				))}
-				<div
-					style={{
-						padding: "16px 12px 8px",
-						fontSize: "12px",
-						color: "#666",
-						fontWeight: 600,
-						textTransform: "uppercase",
-					}}
-				>
-					Settings
-				</div>
-				<NavItem
-					label="AI / Config"
-					testId="nav-settings"
-					active={currentView === "settings"}
-					onClick={() => setCurrentView("settings")}
-				/>
-			</div>
-			<div style={{ flex: 1, padding: "24px", overflowY: "auto" }}>{renderMain()}</div>
-		</div>
-	);
 }
 
 export function App() {
+	const [section, setSection] = useState<Section>(DEFAULT_SECTION);
+	const [isReady, setIsReady] = useState(false);
+
+	useEffect(() => {
+		SDK.init()
+			.then(() => {
+				setSection(resolveSection(SDK.getContributionId()));
+				setIsReady(true);
+				SDK.notifyLoadSucceeded();
+			})
+			.catch((err) => {
+				console.error("SDK init failed", err);
+				SDK.notifyLoadFailed(err);
+			});
+	}, []);
+
+	if (!isReady) {
+		return <div data-testid="hub-loading">Loading...</div>;
+	}
+
 	return (
 		<FluentProvider theme={webLightTheme}>
 			<ServicesProvider>
-				<MainContent />
+				<div style={{ padding: "24px", fontFamily: "Segoe UI, sans-serif" }}>
+					<HubContent section={section} />
+				</div>
 			</ServicesProvider>
 		</FluentProvider>
 	);

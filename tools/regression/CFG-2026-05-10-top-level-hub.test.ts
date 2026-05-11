@@ -1,12 +1,13 @@
 /**
  * Regression test: CFG-2026-05-10-top-level-hub
  *
- * Locks invariants in vss-extension.json after Sprint 3 (v0.3.0) and Sprint 3.4 (v0.3.5):
+ * Locks invariants in vss-extension.json after Sprint 3 (v0.3.0), Sprint 3.4 (v0.3.5), Sprint 4 (v0.4.0):
  *   1. No contribution targets "ms.vss-work-web.work-hub-group" (zero tolerance, Sprint 3)
  *   2. version >= 0.3.0
  *   3. categories includes both "Azure Boards" and "Azure Test Plans"
  *   4. No contribution targets the invalid "ms.vss-web.project-hub-group" (Sprint 3 false premise guard)
  *   5. manifest must declare an argos-hub-group contribution of type ms.vss-web.hub-group
+ *   6. argos-hub-group must contain at least one hub (no empty hub-group)
  *
  * Complementary to T-0.9-argos-top-level-placement (which checks the positive
  * presence of the top-level target). This test enforces zero-tolerance on the
@@ -14,7 +15,7 @@
  *
  * DO NOT delete without explicit spec-kit decision.
  *
- * Reference: Sprint 3 (v0.3.0), Sprint 3.4 (v0.3.5), tools/regression/REGISTRY.md
+ * Reference: Sprint 3 (v0.3.0), Sprint 3.4 (v0.3.5), Sprint 4 (v0.4.0), tools/regression/REGISTRY.md
  */
 
 import { readFileSync } from "node:fs";
@@ -85,5 +86,10 @@ describe("CFG-2026-05-10-top-level-hub regression", () => {
 		const hubGroup = manifest.contributions.find((c) => c.id === "argos-hub-group");
 		expect(hubGroup).toBeDefined();
 		expect(hubGroup?.type).toBe("ms.vss-web.hub-group");
+	});
+
+	it("argos-hub-group must contain at least one hub (no empty hub-group)", () => {
+		const hubs = manifest.contributions.filter((c) => c.targets?.includes(".argos-hub-group"));
+		expect(hubs.length).toBeGreaterThanOrEqual(1);
 	});
 });

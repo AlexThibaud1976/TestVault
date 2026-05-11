@@ -1,16 +1,38 @@
-import { FluentProvider, webLightTheme } from "@fluentui/react-components";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { createMockServices } from "../test-utils/mock-services.js";
-import { App, MainContent } from "./App.js";
-import { ServicesContext } from "./services-context.js";
+import * as SDK from "azure-devops-extension-sdk";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { App } from "./App.js";
 
 afterEach(cleanup);
 
+const mockProjectService = {
+	getProject: vi.fn().mockResolvedValue({ name: "MockProject" }),
+};
+
+const mockExtensionDataManager = {
+	getValue: vi.fn().mockResolvedValue(undefined),
+	setValue: vi.fn().mockResolvedValue(undefined),
+};
+
+const mockExtensionDataService = {
+	getExtensionDataManager: vi.fn().mockResolvedValue(mockExtensionDataManager),
+};
+
 vi.mock("azure-devops-extension-sdk", () => ({
-	init: vi.fn(),
+	init: vi.fn(() => Promise.resolve()),
 	ready: vi.fn(() => Promise.resolve()),
+	getContributionId: vi.fn(),
+	getHost: vi.fn(() => ({ name: "MockOrg" })),
+	getService: vi.fn((serviceId: string) => {
+		if (serviceId === "ms.vss-features.extension-data-service") {
+			return Promise.resolve(mockExtensionDataService);
+		}
+		return Promise.resolve(mockProjectService);
+	}),
+	getAccessToken: vi.fn(() => Promise.resolve("mock-token")),
+	getExtensionContext: vi.fn(() => ({ id: "mock-extension-id" })),
+	notifyLoadSucceeded: vi.fn(),
+	notifyLoadFailed: vi.fn(),
 }));
 
 vi.mock("azure-devops-extension-api", () => ({
@@ -20,71 +42,61 @@ vi.mock("azure-devops-extension-api", () => ({
 	},
 }));
 
-function renderWithMockServices(overrides?: Parameters<typeof createMockServices>[0]) {
-	const services = createMockServices(overrides);
-	return render(
-		<FluentProvider theme={webLightTheme}>
-			<ServicesContext.Provider value={services}>
-				<MainContent />
-			</ServicesContext.Provider>
-		</FluentProvider>
-	);
-}
-
-describe("Argos Hub", () => {
-	it("renders the sidebar nav", () => {
-		renderWithMockServices();
-		expect(screen.getByTestId("nav-plans")).toBeDefined();
-		expect(screen.getByTestId("nav-cases")).toBeDefined();
-		expect(screen.getByTestId("nav-sets")).toBeDefined();
-		expect(screen.getByTestId("nav-preconditions")).toBeDefined();
-		expect(screen.getByTestId("nav-reports")).toBeDefined();
+describe("App contribution-id routing", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		vi.mocked(SDK.init).mockResolvedValue(undefined);
+		vi.mocked(SDK.ready).mockResolvedValue(undefined);
+		vi.mocked(SDK.getHost).mockReturnValue({ name: "MockOrg" } as ReturnType<typeof SDK.getHost>);
+		vi.mocked(SDK.getService).mockImplementation((serviceId: string) => {
+			if (serviceId === "ms.vss-features.extension-data-service") {
+				return Promise.resolve(mockExtensionDataService) as never;
+			}
+			return Promise.resolve(mockProjectService) as never;
+		});
+		vi.mocked(SDK.getAccessToken).mockResolvedValue("mock-token");
+		vi.mocked(SDK.getExtensionContext).mockReturnValue({ id: "mock-extension-id" } as ReturnType<
+			typeof SDK.getExtensionContext
+		>);
+		mockProjectService.getProject.mockResolvedValue({ name: "MockProject" });
+		mockExtensionDataManager.getValue.mockResolvedValue(undefined);
+		mockExtensionDataManager.setValue.mockResolvedValue(undefined);
+		mockExtensionDataService.getExtensionDataManager.mockResolvedValue(mockExtensionDataManager);
 	});
 
-	it("shows the Plans view by default", async () => {
-		renderWithMockServices();
-		await waitFor(() => expect(screen.getByTestId("view-plans")).toBeDefined());
-	});
-
-	it("navigates to Cases view on nav click", async () => {
-		const user = userEvent.setup();
-		renderWithMockServices();
-		await user.click(screen.getByTestId("nav-cases"));
-		expect(screen.getByTestId("view-cases")).toBeDefined();
-		expect(screen.queryByTestId("view-plans")).toBeNull();
-	});
-
-	it("navigates to Sets view on nav click", async () => {
-		const user = userEvent.setup();
-		renderWithMockServices();
-		await user.click(screen.getByTestId("nav-sets"));
-		expect(screen.getByTestId("view-sets")).toBeDefined();
-	});
-
-	it("navigates to Preconditions view on nav click", async () => {
-		const user = userEvent.setup();
-		renderWithMockServices();
-		await user.click(screen.getByTestId("nav-preconditions"));
-		expect(screen.getByTestId("view-preconditions")).toBeDefined();
-	});
-
-	it("navigates to Reports view on nav click", async () => {
-		const user = userEvent.setup();
-		renderWithMockServices();
-		await user.click(screen.getByTestId("nav-reports"));
-		expect(screen.getByTestId("view-reports")).toBeDefined();
-	});
-
-	it("navigates back to Plans view when Plans nav is clicked", async () => {
-		const user = userEvent.setup();
-		renderWithMockServices();
-		await user.click(screen.getByTestId("nav-cases"));
-		await user.click(screen.getByTestId("nav-plans"));
-		expect(screen.getByTestId("view-plans")).toBeDefined();
-	});
-
-	it("App renders ServicesProvider loading state", () => {
+	it.each([
+		["AlexThibaud.ArgosTesting.argos-hub-plans", "view-plans"],
+		["AlexThibaud.ArgosTesting.argos-hub-cases", "view-cases"],
+		["AlexThibaud.ArgosTesting.argos-hub-sets", "view-sets"],
+		["AlexThibaud.ArgosTesting.argos-hub-preconditions", "view-preconditions"],
+		["AlexThibaud.ArgosTesting.argos-hub-reports", "view-reports"],
+		["AlexThibaud.ArgosTesting.argos-hub-settings", "view-settings"],
+	])("renders correct view for contribution %s", async (contributionId, expectedTestId) => {
+		vi.mocked(SDK.getContributionId).mockReturnValue(contributionId);
 		render(<App />);
-		expect(screen.getByTestId("services-loading")).toBeDefined();
+		await waitFor(
+			() => {
+				expect(screen.getByTestId(expectedTestId)).toBeDefined();
+			},
+			{ timeout: 3000 }
+		);
+	});
+
+	it("falls back to plans section if contributionId is unknown", async () => {
+		vi.mocked(SDK.getContributionId).mockReturnValue("unknown.contribution.id");
+		render(<App />);
+		await waitFor(
+			() => {
+				expect(screen.getByTestId("view-plans")).toBeDefined();
+			},
+			{ timeout: 3000 }
+		);
+	});
+
+	it("shows loading state before SDK init resolves", () => {
+		vi.mocked(SDK.init).mockReturnValue(new Promise(() => {}));
+		vi.mocked(SDK.getContributionId).mockReturnValue("AlexThibaud.ArgosTesting.argos-hub-plans");
+		render(<App />);
+		expect(screen.getByTestId("hub-loading")).toBeDefined();
 	});
 });
