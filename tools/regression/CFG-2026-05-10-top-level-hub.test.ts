@@ -1,10 +1,12 @@
 /**
  * Regression test: CFG-2026-05-10-top-level-hub
  *
- * Locks 3 invariants in vss-extension.json after Sprint 3 (v0.3.0):
- *   1. No contribution targets "ms.vss-work-web.work-hub-group" (zero tolerance)
+ * Locks invariants in vss-extension.json after Sprint 3 (v0.3.0) and Sprint 3.4 (v0.3.5):
+ *   1. No contribution targets "ms.vss-work-web.work-hub-group" (zero tolerance, Sprint 3)
  *   2. version >= 0.3.0
  *   3. categories includes both "Azure Boards" and "Azure Test Plans"
+ *   4. No contribution targets the invalid "ms.vss-web.project-hub-group" (Sprint 3 false premise guard)
+ *   5. manifest must declare an argos-hub-group contribution of type ms.vss-web.hub-group
  *
  * Complementary to T-0.9-argos-top-level-placement (which checks the positive
  * presence of the top-level target). This test enforces zero-tolerance on the
@@ -12,7 +14,7 @@
  *
  * DO NOT delete without explicit spec-kit decision.
  *
- * Reference: Sprint 3 (v0.3.0), tools/regression/REGISTRY.md
+ * Reference: Sprint 3 (v0.3.0), Sprint 3.4 (v0.3.5), tools/regression/REGISTRY.md
  */
 
 import { readFileSync } from "node:fs";
@@ -56,7 +58,7 @@ function gte(a: string, b: string): boolean {
 describe("CFG-2026-05-10-top-level-hub regression", () => {
 	const manifest: Manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"));
 
-	it("no contribution must target ms.vss-work-web.work-hub-group", () => {
+	it("no contribution must target ms.vss-work-web.work-hub-group (no Boards placement)", () => {
 		const offenders = manifest.contributions.filter((c) =>
 			c.targets?.includes("ms.vss-work-web.work-hub-group")
 		);
@@ -70,5 +72,18 @@ describe("CFG-2026-05-10-top-level-hub regression", () => {
 	it("categories must include Azure Boards and Azure Test Plans", () => {
 		expect(manifest.categories).toContain("Azure Boards");
 		expect(manifest.categories).toContain("Azure Test Plans");
+	});
+
+	it("no contribution must target the invalid ms.vss-web.project-hub-group (Sprint 3 false premise guard)", () => {
+		const offenders = manifest.contributions.filter((c) =>
+			c.targets?.includes("ms.vss-web.project-hub-group")
+		);
+		expect(offenders).toEqual([]);
+	});
+
+	it("manifest must declare an argos-hub-group contribution of type hub-group", () => {
+		const hubGroup = manifest.contributions.find((c) => c.id === "argos-hub-group");
+		expect(hubGroup).toBeDefined();
+		expect(hubGroup?.type).toBe("ms.vss-web.hub-group");
 	});
 });

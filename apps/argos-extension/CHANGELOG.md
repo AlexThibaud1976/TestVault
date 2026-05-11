@@ -1,5 +1,11 @@
 # argos-extension
 
+## 0.3.5
+
+### Patch Changes
+
+- Fix top-level placement via dedicated hub-group (Microsoft official pattern)
+
 ## 0.3.4
 
 ### Patch Changes

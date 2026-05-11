@@ -1,9 +1,10 @@
 # Constitution — TestVault
 
-> Version 0.4.2 — 10 mai 2026
+> Version 0.4.3 — 11 mai 2026
 > Principes non-négociables pour le projet TestVault par ATConseil
 > Auteur : Alexandre Thibaud — atconseil.info
 
+> **Changelog v0.4.3** : Sprint 3.4 — refonte architecture top-level placement. Sprint 3 utilisait `ms.vss-web.project-hub-group` comme target (ID invente sans verification doc Microsoft, 3eme fausse premisse). Architecture corrigee via pattern officiel Microsoft : hub-group `argos-hub-group` (type `ms.vss-web.hub-group`) targetant `ms.vss-web.project-hub-groups-collection`, hub interne `argos-hub` ciblant `.argos-hub-group` (reference relative). TECH-DEBT-011 v2 enrichi. TECH-DEBT-013 ouvert (eclatement hubs). Version packages 0.3.5.
 > **Changelog v0.4.2** : Sprint 3.2 — revert `"public": false` du manifest Argos (fausse prémisse Sprint Marketplace privé). Argos v0.1.1 était déjà public ; Microsoft interdit le downgrade Public→Privé sans perte de l'extensionId. Test régression CFG-2026-05-10-marketplace-private renommé en marketplace-public + logique inversée. Version packages 0.3.2.
 > **Changelog v0.4.1** : Sprint 3.1 — revert publisher Marketplace `ATConseil` → `AlexThibaud` (fausse prémisse Sprint 2 corrigée). AlexThibaud est le publisher historique d'Argos (v0.1.1 déjà publiée). ATConseil réservé à TestPulse. Publication v0.3.0 avait échoué avec mismatch error. Test régression renommé + logique inversée. Version packages 0.3.1.
 > **Changelog v0.4.0** : Sprint 3 — hub Argos repositionné au niveau projet ADO (`ms.vss-web.project-hub-group`), terminologie concurrentielle retirée de tous les fichiers publics et du spec-kit. Version packages 0.3.0.
@@ -360,6 +361,19 @@ Toute publication sur le Marketplace exige que **TOUS** les points suivants soie
 - [ ] Hub `argos-hub` a `properties.iconUrl` pointant vers `static/argos-hub.svg`
 - [ ] `icons.default` pointe vers `static/marketplace-icon.png` (128×128)
 - [ ] Validation manuelle Alexandre Thibaud — **en attente**
+
+---
+
+## Sprint 3.4 (v0.3.5) — Architecture hub-group dedie
+
+- 2026-05-11 : Refonte architecture top-level placement. Sprint 3 utilisait `ms.vss-web.project-hub-group` comme target, un ID invente sans verification doc Microsoft (3eme fausse premisse de la chaine). L'extension etait installee dans BCEE-QA mais le hub n'apparaissait pas (silent failure runtime ADO).
+- 2026-05-11 : Architecture validee via doc Microsoft officielle (learn.microsoft.com/en-us/azure/devops/extend/develop/add-hub) :
+  - Hub-group `argos-hub-group` (type `ms.vss-web.hub-group`) targetant le vrai conteneur `ms.vss-web.project-hub-groups-collection`
+  - Hub interne `argos-hub` targetant `.argos-hub-group` (syntaxe reference relative obligatoire pour cross-contribution dans la meme extension)
+  - Architecture extensible : on peut ajouter des hubs internes au hub-group plus tard (Test Cases, Coverage, Reports, etc.)
+- 2026-05-11 : `iconUrl` -> `icon` (alignement propriete standard Microsoft).
+- 2026-05-11 : Order hub-group = 450 (apres Test Plans natif, coherence semantique).
+- 2026-05-11 : **TECH-DEBT-011 v2 enrichi** : pre-flight check inclut desormais "validation target IDs via doc Microsoft officielle" (3eme fausse premisse aurait ete attrapee).
 
 ---
 
