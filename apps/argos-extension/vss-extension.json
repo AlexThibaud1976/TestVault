@@ -82,7 +82,7 @@
 			"targets": [".argos-hub-group"],
 			"properties": {
 				"name": "Reports",
-				"iconName": "BarChart4",
+				"iconName": "asset://static/icon-reports.png",
 				"order": 50,
 				"uri": "dist/hub/hub.html"
 			}
