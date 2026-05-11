@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ---
+## [0.4.2] - 2026-05-11
+
+### Fixed (Sprint 4.2 - cosmetic)
+
+- Reports hub iconName: `BarChart4` -> `AnalyticsReport` (BarChart4 didn't render in ADO sandbox post-Sprint 4.1, likely because variante numerotee). AnalyticsReport est dans l'enum officiel @uifabric/icons.IconNames, nom canonique non-numerote.
+- Si AnalyticsReport ne rend pas non plus, fallback : `ReportLibrary`, puis `BIDashboard`.
+- Bump 0.4.1 -> 0.4.2 (patch cosmetique).
+
 
 ## [0.4.1] - 2026-05-11
 
