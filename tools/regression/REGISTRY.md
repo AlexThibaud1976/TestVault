@@ -33,6 +33,8 @@ Format : `<TYPE>-<DATE-OU-TASK>-<short-slug>`
 | T-1.0-argos-multi-hubs-architecture | 2026-05-11 (Sprint 4) | T-task | argos-multi-hubs-architecture | 6 hubs independants (plans, cases, sets, preconditions, reports, settings) presentent dans le manifest avec type ms.vss-web.hub, targeting .argos-hub-group, noms corrects. Aucun hub legacy argos-hub. Exactement 6 contributions de type ms.vss-web.hub. | tasks.md T-1.0 / Sprint 4 (v0.4.0) | AT |
 | CFG-2026-05-10-no-xray-references | 2026-05-10 | CFG-branding | no-xray-references | Empeche la reintroduction de references a la marque Xray dans les fichiers publics et le spec-kit. Decision 2026-05-10 : la terminologie "Xray-class" est remplacee par "industrial-grade test management". | Sprint 3 branding cleanup | AT |
 
+| CFG-2026-05-12-preflight-rules | 2026-05-12 (TECH-DEBT-011 v3) | CFG-config | preflight-rules | 7 regles mecaniques du manifest vss-extension.json : version coherence (package.json = vss-extension.json), publisher dans whitelist [AlexThibaud, ATConseil], aucun SVG dans static/, categories non-vides, icons.default PNG, aucune contribution utilisant la target invalide ms.vss-web.project-hub-group (fausse premisse Sprint 3), toute reference relative hub-group resolue. Premier test a avoir detecte la desynchronisation 1.0.0 / 0.4.1 (PR #30 bump errone). | TECH-DEBT-011 v3 / Sprint 4.x / tools/preflight/ | AT |
+
 ## Tests retirés
 
 | ID retiré | Date ajout | Date retrait | Raison | PR retrait |

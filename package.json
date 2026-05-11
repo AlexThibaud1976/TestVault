@@ -16,7 +16,8 @@
 		"prepare": "simple-git-hooks",
 		"changeset": "changeset",
 		"version": "changeset version",
-		"release": "changeset publish"
+		"release": "changeset publish",
+		"preflight": "node tools/preflight/manifest-check.cjs"
 	},
 	"devDependencies": {
 		"@changesets/cli": "^2.27.0",

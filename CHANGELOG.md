@@ -8,87 +8,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ---
-## [0.4.6] - 2026-05-11
 
-### Notes (Sprint 4.6 - cosmetic closure)
+## [0.4.7] - 2026-05-12
 
-- **Cloture de la recherche icone Reports**. 5 tentatives infructueuses :
-  1. v0.4.0 : `iconName: "ReportDocument"` (Sprint 4)
-  2. v0.4.1 : `iconName: "BarChart4"` (Sprint 4.1)
-  3. v0.4.2 + v0.4.3 : `iconName: "AnalyticsReport"` (Sprint 4.2/4.3)
-  4. v0.4.4 : `icon: "static/icon-reports.png"` (Sprint 4.4 - traite comme iconName par ADO)
-  5. v0.4.5 : `icon: "asset://static/icon-reports.png"` (Sprint 4.5 - prefixe asset:// ignore)
-- Le manifest reste a `icon: "asset://static/icon-reports.png"` (intention documentee). L'icone ne rend pas mais le hub Reports fonctionne (label cliquable, view charge).
-- **Decision** : accepter l'absence d'icone comme detail cosmetique mineur. Investir le temps sur des sujets plus impactants (TECH-DEBT-011 v3, Sprint 2.5b, audit monorepo).
-- Bump 0.4.5 -> 0.4.6 (note de cloture, pas de modification fonctionnelle).
+### Added (TECH-DEBT-011 v3 - feat/preflight-manifest-check)
 
-### Backlog enrichi
+- **`tools/preflight/marketplace-check.md`** : Checklist humaine en 4 sections (etat Marketplace, cibles/types de contributions, icones/assets, versions). A consulter avant tout sprint touchant `vss-extension.json`. Encode les lecons des 5 fausses premises Sprint 2→4.5.
+- **`tools/preflight/microsoft-docs-snippets.md`** : Exemples Microsoft copy-paste integraux anti-simplification. Hub-group+hub pattern valide Sprint 3.4, iconName confirmes OK/KO, publisher/visibility, categories valides, table anti-patterns.
+- **`tools/preflight/manifest-check.cjs`** : Script auto-validation (7 regles, exit 0/1). `pnpm preflight` ou `node tools/preflight/manifest-check.cjs`. Regles : version coherence, publisher whitelist, no SVG in static/, categories non-vides, icons.default PNG, no `ms.vss-web.project-hub-group`, hub-group consistency.
+- **`tools/regression/CFG-2026-05-12-preflight-rules.test.ts`** : Test CI identique au script (7 assertions). Merge bloque si une regle echoue.
+- **Section "Avant tout sprint qui touche le manifest"** dans `CLAUDE.md` : pointe vers les 3 couches de garde-fous.
+- **REGISTRY** : entree `CFG-2026-05-12-preflight-rules` ajoutee.
 
-- **TECH-DEBT-014 NEW** : Identifier la vraie syntaxe et liste des icones acceptees par ADO pour les hubs `ms.vss-web.hub`. 5 tentatives Sprint 4 -> 4.5 ratees malgre doc Microsoft consultee. Methode probable : inspection F12 d'extensions Microsoft sample (`microsoft/azure-devops-extension-sample`) qui rendent des icones, identifier le pattern exact (CSS class produite, syntaxe manifest, type d'asset). Sprint dedie ~1h.
-- **TECH-DEBT-015 NEW** : Audit du monorepo. 9 packages dans `packages/` (testpulse-ui-shared, testvault-cli, testvault-exporters, testvault-gherkin, testvault-importers, testvault-sdk, testvault-types, testvault-ui, testvault-wit-schema). Clarifier role + dependances + frontiere TestVault/TestPulse.
-- (autres items inchanges : TECH-DEBT-011 v3, Sprint 2.5b, WIRING-CLOUD-PLUS, etc.)
+### Fixed
 
-### Lessons learned (Sprint 4 -> 4.6 chain)
+- **Version desynchronisation** detectee par le nouveau test CI : `package.json` etait a `1.0.0` (bump errone `major` PR #30) et `vss-extension.json` a `0.4.1`. Les deux sont maintenant alignes sur `0.4.7` (version cible post-prod `0.4.6`).
 
-- **5 fausses premisses sur l'iconographie**. Cause racine commune : Microsoft documente l'existence des proprietes (`iconName`, `icon`, `asset://`) mais pas la syntaxe exhaustive ou les valeurs valides pour ADO sandbox specifiquement. Inferer "depuis la doc" = inferer dans le vide. La vraie methode = **inspection d'extensions concretes qui marchent** (Microsoft samples + extensions tierces populaires).
-- **F12 DOM inspection** a permis a chaque essai de diagnostiquer le silent failure (`ms-Icon--<valeur>` qui n'existe pas). C'est l'outil le plus precieux quand la doc Microsoft est incomplete.
-- **Cosmetique != critique**. 5 sprints sur une icone qui ne bloque rien fonctionnellement, c'est trop. Critere de decision pour la prochaine fois : "si 3 tentatives echouent sur du cosmetique, accepter et inscrire en TECH-DEBT".
+### Resolved (TECH-DEBT)
 
+- **TECH-DEBT-011 v3** : Infrastructure preventive manifest complete. Trois couches complementaires en place : checklist humaine (judgment-required), script local (mecanicque pre-commit), test CI (enforcement merge). Le premier test actif a immediatement detecte une regression reelle (desync 1.0.0/0.4.1).
 
-## [0.4.5] - 2026-05-11
+### Lessons learned (TECH-DEBT-011 v3)
 
-### Fixed (Sprint 4.5)
+- **Hybrid tooling > single layer** : checklist humaine pour les regles qui necessitent du contexte (etat Marketplace portail, validation doc Microsoft), script pour les regles mecaniques en local, test CI pour l'enforcement. Les trois se completent.
+- **TDD s'applique aux outils preventifs** : le test CI a detecte un bug reel (version desync) immediatement, avant meme que le script soit integre au workflow.
+- **Source 100% ASCII pour `tools/regression/`** : les fichiers de test doivent etre ecrits en ASCII pur pour etre immunises contre la corruption d'encoding qu'ils detectent.
 
-- **Reports hub icone : enfin visible.** Sprint 4.4 utilisait `"icon": "static/icon-reports.png"` (sans prefixe). ADO a traite la valeur comme un `iconName` Fluent UI, generant la classe CSS `ms-Icon--static/icon-reports.png` qui n'existait pas. Aucune image n'etait rendue (silent failure, F12 a permis d'identifier).
-- Fix : ajout du prefixe `asset://` requis par Microsoft pour indiquer un asset packagé : `"icon": "asset://static/icon-reports.png"`.
-- Bump 0.4.4 -> 0.4.5 (patch).
-
-### Lessons learned (Sprint 4.5)
-
-- **5eme fausse premisse de la chaine** (apres publisher, visibility, target hub, iconName Fluent UI partielle, prefixe icon). Pattern stable : Microsoft documente correctement mais je retiens des details de travers ou simplifies. Ici la doc disait `"icon": "asset://static/sample-icon.png"` (exemple Microsoft) ; j'avais retenu juste le path. La regle est : preserver le prefixe `asset://` (ou le full `{publisher}.{extension}/path` via `iconAsset`).
-- **F12 DOM inspection = methode de diagnostic** : la classe CSS rendue (`ms-Icon--static/icon-reports.png`) a permis d'identifier que la valeur etait traitee comme iconName, pas comme asset path. A retenir pour les futurs problemes d'icone.
-- **TECH-DEBT-011 v3 enrichi** : pre-flight check inclut "verifier la syntaxe exacte des proprietes manifest contre les exemples Microsoft officiels", pas juste les noms de target IDs.
-
-## [0.4.4] - 2026-05-11
-
-### Fixed (Sprint 4.4)
-
-- **Reports hub icone enfin rendue**. Apres 3 tentatives infructueuses avec `iconName` Fluent UI (`ReportDocument` v0.4.0, `BarChart4` v0.4.1, `AnalyticsReport` v0.4.2/0.4.3), bascule sur `icon` PNG custom (`static/icon-reports.png`). Pattern hybride : 5 hubs utilisent toujours `iconName` Fluent UI (Test Plans/Cases/Sets/Preconditions/Settings), 1 hub utilise `icon` PNG (Reports).
-- Le PNG est coherent avec le brand Argos : 3 barres bleues #0C447C (bar chart), meme style trace que l'icone hub-group oeil-bouclier.
-
-### Note historique (v0.4.2)
-
-- v0.4.2 a ete poussee sans modification du manifest (oubli humain). Fonctionnellement identique a v0.4.1. v0.4.3 a inclus la vraie tentative AnalyticsReport (echouee). v0.4.4 corrige enfin avec PNG.
-
-### Lessons learned (Sprints 4.1 a 4.4)
-
-- Apres 3 essais Fluent UI Icons rates sur Reports, arret de la chasse aux noms valides. Strategie pragmatique : `icon` PNG custom quand `iconName` Fluent ne rend pas, sans perdre de temps en loterie.
-- Pattern observe : les `iconName` qui rendent dans ADO sandbox sont des noms simples non-numerotes (BulletedList, TestBeaker, FolderList, Warning, Settings). Les composes descriptifs (ReportDocument, AnalyticsReport) ou numerotes (BarChart4) ne rendent pas. **TECH-DEBT-014 inscrit** : compiler la vraie liste des iconName supportes ADO via inspection F12 sur la nav native Microsoft.
-
-### Backlog enrichi
-
-- **TECH-DEBT-014 NEW** : Compiler la vraie liste iconName Fluent UI supportes par ADO (via inspection F12 + repo Microsoft samples).
-- **TECH-DEBT-015 NEW** : Audit du monorepo. Le repo contient des packages au-dela des 4-5 que j'avais en tete : testpulse-ui-shared, testvault-cli, testvault-ui, testvault-wit-schema, etc. Clarifier le role de chaque package + dependances inter-packages + frontiere TestVault/TestPulse.
-- (autres items inchanges)
-
-## [0.4.3] - 2026-05-11
-
-### Note
-
-- **v0.4.2 a ete poussee sans modification de l'iconName** (oubli humain pendant le sprint 4.2). La version est identique fonctionnellement a 0.4.1. v0.4.3 inclut la vraie modification : `iconName: BarChart4 -> AnalyticsReport`. Resultat : `AnalyticsReport` ne rend pas non plus.
-
-### Fixed (Sprint 4.3 - cosmetic, attempt 2)
-
-- Reports hub iconName: `BarChart4` -> `AnalyticsReport`
-- Resultat : ne rend pas. Hypothese : ADO ne charge qu'un sous-ensemble de Fluent UI Icons.
-- **Decision** : bascule strategique sur `icon` (PNG custom) plutot que de continuer a deviner `iconName` Fluent UI valides. Voir Sprint 4.4 (a venir).
-
-### Lessons learned (Sprint 4.2 + 4.3)
-
-- 3 valeurs `iconName` Fluent UI testees sur Reports (`ReportDocument`, `BarChart4`, `AnalyticsReport`), aucune ne rend dans ADO sandbox post-Sprint 4.
-- Pattern : les noms qui rendent (Sprint 4 + 4.1) sont des noms simples non-numerotes (BulletedList, TestBeaker, FolderList, Warning, Settings). Les noms qui ne rendent pas sont soit numerotes (BarChart4) soit composes descriptifs (ReportDocument, AnalyticsReport).
-- **TECH-DEBT-014 inscrit** : documenter la vraie liste des `iconName` supportes par ADO (via inspection F12 ou repo Microsoft) pour les sprints futurs.
-- **Strategie** : passer sur `icon` PNG custom pour Reports (Sprint 4.4). Eviter la loterie iconName.
+---
 
 ## [0.4.2] - 2026-05-11
 

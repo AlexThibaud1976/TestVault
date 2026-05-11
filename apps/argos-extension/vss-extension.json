@@ -2,7 +2,7 @@
 	"manifestVersion": 1,
 	"id": "ArgosTesting",
 	"publisher": "AlexThibaud",
-	"version": "0.4.6",
+	"version": "0.4.7",
 	"name": "ArgosTesting",
 	"description": "Industrial-grade test management for Azure DevOps — native Custom Work Items, AI-assisted, Cloud-only.",
 	"targets": [{ "id": "Microsoft.VisualStudio.Services.Cloud" }],
