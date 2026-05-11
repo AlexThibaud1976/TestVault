@@ -1,5 +1,11 @@
 # argos-extension
 
+## 2.0.0
+
+### Major Changes
+
+- "Fix Reports icon: add asset:// prefix"
+
 ## 1.0.0
 
 ### Major Changes
