@@ -52,6 +52,12 @@ export const SHARED_DOC_ALLOWLIST: ReadonlySet<string> = new Set([
 	"tools/claude-prompts/CLAUDE_TASK_sprint-3.4.md",
 	"tools/claude-prompts/CLAUDE_TASK_sprint-4.md",
 	"tools/regression/T-1.0-argos-multi-hubs-architecture.test.ts",
+	"tools/claude-prompts/CLAUDE_TASK_sprint-4.1.md",
+	"tools/claude-prompts/CLAUDE_TASK_tech-debt-011-v3.md",
+	"tools/preflight/marketplace-check.md",
+	"tools/preflight/microsoft-docs-snippets.md",
+	"tools/preflight/manifest-check.cjs",
+	"tools/regression/CFG-2026-05-12-preflight-rules.test.ts",
 ]);
 
 /**

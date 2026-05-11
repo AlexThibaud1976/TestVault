@@ -8,6 +8,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ---
+
+## [0.4.7] - 2026-05-12
+
+### Added (TECH-DEBT-011 v3 - feat/preflight-manifest-check)
+
+- **`tools/preflight/marketplace-check.md`** : Checklist humaine en 4 sections (etat Marketplace, cibles/types de contributions, icones/assets, versions). A consulter avant tout sprint touchant `vss-extension.json`. Encode les lecons des 5 fausses premises Sprint 2→4.5.
+- **`tools/preflight/microsoft-docs-snippets.md`** : Exemples Microsoft copy-paste integraux anti-simplification. Hub-group+hub pattern valide Sprint 3.4, iconName confirmes OK/KO, publisher/visibility, categories valides, table anti-patterns.
+- **`tools/preflight/manifest-check.cjs`** : Script auto-validation (7 regles, exit 0/1). `pnpm preflight` ou `node tools/preflight/manifest-check.cjs`. Regles : version coherence, publisher whitelist, no SVG in static/, categories non-vides, icons.default PNG, no `ms.vss-web.project-hub-group`, hub-group consistency.
+- **`tools/regression/CFG-2026-05-12-preflight-rules.test.ts`** : Test CI identique au script (7 assertions). Merge bloque si une regle echoue.
+- **Section "Avant tout sprint qui touche le manifest"** dans `CLAUDE.md` : pointe vers les 3 couches de garde-fous.
+- **REGISTRY** : entree `CFG-2026-05-12-preflight-rules` ajoutee.
+
+### Fixed
+
+- **Version desynchronisation** detectee par le nouveau test CI : `package.json` etait a `1.0.0` (bump errone `major` PR #30) et `vss-extension.json` a `0.4.1`. Les deux sont maintenant alignes sur `0.4.7` (version cible post-prod `0.4.6`).
+
+### Resolved (TECH-DEBT)
+
+- **TECH-DEBT-011 v3** : Infrastructure preventive manifest complete. Trois couches complementaires en place : checklist humaine (judgment-required), script local (mecanicque pre-commit), test CI (enforcement merge). Le premier test actif a immediatement detecte une regression reelle (desync 1.0.0/0.4.1).
+
+### Lessons learned (TECH-DEBT-011 v3)
+
+- **Hybrid tooling > single layer** : checklist humaine pour les regles qui necessitent du contexte (etat Marketplace portail, validation doc Microsoft), script pour les regles mecaniques en local, test CI pour l'enforcement. Les trois se completent.
+- **TDD s'applique aux outils preventifs** : le test CI a detecte un bug reel (version desync) immediatement, avant meme que le script soit integre au workflow.
+- **Source 100% ASCII pour `tools/regression/`** : les fichiers de test doivent etre ecrits en ASCII pur pour etre immunises contre la corruption d'encoding qu'ils detectent.
+
+---
+
 ## [0.4.2] - 2026-05-11
 
 ### Fixed (Sprint 4.2 - cosmetic)

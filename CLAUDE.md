@@ -2,7 +2,7 @@
 
 > This file is automatically read by Claude Code at the start of every session in this repo. It is **not** a substitute for the spec-kit files in `Specs/` — those remain the source of truth. This file is a fast-access summary.
 >
-> Last updated: 2026-05-10 — Sprint 3 complete. Aligned with constitution v0.4.0, spec v0.1.0, plan v0.1.0, tasks v0.1.0.
+> Last updated: 2026-05-12 — Sprint 4 + TECH-DEBT-011 v3 complete. Aligned with constitution v0.5.1, spec v0.1.0, plan v0.1.0, tasks v0.1.0.
 
 ---
 
@@ -234,6 +234,18 @@ Référence d'exemple : `tools/regression/ENC-2026-05-09-spec-mojibake.test.ts`.
 - `tools/regression/fix-mojibake.cjs` — recovery algorithmique : `node tools/regression/fix-mojibake.cjs <file>` (dry-run) ou `node tools/regression/fix-mojibake.cjs <file> <output>` (apply).
 
 > Update this file (with a PR) when stack, conventions, or hard rules change. Keep spec-kit version numbers cited at the top in sync.
+
+---
+
+## Avant tout sprint qui touche le manifest
+
+Avant de modifier `apps/argos-extension/vss-extension.json`, consulter les trois niveaux du pre-flight check (TECH-DEBT-011 v3, 2026-05-12) :
+
+1. **Checklist humaine** : `tools/preflight/marketplace-check.md` — 4 sections couvrant état Marketplace, cibles/types, icônes/assets, versions. Traiter chaque case à cocher avant de proposer un changement.
+2. **Script auto** : `pnpm preflight` (= `node tools/preflight/manifest-check.cjs`) — 7 règles mécaniques, exit 0 = PASS. À lancer avant tout commit touchant le manifest.
+3. **Test CI** : `tools/regression/CFG-2026-05-12-preflight-rules.test.ts` — 7 assertions identiques, tournent à chaque PR. Échec = merge bloqué.
+
+**Référence** : `tools/preflight/microsoft-docs-snippets.md` contient les exemples Microsoft copy-paste anti-simplification (hub-group+hub pattern, iconName confirmés OK/KO, publisher/visibility).
 
 ---
 

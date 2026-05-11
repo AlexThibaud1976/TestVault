@@ -45,6 +45,9 @@ const XRAY_TEST_SPECIFIC_ALLOWLIST: ReadonlySet<string> = new Set([
 	"tools/claude-prompts/CLAUDE_TASK.md",
 	"tools/claude-prompts/CLAUDE_TASK_sprint-2.md",
 	"tools/claude-prompts/CLAUDE_TASK_sprint-3.md",
+	"tools/claude-prompts/CLAUDE_TASK_tech-debt-011-v3.md",
+	"tools/preflight/marketplace-check.md",
+	"tools/preflight/microsoft-docs-snippets.md",
 ]);
 
 const XRAY_PATTERN = /\bxray\b/i;
