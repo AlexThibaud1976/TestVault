@@ -1,5 +1,11 @@
 # argos-extension
 
+## 0.4.1
+
+### Patch Changes
+
+- Fix icon names for Preconditions and Reports hubs (Sprint 4 visual fix)
+
 ## 0.4.0
 
 ### Minor Changes

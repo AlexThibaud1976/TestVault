@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.1] - 2026-05-11
+
+### Fixed (Sprint 4.1 - fix/icon-names-preconditions-reports)
+
+- **Icones Preconditions et Reports** : 2 `iconName` Fluent UI ne s'affichaient pas dans la nav ADO post-Sprint 4 :
+  - `Important` → `Warning` pour le hub Preconditions
+  - `ReportDocument` → `BarChart4` pour le hub Reports
+- Cause probable : ADO sandbox ne charge qu'un sous-ensemble de Fluent UI Icons. Les valeurs Sprint 4 venaient d'estimations raisonnables, pas d'une liste validee.
+- Aucun test regression modifie : T-1.0 verifie name/type/targets des 6 hubs, pas leur iconName (cosmetique). Validation visuelle BCEE-QA post-deploy.
+- Bump 0.4.0 → 0.4.1 (patch cosmetique, pas de feature ni de fix critique).
+
+### Lessons learned (Sprint 4.1)
+
+- **`iconName` Fluent UI sans liste exhaustive** : Microsoft documente la propriete mais pas les valeurs valides cote ADO. Premiere strategie post-deploy : essayer 2-3 alternatives jusqu'a trouver une qui rend. Pas besoin de tests automatises pour la cosmetique.
+- **Patch cosmetique = sprint de 15-20 min** : pas besoin de la lourdeur d'un sprint avec test regression + REGISTRY entry. CHANGELOG + bump + upload suffisent.
+
+### Backlog (post-Sprint 4.1)
+
+- TECH-DEBT-011 v2 — Pre-flight check Marketplace + validation target IDs Microsoft (idem)
+- (autres items inchanges)
+
+---
+
 ## [0.4.0] - 2026-05-11
 
 ### Added (Sprint 4 - feat/multi-hubs-architecture)
