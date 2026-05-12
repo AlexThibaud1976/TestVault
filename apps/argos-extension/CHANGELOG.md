@@ -1,5 +1,11 @@
 # argos-extension
 
+## 0.4.8
+
+### Patch Changes
+
+- Sprint 5a/5b cleanup: remove testvault-ui placeholder + dist/vsix-debug root artifacts
+
 ## 2.0.0
 
 ### Major Changes

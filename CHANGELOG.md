@@ -43,6 +43,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (015A) + decisions architecturales (015B) + reconnaissance gaps (015C). Base solide pour les
   sprints d'execution.
 
+### Removed (Sprint 5a + 5b - chore/cleanup-dead-code)
+
+- **`packages/testvault-ui`** : suppression du package placeholder vide identifie dans TECH-DEBT-015A (`src/index.ts` contenait uniquement `export {}`, zero consommateur interne dans le repo). Decision validee dans `Specs/MIGRATION-PLAN.md` section 1.6.
+- **`dist/`** a la racine : suppression de l'artefact de build/debug non reference dans `pnpm-workspace.yaml`. Le `.gitignore` est mis a jour pour exclure les futurs artefacts similaires (`vsix-debug-*/`).
+- **`vsix-debug-3.2/`** a la racine : suppression de l'artefact de debug Sprint 3.2, plus utilise.
+
+### Notes (Sprint 5a + 5b)
+
+- Sprint d'echauffement matinal post-pause : 2 micro-sprints atomiques regroupes en une seule PR (`chore/cleanup-dead-code`).
+- Aucune modification fonctionnelle de l'extension Argos.
+- Bump 0.4.7 -> 0.4.8 (patch : nettoyage, pas de changement utilisateur).
+- Tests regression : 47 passing (inchange, code mort supprime sans test associe).
+
+### Lessons learned (Sprint 5a + 5b)
+
+- **`testvault-ui` a vecu 6+ mois en placeholder** sans qu'aucun sprint ne le notifie. C'est typiquement le genre de code mort qu'un audit periodique (TECH-DEBT-015) doit detecter.
+- **`dist/` a la racine etait un VSIX de build:vsix** : le script `build:vsix` dans `package.json` ecrit `../../dist/argos.vsix` (chemin relatif depuis `apps/argos-extension/`), ce qui cree un `dist/` a la racine du repo. Chaque `pnpm build:vsix` regenere cet artefact. Voir TECH-DEBT-021.
+
+### Backlog enrichi (Sprint 5a + 5b)
+
+- **TECH-DEBT-021 NEW** : Migrer le script `build:vsix` output-path de `../../dist/argos.vsix` vers `./dist/argos.vsix` (= `apps/argos-extension/dist/`). Sans cette migration, chaque build regenere un `dist/` racine. Sprint dedie futur, doit aussi mettre a jour `.github/workflows/publish-marketplace.yml`.
+- **Sprint 6a NEXT** : Renaming `testvault-types` -> `argos-types` (premier sprint du renaming Groupe 1, le plus risque a cause de ses 10 consommateurs).
+
 ---
 
 ## [0.4.7] - 2026-05-12
