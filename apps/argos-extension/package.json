@@ -1,6 +1,6 @@
 {
 	"name": "argosTesting",
-	"version": "0.4.13",
+	"version": "0.4.14",
 	"private": false,
 	"type": "module",
 	"scripts": {
@@ -13,7 +13,7 @@
 	},
 	"dependencies": {
 		"@atconseil/argos-exporters": "workspace:^",
-		"@atconseil/testvault-gherkin": "workspace:*",
+		"@atconseil/argos-gherkin": "workspace:*",
 		"@atconseil/argos-importers": "workspace:^",
 		"@atconseil/argos-sdk": "workspace:^",
 		"@atconseil/argos-types": "workspace:^",

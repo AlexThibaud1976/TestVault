@@ -1,4 +1,4 @@
-import { validateGherkin } from "@atconseil/testvault-gherkin";
+import { validateGherkin } from "@atconseil/argos-gherkin";
 import { Text } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
 

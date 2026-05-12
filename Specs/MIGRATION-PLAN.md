@@ -272,7 +272,7 @@ n'est execute dans 015B** -- ce sont des reservations pour des sessions futures.
 | Sprint 6c | Renaming `testvault-sdk` -> `argos-sdk` | ~45 min | Moyen (5 consommateurs, 47 fichiers source) | **DONE 2026-05-13** |
 | Sprint 6d | Renaming `testvault-importers` -> `argos-importers` | ~25 min | Faible (4 consommateurs, 6 fichiers source) | **DONE 2026-05-13** |
 | Sprint 6e | Renaming `testvault-exporters` -> `argos-exporters` | ~20 min | Faible (3 consommateurs, 4 fichiers source) | **DONE 2026-05-13** |
-| Sprint 6f | Renaming `testvault-gherkin` -> `argos-gherkin` | ~20 min | Faible (3 consommateurs) | Apres 6c |
+| Sprint 6f | Renaming `testvault-gherkin` -> `argos-gherkin` | ~20 min | Faible (4 consommateurs, 5 fichiers source) | **DONE 2026-05-13** -- Jalon : Groupe 1 packages/ 6/8 complet |
 | Sprint 6g | Renaming `testvault-azure-pipelines-task` -> `argos-azure-pipelines-task` | ~30 min | Faible (0 consommateur interne, livrable produit) | Apres Groupe 1 |
 | Sprint 6h | Renaming `testvault-e2e` -> `argos-e2e` | ~20 min | Faible (0 consommateur, mais consomme 5 packages updates) | Apres 6c-6f, 7a |
 | Sprint 7a | Renaming `testvault-cli` -> `argos-cli` | ~30 min | Faible (0 consommateur interne) | Apres Groupe 1 |
