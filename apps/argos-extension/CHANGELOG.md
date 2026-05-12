@@ -1,5 +1,11 @@
 # argos-extension
 
+## 0.4.14
+
+### Patch Changes
+
+- Sprint 6f - rename @atconseil/testvault-gherkin to @atconseil/argos-gherkin (6th and last Groupe 1 rename in packages/).
+
 ## 0.4.13
 
 ### Patch Changes

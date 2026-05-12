@@ -17,7 +17,7 @@ vi.mock("@atconseil/argos-sdk", () => ({
 	})),
 }));
 
-vi.mock("@atconseil/testvault-gherkin", () => ({
+vi.mock("@atconseil/argos-gherkin", () => ({
 	featureToTestCases: vi.fn(),
 }));
 
@@ -43,7 +43,7 @@ describe("processBddSync", () => {
 
 	it("creates TC for each scenario in a .feature file (no existing TCs)", async () => {
 		const { readFileSync } = await import("node:fs");
-		const { featureToTestCases } = await import("@atconseil/testvault-gherkin");
+		const { featureToTestCases } = await import("@atconseil/argos-gherkin");
 		vi.mocked(readFileSync).mockReturnValue(SIMPLE_FEATURE);
 		vi.mocked(featureToTestCases).mockReturnValue([
 			{
@@ -65,7 +65,7 @@ describe("processBddSync", () => {
 
 	it("updates TC when scenario title matches an existing TC", async () => {
 		const { readFileSync } = await import("node:fs");
-		const { featureToTestCases } = await import("@atconseil/testvault-gherkin");
+		const { featureToTestCases } = await import("@atconseil/argos-gherkin");
 		vi.mocked(readFileSync).mockReturnValue(SIMPLE_FEATURE);
 		vi.mocked(featureToTestCases).mockReturnValue([
 			{
@@ -91,7 +91,7 @@ describe("processBddSync", () => {
 
 	it("handles multiple .feature files", async () => {
 		const { readFileSync } = await import("node:fs");
-		const { featureToTestCases } = await import("@atconseil/testvault-gherkin");
+		const { featureToTestCases } = await import("@atconseil/argos-gherkin");
 		vi.mocked(readFileSync).mockReturnValue(SIMPLE_FEATURE);
 		vi.mocked(featureToTestCases)
 			.mockReturnValueOnce([
@@ -127,7 +127,7 @@ describe("processBddSync", () => {
 
 	it("returns correct files count", async () => {
 		const { readFileSync } = await import("node:fs");
-		const { featureToTestCases } = await import("@atconseil/testvault-gherkin");
+		const { featureToTestCases } = await import("@atconseil/argos-gherkin");
 		vi.mocked(readFileSync).mockReturnValue(SIMPLE_FEATURE);
 		vi.mocked(featureToTestCases).mockReturnValue([]);
 		mockList.mockResolvedValue([]);
@@ -142,7 +142,7 @@ describe("processBddSync", () => {
 
 	it("passes the correct areaPath to tcService.create", async () => {
 		const { readFileSync } = await import("node:fs");
-		const { featureToTestCases } = await import("@atconseil/testvault-gherkin");
+		const { featureToTestCases } = await import("@atconseil/argos-gherkin");
 		vi.mocked(readFileSync).mockReturnValue(SIMPLE_FEATURE);
 		vi.mocked(featureToTestCases).mockReturnValue([
 			{
@@ -163,7 +163,7 @@ describe("processBddSync", () => {
 
 	it("returns zero created and updated when all files are empty", async () => {
 		const { readFileSync } = await import("node:fs");
-		const { featureToTestCases } = await import("@atconseil/testvault-gherkin");
+		const { featureToTestCases } = await import("@atconseil/argos-gherkin");
 		vi.mocked(readFileSync).mockReturnValue("");
 		vi.mocked(featureToTestCases).mockReturnValue([]);
 		mockList.mockResolvedValue([]);

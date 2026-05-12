@@ -9,6 +9,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.14] - 2026-05-13
+
+### Changed (Sprint 6f - feat/rename-testvault-gherkin-to-argos-gherkin)
+
+- **`@atconseil/testvault-gherkin` renomme en `@atconseil/argos-gherkin`** (6eme et dernier sprint Groupe 1 packages/).
+  - Dossier : `packages/testvault-gherkin/` -> `packages/argos-gherkin/` (git mv, historique preserve).
+  - 4 consommateurs internes mis a jour (tous workspace:*) :
+    - `packages/testvault-cli/package.json` + 2 fichiers (bdd-sync.ts, bdd-sync.test.ts)
+    - `apps/argos-extension/package.json` + 1 fichier (GherkinEditor.tsx)
+    - `apps/argos-functions/package.json` + 1 fichier (bdd-sync/git-push-handler.ts)
+    - `tools/e2e/package.json` + 1 fichier (08-phase5-bdd-sync.spec.ts)
+  - Aucune modification fonctionnelle de l'extension Argos.
+
+- **CFG-2026-05-13-package-naming** : retire `"@atconseil/testvault-gherkin"` de `ALLOWED_LEGACY_NAMES`.
+  La liste contient maintenant 2 entrees restantes (cli, testpulse-ui-shared).
+
+### Milestone (Sprint 6f)
+
+- **Groupe 1 packages/ : 6/8 packages renommes** (types, wit-schema, sdk, importers, exporters, gherkin).
+  Restants : testvault-cli (Sprint 7a), testpulse-ui-shared (Sprint 7b).
+
+### Notes (Sprint 6f)
+
+- Sprint court (~20 min). 5 fichiers source.
+- Tous les consommateurs en workspace:* (pas de workspace:^ dans ce sprint).
+- Bump 0.4.13 -> 0.4.14 (patch : renaming sans changement fonctionnel).
+- Garde-fou ASCII commit : pre-check execute, message 100% ASCII.
+- Note : pnpm install --force requis apres Move-Item (symlinks vitest).
+
+### Backlog enrichi (0.4.14)
+
+- **Sprint 6g NEXT** : `testvault-azure-pipelines-task` -> `argos-azure-pipelines-task`
+- **Sprint 6h** : `testvault-e2e` -> `argos-e2e`
+- **Sprint 7a** : `testvault-cli` -> `argos-cli`
+- **Sprint 7b** : `testpulse-ui-shared` -> `argos-detection-api`
+- **TECH-DEBT-022** : Cleanup automatique artefacts orphelins post-git-mv (dist/, .turbo/).
+- **TECH-DEBT-023** : Etendre scan-mojibake pour scanner les commits recents.
+- **TECH-DEBT-024 NEW** : Regenerer sbom.json (stale depuis Sprint 6d).
+- (autres items inchanges)
+
+---
+
 ## [0.4.13] - 2026-05-13
 
 ### Changed (Sprint 6e - feat/rename-testvault-exporters-to-argos-exporters)

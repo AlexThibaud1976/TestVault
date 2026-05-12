@@ -1,5 +1,5 @@
-import { featureToTestCases, parseFeature } from "@atconseil/testvault-gherkin";
-import type { FeatureTestCaseDraft } from "@atconseil/testvault-gherkin";
+import { featureToTestCases, parseFeature } from "@atconseil/argos-gherkin";
+import type { FeatureTestCaseDraft } from "@atconseil/argos-gherkin";
 
 export type GitPushChangedFile = {
 	path: string;
