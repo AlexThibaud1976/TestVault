@@ -12,7 +12,7 @@
 		"@atconseil/testvault-cli": "workspace:*",
 		"@atconseil/testvault-exporters": "workspace:^",
 		"@atconseil/testvault-gherkin": "workspace:*",
-		"@atconseil/testvault-importers": "workspace:*",
+		"@atconseil/argos-importers": "workspace:*",
 		"@atconseil/argos-sdk": "workspace:*"
 	},
 	"devDependencies": {

@@ -6,6 +6,13 @@
 import { writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import {
+	parseCsv,
+	parseCucumber,
+	parseJUnit,
+	parseNUnit,
+	parseXUnit,
+} from "@atconseil/argos-importers";
 import { processUploadResults } from "@atconseil/testvault-cli";
 import {
 	exportCatalogToExcel,
@@ -13,13 +20,6 @@ import {
 	exportReleaseReadinessToExcel,
 	exportReleaseReadinessToPdf,
 } from "@atconseil/testvault-exporters";
-import {
-	parseCsv,
-	parseCucumber,
-	parseJUnit,
-	parseNUnit,
-	parseXUnit,
-} from "@atconseil/testvault-importers";
 import { expect, test } from "../fixtures/index.js";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────

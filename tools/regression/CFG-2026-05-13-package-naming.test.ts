@@ -17,7 +17,7 @@
  *   - Sprint 6a (this test introduction): testvault-types renamed; 6 legacy names accepted
  *   - Sprint 6b (done): testvault-wit-schema renamed; removed from ALLOWED_LEGACY_NAMES
  *   - Sprint 6c (done): testvault-sdk renamed; removed from ALLOWED_LEGACY_NAMES
- *   - Sprint 6d: testvault-importers renamed; remove from ALLOWED_LEGACY_NAMES
+ *   - Sprint 6d (done): testvault-importers renamed; removed from ALLOWED_LEGACY_NAMES
  *   - Sprint 6e: testvault-exporters renamed; remove from ALLOWED_LEGACY_NAMES
  *   - Sprint 6f: testvault-gherkin renamed; remove from ALLOWED_LEGACY_NAMES
  *   - Sprint 7a: testvault-cli renamed; remove from ALLOWED_LEGACY_NAMES
@@ -46,7 +46,6 @@ const ALLOWED_LEGACY_NAMES = new Set([
 	// Legacy names accepted during the testvault-* -> argos-* migration wave.
 	// Each future sprint will remove its entry as the package is renamed.
 	// See Specs/MIGRATION-PLAN.md (TECH-DEBT-015B section 1.4).
-	"@atconseil/testvault-importers", // Sprint 6d: rename to argos-importers
 	"@atconseil/testvault-exporters", // Sprint 6e: rename to argos-exporters
 	"@atconseil/testvault-gherkin", // Sprint 6f: rename to argos-gherkin
 	"@atconseil/testvault-cli", // Sprint 7a: rename to argos-cli

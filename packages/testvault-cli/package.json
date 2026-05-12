@@ -21,7 +21,7 @@
 	"dependencies": {
 		"@atconseil/testvault-exporters": "workspace:*",
 		"@atconseil/testvault-gherkin": "workspace:*",
-		"@atconseil/testvault-importers": "workspace:*",
+		"@atconseil/argos-importers": "workspace:*",
 		"@atconseil/argos-sdk": "workspace:*",
 		"@atconseil/argos-types": "workspace:*",
 		"commander": "^13.0.0"
