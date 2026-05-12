@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ImportWizard } from "./ImportWizard.js";
 
-vi.mock("@atconseil/testvault-importers", () => ({
+vi.mock("@atconseil/argos-importers", () => ({
 	parseCsv: vi.fn().mockReturnValue({
 		items: [
 			{ title: "TC-01", description: "Login flow" },
@@ -71,7 +71,7 @@ describe("ImportWizard", () => {
 	});
 
 	it("shows error count when parser returns errors", async () => {
-		const { parseCsv } = await import("@atconseil/testvault-importers");
+		const { parseCsv } = await import("@atconseil/argos-importers");
 		vi.mocked(parseCsv).mockReturnValueOnce({
 			items: [{ title: "TC-01" }],
 			errors: [{ row: 3, message: "Missing title" }],
@@ -85,7 +85,7 @@ describe("ImportWizard", () => {
 	});
 
 	it("shows download-errors button when there are errors", async () => {
-		const { parseCsv } = await import("@atconseil/testvault-importers");
+		const { parseCsv } = await import("@atconseil/argos-importers");
 		vi.mocked(parseCsv).mockReturnValueOnce({
 			items: [],
 			errors: [{ row: 2, message: "Missing title" }],
@@ -106,7 +106,7 @@ describe("ImportWizard", () => {
 	});
 
 	it("detects JUnit format from .xml file with JUnit content", async () => {
-		const { parseJUnit } = await import("@atconseil/testvault-importers");
+		const { parseJUnit } = await import("@atconseil/argos-importers");
 		vi.mocked(parseJUnit).mockReturnValueOnce({
 			items: [{ title: "testLogin", automationKey: "com.example.LoginTest.testLogin" }],
 			errors: [],

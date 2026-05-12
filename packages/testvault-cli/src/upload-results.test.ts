@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { UploadResultsOptions } from "./upload-results.js";
 import { processUploadResults } from "./upload-results.js";
 
-vi.mock("@atconseil/testvault-importers", () => ({
+vi.mock("@atconseil/argos-importers", () => ({
 	parseCsv: vi.fn(),
 	parseJUnit: vi.fn(),
 	parseNUnit: vi.fn(),
@@ -52,7 +52,7 @@ describe("processUploadResults", () => {
 
 	it("records a Pass execution for each matched test case", async () => {
 		const { readFileSync } = await import("node:fs");
-		const { parseJUnit } = await import("@atconseil/testvault-importers");
+		const { parseJUnit } = await import("@atconseil/argos-importers");
 
 		vi.mocked(readFileSync).mockReturnValue(
 			`<testsuite><testcase classname="com.LoginTest" name="testLogin"/></testsuite>`
@@ -79,7 +79,7 @@ describe("processUploadResults", () => {
 
 	it("records a Fail execution when the parsed item has a description (failure message)", async () => {
 		const { readFileSync } = await import("node:fs");
-		const { parseJUnit } = await import("@atconseil/testvault-importers");
+		const { parseJUnit } = await import("@atconseil/argos-importers");
 
 		vi.mocked(readFileSync).mockReturnValue(
 			`<testsuite><testcase classname="X" name="y"/></testsuite>`
@@ -100,7 +100,7 @@ describe("processUploadResults", () => {
 
 	it("reports unmatched when no TC has the automationKey", async () => {
 		const { readFileSync } = await import("node:fs");
-		const { parseJUnit } = await import("@atconseil/testvault-importers");
+		const { parseJUnit } = await import("@atconseil/argos-importers");
 
 		vi.mocked(readFileSync).mockReturnValue(
 			`<testsuite><testcase classname="X" name="y"/></testsuite>`
@@ -119,7 +119,7 @@ describe("processUploadResults", () => {
 
 	it("auto-creates missing TC when autoCreate is set", async () => {
 		const { readFileSync } = await import("node:fs");
-		const { parseJUnit } = await import("@atconseil/testvault-importers");
+		const { parseJUnit } = await import("@atconseil/argos-importers");
 
 		vi.mocked(readFileSync).mockReturnValue(
 			`<testsuite><testcase classname="X" name="y"/></testsuite>`
@@ -143,7 +143,7 @@ describe("processUploadResults", () => {
 
 	it("throws in strict mode when a TC is unmatched", async () => {
 		const { readFileSync } = await import("node:fs");
-		const { parseJUnit } = await import("@atconseil/testvault-importers");
+		const { parseJUnit } = await import("@atconseil/argos-importers");
 
 		vi.mocked(readFileSync).mockReturnValue(
 			`<testsuite><testcase classname="X" name="y"/></testsuite>`
@@ -159,7 +159,7 @@ describe("processUploadResults", () => {
 
 	it("detects JUnit format from .xml file extension", async () => {
 		const { readFileSync } = await import("node:fs");
-		const { parseJUnit } = await import("@atconseil/testvault-importers");
+		const { parseJUnit } = await import("@atconseil/argos-importers");
 
 		vi.mocked(readFileSync).mockReturnValue("<testsuite></testsuite>");
 		vi.mocked(parseJUnit).mockReturnValue({ items: [], errors: [] });
@@ -172,7 +172,7 @@ describe("processUploadResults", () => {
 
 	it("detects Cucumber format from .json file extension", async () => {
 		const { readFileSync } = await import("node:fs");
-		const { parseCucumber } = await import("@atconseil/testvault-importers");
+		const { parseCucumber } = await import("@atconseil/argos-importers");
 
 		vi.mocked(readFileSync).mockReturnValue("[]");
 		vi.mocked(parseCucumber).mockReturnValue({ items: [], errors: [] });

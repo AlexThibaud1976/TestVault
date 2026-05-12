@@ -1,5 +1,11 @@
 # argos-extension
 
+## 0.4.12
+
+### Patch Changes
+
+- Sprint 6d: rename @atconseil/testvault-importers -> @atconseil/argos-importers
+
 ## 0.4.11
 
 ### Patch Changes

@@ -44,6 +44,9 @@ importers:
 
   apps/argos-extension:
     dependencies:
+      '@atconseil/argos-importers':
+        specifier: workspace:^
+        version: link:../../packages/argos-importers
       '@atconseil/argos-sdk':
         specifier: workspace:^
         version: link:../../packages/argos-sdk
@@ -56,9 +59,6 @@ importers:
       '@atconseil/testvault-gherkin':
         specifier: workspace:*
         version: link:../../packages/testvault-gherkin
-      '@atconseil/testvault-importers':
-        specifier: workspace:^
-        version: link:../../packages/testvault-importers
       '@fluentui/react-components':
         specifier: ^9.54.0
         version: 9.73.8(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)
@@ -102,15 +102,15 @@ importers:
 
   apps/argos-functions:
     dependencies:
+      '@atconseil/argos-importers':
+        specifier: workspace:*
+        version: link:../../packages/argos-importers
       '@atconseil/argos-sdk':
         specifier: workspace:*
         version: link:../../packages/argos-sdk
       '@atconseil/testvault-gherkin':
         specifier: workspace:*
         version: link:../../packages/testvault-gherkin
-      '@atconseil/testvault-importers':
-        specifier: workspace:*
-        version: link:../../packages/testvault-importers
       '@azure/functions':
         specifier: ^4.5.0
         version: 4.14.0
@@ -126,6 +126,25 @@ importers:
         version: 3.2.4(@types/node@22.19.18)(jsdom@25.0.1)(msw@2.14.5(@types/node@22.19.18)(typescript@5.9.3))(yaml@2.8.4)
 
   apps/docs-site: {}
+
+  packages/argos-importers:
+    dependencies:
+      '@atconseil/argos-types':
+        specifier: workspace:*
+        version: link:../argos-types
+      exceljs:
+        specifier: ^4.4.0
+        version: 4.4.0
+      fast-xml-parser:
+        specifier: ^5.7.3
+        version: 5.7.3
+    devDependencies:
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vitest:
+        specifier: ^3.1.0
+        version: 3.2.4(@types/node@22.19.18)(jsdom@25.0.1)(msw@2.14.5(@types/node@22.19.18)(typescript@5.9.3))(yaml@2.8.4)
 
   packages/argos-sdk:
     dependencies:
@@ -199,6 +218,9 @@ importers:
 
   packages/testvault-cli:
     dependencies:
+      '@atconseil/argos-importers':
+        specifier: workspace:*
+        version: link:../argos-importers
       '@atconseil/argos-sdk':
         specifier: workspace:*
         version: link:../argos-sdk
@@ -211,9 +233,6 @@ importers:
       '@atconseil/testvault-gherkin':
         specifier: workspace:*
         version: link:../testvault-gherkin
-      '@atconseil/testvault-importers':
-        specifier: workspace:*
-        version: link:../testvault-importers
       commander:
         specifier: ^13.0.0
         version: 13.1.0
@@ -256,25 +275,6 @@ importers:
         specifier: ^3.1.0
         version: 3.2.4(@types/node@22.19.18)(jsdom@25.0.1)(msw@2.14.5(@types/node@22.19.18)(typescript@5.9.3))(yaml@2.8.4)
 
-  packages/testvault-importers:
-    dependencies:
-      '@atconseil/argos-types':
-        specifier: workspace:*
-        version: link:../argos-types
-      exceljs:
-        specifier: ^4.4.0
-        version: 4.4.0
-      fast-xml-parser:
-        specifier: ^5.7.3
-        version: 5.7.3
-    devDependencies:
-      typescript:
-        specifier: ^5.7.0
-        version: 5.9.3
-      vitest:
-        specifier: ^3.1.0
-        version: 3.2.4(@types/node@22.19.18)(jsdom@25.0.1)(msw@2.14.5(@types/node@22.19.18)(typescript@5.9.3))(yaml@2.8.4)
-
   tools/azure-pipelines-task:
     dependencies:
       azure-pipelines-task-lib:
@@ -293,6 +293,9 @@ importers:
 
   tools/e2e:
     dependencies:
+      '@atconseil/argos-importers':
+        specifier: workspace:*
+        version: link:../../packages/argos-importers
       '@atconseil/argos-sdk':
         specifier: workspace:*
         version: link:../../packages/argos-sdk
@@ -305,9 +308,6 @@ importers:
       '@atconseil/testvault-gherkin':
         specifier: workspace:*
         version: link:../../packages/testvault-gherkin
-      '@atconseil/testvault-importers':
-        specifier: workspace:*
-        version: link:../../packages/testvault-importers
     devDependencies:
       '@playwright/test':
         specifier: ^1.49.0

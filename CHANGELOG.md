@@ -9,6 +9,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.12] - 2026-05-13
+
+### Changed (Sprint 6d - feat/rename-testvault-importers-to-argos-importers)
+
+- **`@atconseil/testvault-importers` renomme en `@atconseil/argos-importers`** (4eme sprint du renaming Groupe 1).
+  - Dossier : `packages/testvault-importers/` -> `packages/argos-importers/` (historique git preserve).
+  - 4 consommateurs internes mis a jour :
+    - `apps/argos-extension/package.json` + 2 fichiers source (ImportWizard.tsx, ImportWizard.test.tsx)
+    - `apps/argos-functions/package.json` + 1 fichier (webhooks/queue-processor.ts)
+    - `packages/testvault-cli/package.json` + 2 fichiers (upload-results.ts, upload-results.test.ts)
+    - `tools/e2e/package.json` + 1 fichier (tests/07-phase4-import-export-cli.spec.ts)
+  - Aucune modification fonctionnelle de l'extension Argos.
+
+- **`tools/regression/CFG-2026-05-13-package-naming.test.ts`** : retire `"@atconseil/testvault-importers"` de `ALLOWED_LEGACY_NAMES`. La liste contient maintenant 4 entrees restantes (exporters, gherkin, cli, testpulse-ui-shared).
+
+### Notes (Sprint 6d)
+
+- Sprint court (~25 min). Methodologie identique aux precedents (template valide).
+- Surface : 4 consommateurs, 6 fichiers source.
+- Bump 0.4.11 -> 0.4.12 (patch : renaming sans changement fonctionnel).
+- Note : pnpm install --force requis apres rename pour rebuildier les symlinks vitest.
+
+### Backlog enrichi (0.4.12)
+
+- **Sprint 6e NEXT** : Renaming `testvault-exporters` -> `argos-exporters`
+- **Sprint 6f** : Renaming `testvault-gherkin` -> `argos-gherkin`
+- (autres items inchanges)
+
+---
+
 ## [0.4.11] - 2026-05-13
 
 ### Changed (Sprint 6c - feat/rename-testvault-sdk-to-argos-sdk)

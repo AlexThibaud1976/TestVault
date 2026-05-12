@@ -6,8 +6,8 @@ import {
 	parseNUnit,
 	parseTestNG,
 	parseXUnit,
-} from "@atconseil/testvault-importers";
-import type { ImportError, ImportResult, ParsedTestCase } from "@atconseil/testvault-importers";
+} from "@atconseil/argos-importers";
+import type { ImportError, ImportResult, ParsedTestCase } from "@atconseil/argos-importers";
 import { Button, Text } from "@fluentui/react-components";
 import { useRef, useState } from "react";
 

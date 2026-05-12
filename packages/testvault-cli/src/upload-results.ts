@@ -1,17 +1,17 @@
 import { readFileSync } from "node:fs";
 import {
-	createAdoClient,
-	createTestCaseService,
-	createTestExecutionService,
-} from "@atconseil/argos-sdk";
-import {
 	parseCucumber,
 	parseJUnit,
 	parseNUnit,
 	parseTestNG,
 	parseXUnit,
-} from "@atconseil/testvault-importers";
-import type { ImportResult } from "@atconseil/testvault-importers";
+} from "@atconseil/argos-importers";
+import type { ImportResult } from "@atconseil/argos-importers";
+import {
+	createAdoClient,
+	createTestCaseService,
+	createTestExecutionService,
+} from "@atconseil/argos-sdk";
 
 export type UploadResultsOptions = {
 	file: string;

@@ -270,7 +270,7 @@ n'est execute dans 015B** -- ce sont des reservations pour des sessions futures.
 | Sprint 6a | Renaming `testvault-types` -> `argos-types` | ~45 min | Eleve (9 consommateurs) | **DONE 2026-05-13** |
 | Sprint 6b | Renaming `testvault-wit-schema` -> `argos-wit-schema` | ~20 min | Faible (1 consommateur) | **DONE 2026-05-13** (incident corruption index Windows, mitige par exclusion Defender) |
 | Sprint 6c | Renaming `testvault-sdk` -> `argos-sdk` | ~45 min | Moyen (5 consommateurs, 47 fichiers source) | **DONE 2026-05-13** |
-| Sprint 6d | Renaming `testvault-importers` -> `argos-importers` | ~20 min | Faible (3 consommateurs) | Apres 6c |
+| Sprint 6d | Renaming `testvault-importers` -> `argos-importers` | ~25 min | Faible (4 consommateurs, 6 fichiers source) | **DONE 2026-05-13** |
 | Sprint 6e | Renaming `testvault-exporters` -> `argos-exporters` | ~20 min | Faible (2 consommateurs) | Apres 6c |
 | Sprint 6f | Renaming `testvault-gherkin` -> `argos-gherkin` | ~20 min | Faible (3 consommateurs) | Apres 6c |
 | Sprint 6g | Renaming `testvault-azure-pipelines-task` -> `argos-azure-pipelines-task` | ~30 min | Faible (0 consommateur interne, livrable produit) | Apres Groupe 1 |
