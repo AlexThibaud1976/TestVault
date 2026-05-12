@@ -1,6 +1,6 @@
 {
-	"name": "@atconseil/testvault-sdk",
-	"version": "0.3.3",
+	"name": "@atconseil/argos-sdk",
+	"version": "0.3.4",
 	"private": false,
 	"type": "module",
 	"exports": {

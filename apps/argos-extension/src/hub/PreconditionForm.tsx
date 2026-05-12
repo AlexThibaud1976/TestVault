@@ -1,5 +1,5 @@
+import type { IPreconditionService, PreconditionDraft } from "@atconseil/argos-sdk";
 import type { TestVaultPrecondition } from "@atconseil/argos-types";
-import type { IPreconditionService, PreconditionDraft } from "@atconseil/testvault-sdk";
 import { Button, Field, Input, Textarea } from "@fluentui/react-components";
 import { useState } from "react";
 

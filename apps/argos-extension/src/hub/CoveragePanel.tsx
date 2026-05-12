@@ -1,9 +1,9 @@
-import type { GlobalStatus } from "@atconseil/argos-types";
 import type {
 	ITestExecutionService,
 	IWorkItemLinkService,
 	WorkItemLink,
-} from "@atconseil/testvault-sdk";
+} from "@atconseil/argos-sdk";
+import type { GlobalStatus } from "@atconseil/argos-types";
 import { Text } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
 

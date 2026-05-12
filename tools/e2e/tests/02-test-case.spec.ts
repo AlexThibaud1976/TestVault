@@ -2,7 +2,7 @@
  * T-1.9 — CRUD Test Case against Cloud ADO instance.
  * Each test is self-contained: creates, reads, updates, then deletes its own WI.
  */
-import { AdoNotFoundError } from "@atconseil/testvault-sdk";
+import { AdoNotFoundError } from "@atconseil/argos-sdk";
 import { expect, test } from "../fixtures/index.js";
 
 test.describe("Test Case CRUD", () => {

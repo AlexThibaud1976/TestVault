@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
+import { createAdoClient, createTestCaseService } from "@atconseil/argos-sdk";
 import { featureToTestCases } from "@atconseil/testvault-gherkin";
-import { createAdoClient, createTestCaseService } from "@atconseil/testvault-sdk";
 
 export type BddSyncOptions = {
 	orgUrl: string;

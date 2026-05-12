@@ -1,6 +1,6 @@
 {
 	"name": "@atconseil/testvault-cli",
-	"version": "0.3.3",
+	"version": "0.3.4",
 	"private": false,
 	"type": "module",
 	"main": "./dist/index.js",
@@ -22,7 +22,7 @@
 		"@atconseil/testvault-exporters": "workspace:*",
 		"@atconseil/testvault-gherkin": "workspace:*",
 		"@atconseil/testvault-importers": "workspace:*",
-		"@atconseil/testvault-sdk": "workspace:*",
+		"@atconseil/argos-sdk": "workspace:*",
 		"@atconseil/argos-types": "workspace:*",
 		"commander": "^13.0.0"
 	},

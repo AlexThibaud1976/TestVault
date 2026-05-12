@@ -3,7 +3,7 @@ import type {
 	ITestCaseService,
 	ITestPlanService,
 	ITestSetService,
-} from "@atconseil/testvault-sdk";
+} from "@atconseil/argos-sdk";
 import { vi } from "vitest";
 import type { ILlmProviderService } from "../hub/llm-provider-service.js";
 import type { Services } from "../hub/services.js";

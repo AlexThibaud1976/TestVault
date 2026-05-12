@@ -1,5 +1,11 @@
 # @atconseil/testvault-sdk
 
+## 0.3.4
+
+### Patch Changes
+
+- Sprint 6c: rename @atconseil/testvault-sdk -> @atconseil/argos-sdk (5 consumers, 47 source files)
+
 ## 0.3.3
 
 ### Patch Changes

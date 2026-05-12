@@ -1,6 +1,6 @@
+import type { ITestCaseVersionService, TestVaultTestCaseVersion } from "@atconseil/argos-sdk";
+import { SnapshotNameConflictError } from "@atconseil/argos-sdk";
 import type { TestVaultTestCase } from "@atconseil/argos-types";
-import type { ITestCaseVersionService, TestVaultTestCaseVersion } from "@atconseil/testvault-sdk";
-import { SnapshotNameConflictError } from "@atconseil/testvault-sdk";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";

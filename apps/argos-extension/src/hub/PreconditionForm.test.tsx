@@ -1,5 +1,5 @@
+import type { IPreconditionService, PreconditionDraft } from "@atconseil/argos-sdk";
 import type { TestVaultPrecondition } from "@atconseil/argos-types";
-import type { IPreconditionService, PreconditionDraft } from "@atconseil/testvault-sdk";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";

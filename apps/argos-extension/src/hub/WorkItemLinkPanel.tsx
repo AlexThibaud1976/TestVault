@@ -1,4 +1,4 @@
-import type { IWorkItemLinkService, WiLinkType, WorkItemLink } from "@atconseil/testvault-sdk";
+import type { IWorkItemLinkService, WiLinkType, WorkItemLink } from "@atconseil/argos-sdk";
 import { Button, Text } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
 

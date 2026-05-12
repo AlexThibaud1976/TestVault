@@ -6,7 +6,7 @@ import {
 	createTestExecutionService,
 	createTestPlanService,
 	createTestSetService,
-} from "@atconseil/testvault-sdk";
+} from "@atconseil/argos-sdk";
 import type {
 	IPreconditionService,
 	ITestCaseService,
@@ -14,7 +14,7 @@ import type {
 	ITestExecutionService,
 	ITestPlanService,
 	ITestSetService,
-} from "@atconseil/testvault-sdk";
+} from "@atconseil/argos-sdk";
 import { test as base } from "@playwright/test";
 
 function requireEnv(name: string): string {

@@ -11,39 +11,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.4.11] - 2026-05-13
 
-### Added (TECH-DEBT-015A follow-up - docs/monorepo-inventory-followup)
+### Changed (Sprint 6c - feat/rename-testvault-sdk-to-argos-sdk)
 
-- **Specs/MONOREPO.md** : nouvelle section "Packages dans tools/" inventoriant 3 packages
-  non documentes initialement (`azure-pipelines-task`, `e2e`, `regression-suite`). Mise a jour
-  des sections "Vue d'ensemble" (+2 lignes), "Observations factuelles" (+observation 11),
-  "Carte des dependances internes" (+3 entrees + liste consumers), "Statut publication npm"
-  (+ note Azure Pipeline Tasks).
-- **Specs/MIGRATION-PLAN.md** : nouvelle section 1.8 detaillant le sort des 3 packages tools/.
-  Sprints 6g (`testvault-azure-pipelines-task`) et 6h (`testvault-e2e`) ajoutes au tableau
-  d'execution. Ligne risques "tools/* dans grep" ajoutee. Chemin critique mis a jour.
-  Note Sprint 6b (incident corruption index Windows).
-- **Specs/PHASE-0-GAPS.md** : nouvelle section 6 documentant les deux angles morts de l'audit
-  initial (tools/* non inventorie, carte dependances incomplete) et la lecon "tout grep doit
-  inclure tools/".
+- **`@atconseil/testvault-sdk` renomme en `@atconseil/argos-sdk`** (3eme sprint du renaming Groupe 1).
+  - Dossier : `packages/testvault-sdk/` -> `packages/argos-sdk/` (historique git preserve).
+  - 5 consommateurs internes mis a jour (package.json + imports) : testvault-cli, testvault-exporters,
+    argos-extension, argos-functions, tools/e2e.
+  - 47 fichiers source mis a jour (imports `@atconseil/testvault-sdk` -> `@atconseil/argos-sdk`).
+  - Exports `./browser` preserves (argos-extension et tools/e2e).
+  - Aucune modification fonctionnelle de l'extension Argos.
 
-### Notes (TECH-DEBT-015A follow-up)
+- **`tools/regression/CFG-2026-05-13-package-naming.test.ts`** : retire `"@atconseil/testvault-sdk"`
+  de `ALLOWED_LEGACY_NAMES`. La liste contient maintenant 5 entrees restantes (importers, exporters,
+  gherkin, cli, testpulse-ui-shared).
 
-- Sprint purement documentaire. Aucune modification de code, package.json, ou test regression.
-- Decouverte declenchee par Sprint 6b lors du grep des consommateurs de testvault-wit-schema.
-- Lecon principale : tout grep consommateurs doit couvrir `packages/`, `apps/`, ET `tools/`.
+### Notes (Sprint 6c)
 
-### Lessons learned (TECH-DEBT-015A follow-up)
-
-- **Un audit initial peut etre incomplet meme avec methodologie rigoureuse**. TECH-DEBT-011 v3
-  "verifier le terrain reel" doit aussi s'appliquer aux audits documentaires.
-- **Les packages sans consumer interne sont les plus faciles a oublier**. Mitigation : pour tout
-  inventaire, lister AUSSI les packages "feuilles" (zero consumer) via
-  `pnpm list -r --depth=0`.
+- Sprint le plus large du Groupe 1 (~45 min). 5 consommateurs, 47 fichiers source.
+- Methodologie identique aux Sprints 6a/6b (template valide).
+- Bump 0.4.10 -> 0.4.11 (patch : renaming sans changement fonctionnel).
+- Note : TECH-DEBT-015A (documentation uniquement, branch docs/monorepo-inventory-followup) n'avait
+  pas justifie de bump independant ; sa documentation est integree dans la release 0.4.10 ci-dessous.
 
 ### Backlog enrichi (0.4.11)
 
-- **Sprint 6g NEW** : Renaming `testvault-azure-pipelines-task` -> `argos-azure-pipelines-task`
-- **Sprint 6h NEW** : Renaming `testvault-e2e` -> `argos-e2e`
+- **Sprint 6d NEXT** : Renaming `testvault-importers` -> `argos-importers` (3 consommateurs : argos-extension, argos-functions, tools/e2e)
+- **Sprint 6e** : Renaming `testvault-exporters` -> `argos-exporters`
+- **Sprint 6f** : Renaming `testvault-gherkin` -> `argos-gherkin`
+- **Sprint 6g** : Renaming `testvault-azure-pipelines-task` -> `argos-azure-pipelines-task`
+- **Sprint 6h** : Renaming `testvault-e2e` -> `argos-e2e`
 - (autres items inchanges)
 
 ---
@@ -59,15 +55,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **`tools/regression/CFG-2026-05-13-package-naming.test.ts`** : retire `"@atconseil/testvault-wit-schema"` de `ALLOWED_LEGACY_NAMES`. La liste contient maintenant 6 entrees restantes (sdk, importers, exporters, gherkin, cli, testpulse-ui-shared).
 
-### Notes (Sprint 6b)
+### Added (TECH-DEBT-015A follow-up - docs/monorepo-inventory-followup)
 
-- Sprint court (~20 min). Surface d'impact minimale : 1 consommateur, 1 fichier source.
-- Methodologie identique au Sprint 6a (template valide).
+- **Specs/MONOREPO.md** : nouvelle section "Packages dans tools/" inventoriant 3 packages
+  non documentes initialement (`azure-pipelines-task`, `e2e`, `regression-suite`). Mise a jour
+  des sections "Vue d'ensemble" (+2 lignes), "Observations factuelles" (+observation 11),
+  "Carte des dependances internes" (+3 entrees + liste consumers), "Statut publication npm"
+  (+ note Azure Pipeline Tasks).
+- **Specs/MIGRATION-PLAN.md** : nouvelle section 1.8 detaillant le sort des 3 packages tools/.
+  Sprints 6g (`testvault-azure-pipelines-task`) et 6h (`testvault-e2e`) ajoutes au tableau
+  d'execution. Ligne risques "tools/* dans grep" ajoutee. Chemin critique mis a jour.
+  Note Sprint 6b (incident corruption index Windows).
+- **Specs/PHASE-0-GAPS.md** : nouvelle section 6 documentant les deux angles morts de l'audit
+  initial (tools/* non inventorie, carte dependances incomplete) et la lecon "tout grep doit
+  inclure tools/".
+
+### Notes (Sprint 6b + TECH-DEBT-015A follow-up)
+
+- Sprint 6b court (~20 min). Surface d'impact minimale : 1 consommateur, 1 fichier source.
+- TECH-DEBT-015A purement documentaire (decouverte declenchee par Sprint 6b). Pas de bump independant.
+- Lecon principale : tout grep consommateurs doit couvrir `packages/`, `apps/`, ET `tools/`.
 - Bump 0.4.9 -> 0.4.10 (patch : renaming sans changement fonctionnel).
+
+### Lessons learned (TECH-DEBT-015A follow-up)
+
+- **Un audit initial peut etre incomplet meme avec methodologie rigoureuse**. TECH-DEBT-011 v3
+  "verifier le terrain reel" doit aussi s'appliquer aux audits documentaires.
+- **Les packages sans consumer interne sont les plus faciles a oublier**. Mitigation : pour tout
+  inventaire, lister AUSSI les packages "feuilles" (zero consumer) via
+  `pnpm list -r --depth=0`.
 
 ### Backlog enrichi (0.4.10)
 
-- **Sprint 6c NEXT** : Renaming `testvault-sdk` -> `argos-sdk` (4 consommateurs : argos-extension, argos-functions, testvault-cli, testvault-exporters)
+- **Sprint 6c NEXT** : Renaming `testvault-sdk` -> `argos-sdk` (5 consommateurs : argos-extension, argos-functions, testvault-cli, testvault-exporters, tools/e2e)
+- **Sprint 6g NEW** : Renaming `testvault-azure-pipelines-task` -> `argos-azure-pipelines-task`
+- **Sprint 6h NEW** : Renaming `testvault-e2e` -> `argos-e2e`
 - Sprint 6d, 6e, 6f : importers, exporters, gherkin (parallelisable apres 6c)
 - (autres items inchanges)
 

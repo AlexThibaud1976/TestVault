@@ -1,7 +1,7 @@
 {
 	"name": "@atconseil/testvault-e2e",
 	"private": true,
-	"version": "0.3.3",
+	"version": "0.3.4",
 	"type": "module",
 	"description": "Playwright E2E suite against real ADO instances",
 	"scripts": {
@@ -13,7 +13,7 @@
 		"@atconseil/testvault-exporters": "workspace:^",
 		"@atconseil/testvault-gherkin": "workspace:*",
 		"@atconseil/testvault-importers": "workspace:*",
-		"@atconseil/testvault-sdk": "workspace:*"
+		"@atconseil/argos-sdk": "workspace:*"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.49.0",

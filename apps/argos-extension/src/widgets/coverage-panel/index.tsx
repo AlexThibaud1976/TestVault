@@ -2,7 +2,7 @@ import {
 	createAdoClient,
 	createTestExecutionService,
 	createWorkItemLinkService,
-} from "@atconseil/testvault-sdk";
+} from "@atconseil/argos-sdk";
 import * as SDK from "azure-devops-extension-sdk";
 import { createRoot } from "react-dom/client";
 import { CoveragePanel } from "../../hub/CoveragePanel.js";

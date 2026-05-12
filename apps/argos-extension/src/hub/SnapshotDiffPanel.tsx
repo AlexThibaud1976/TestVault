@@ -1,5 +1,5 @@
-import type { StepDiffEntry, TestVaultTestCaseVersion } from "@atconseil/testvault-sdk";
-import { diffSnapshots } from "@atconseil/testvault-sdk";
+import type { StepDiffEntry, TestVaultTestCaseVersion } from "@atconseil/argos-sdk";
+import { diffSnapshots } from "@atconseil/argos-sdk";
 import { Text } from "@fluentui/react-components";
 import { useMemo } from "react";
 

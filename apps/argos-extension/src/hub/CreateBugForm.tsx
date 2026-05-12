@@ -1,4 +1,4 @@
-import type { BugDraft, IBugCreationService } from "@atconseil/testvault-sdk";
+import type { BugDraft, IBugCreationService } from "@atconseil/argos-sdk";
 import { Button, Text, Textarea } from "@fluentui/react-components";
 import { useState } from "react";
 
