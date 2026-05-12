@@ -10,7 +10,7 @@
 	},
 	"dependencies": {
 		"@atconseil/testvault-cli": "workspace:*",
-		"@atconseil/testvault-exporters": "workspace:^",
+		"@atconseil/argos-exporters": "workspace:^",
 		"@atconseil/testvault-gherkin": "workspace:*",
 		"@atconseil/argos-importers": "workspace:*",
 		"@atconseil/argos-sdk": "workspace:*"
