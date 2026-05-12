@@ -33,7 +33,7 @@ describe("detectEnvironment", () => {
 
 	it("returned cloud orgUrl validates against AdoEnvironmentSchema", async () => {
 		vi.mocked(getHost).mockReturnValue(cloudHost);
-		const { AdoEnvironmentSchema } = await import("@atconseil/testvault-types");
+		const { AdoEnvironmentSchema } = await import("@atconseil/argos-types");
 		const env = detectEnvironment();
 		expect(() => AdoEnvironmentSchema.parse(env)).not.toThrow();
 	});
@@ -50,7 +50,7 @@ describe("detectEnvironment", () => {
 
 	it("returned server env validates against AdoEnvironmentSchema", async () => {
 		vi.mocked(getHost).mockReturnValue(serverHost);
-		const { AdoEnvironmentSchema } = await import("@atconseil/testvault-types");
+		const { AdoEnvironmentSchema } = await import("@atconseil/argos-types");
 		const env = detectEnvironment("https://ado.company.com/tfs");
 		expect(() => AdoEnvironmentSchema.parse(env)).not.toThrow();
 	});

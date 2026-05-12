@@ -1,4 +1,4 @@
-import type { TestVaultTestCase } from "@atconseil/testvault-types";
+import type { TestVaultTestCase } from "@atconseil/argos-types";
 import { describe, expect, it, vi } from "vitest";
 import type { IAdoClient, RawWorkItem } from "./ado-client.js";
 import type {

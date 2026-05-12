@@ -1,4 +1,4 @@
-import type { TestVaultTestSet } from "@atconseil/testvault-types";
+import type { TestVaultTestSet } from "@atconseil/argos-types";
 import type { IAdoClient, RawWorkItem, WorkItemFieldPatch } from "./ado-client.js";
 
 export type TestSetDraft = {

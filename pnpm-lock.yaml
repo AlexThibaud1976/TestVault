@@ -44,6 +44,9 @@ importers:
 
   apps/argos-extension:
     dependencies:
+      '@atconseil/argos-types':
+        specifier: workspace:^
+        version: link:../../packages/argos-types
       '@atconseil/testvault-exporters':
         specifier: workspace:^
         version: link:../../packages/testvault-exporters
@@ -56,9 +59,6 @@ importers:
       '@atconseil/testvault-sdk':
         specifier: workspace:^
         version: link:../../packages/testvault-sdk
-      '@atconseil/testvault-types':
-        specifier: workspace:^
-        version: link:../../packages/testvault-types
       '@fluentui/react-components':
         specifier: ^9.54.0
         version: 9.73.8(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)
@@ -127,11 +127,24 @@ importers:
 
   apps/docs-site: {}
 
+  packages/argos-types:
+    dependencies:
+      zod:
+        specifier: ^3.24.0
+        version: 3.25.76
+    devDependencies:
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vitest:
+        specifier: ^3.1.0
+        version: 3.2.4(@types/node@22.19.18)(jsdom@25.0.1)(msw@2.14.5(@types/node@22.19.18)(typescript@5.9.3))(yaml@2.8.4)
+
   packages/testpulse-ui-shared:
     dependencies:
-      '@atconseil/testvault-types':
+      '@atconseil/argos-types':
         specifier: workspace:*
-        version: link:../testvault-types
+        version: link:../argos-types
     devDependencies:
       typescript:
         specifier: ^5.7.0
@@ -142,6 +155,9 @@ importers:
 
   packages/testvault-cli:
     dependencies:
+      '@atconseil/argos-types':
+        specifier: workspace:*
+        version: link:../argos-types
       '@atconseil/testvault-exporters':
         specifier: workspace:*
         version: link:../testvault-exporters
@@ -154,9 +170,6 @@ importers:
       '@atconseil/testvault-sdk':
         specifier: workspace:*
         version: link:../testvault-sdk
-      '@atconseil/testvault-types':
-        specifier: workspace:*
-        version: link:../testvault-types
       commander:
         specifier: ^13.0.0
         version: 13.1.0
@@ -170,12 +183,12 @@ importers:
 
   packages/testvault-exporters:
     dependencies:
+      '@atconseil/argos-types':
+        specifier: workspace:*
+        version: link:../argos-types
       '@atconseil/testvault-sdk':
         specifier: workspace:^
         version: link:../testvault-sdk
-      '@atconseil/testvault-types':
-        specifier: workspace:*
-        version: link:../testvault-types
       exceljs:
         specifier: ^4.4.0
         version: 4.4.0
@@ -201,9 +214,9 @@ importers:
 
   packages/testvault-importers:
     dependencies:
-      '@atconseil/testvault-types':
+      '@atconseil/argos-types':
         specifier: workspace:*
-        version: link:../testvault-types
+        version: link:../argos-types
       exceljs:
         specifier: ^4.4.0
         version: 4.4.0
@@ -220,9 +233,9 @@ importers:
 
   packages/testvault-sdk:
     dependencies:
-      '@atconseil/testvault-types':
+      '@atconseil/argos-types':
         specifier: workspace:*
-        version: link:../testvault-types
+        version: link:../argos-types
       '@atconseil/testvault-wit-schema':
         specifier: workspace:^
         version: link:../testvault-wit-schema
@@ -246,24 +259,11 @@ importers:
         specifier: ^3.1.0
         version: 3.2.4(@types/node@22.19.18)(jsdom@25.0.1)(msw@2.14.5(@types/node@22.19.18)(typescript@5.9.3))(yaml@2.8.4)
 
-  packages/testvault-types:
-    dependencies:
-      zod:
-        specifier: ^3.24.0
-        version: 3.25.76
-    devDependencies:
-      typescript:
-        specifier: ^5.7.0
-        version: 5.9.3
-      vitest:
-        specifier: ^3.1.0
-        version: 3.2.4(@types/node@22.19.18)(jsdom@25.0.1)(msw@2.14.5(@types/node@22.19.18)(typescript@5.9.3))(yaml@2.8.4)
-
   packages/testvault-wit-schema:
     dependencies:
-      '@atconseil/testvault-types':
+      '@atconseil/argos-types':
         specifier: workspace:*
-        version: link:../testvault-types
+        version: link:../argos-types
       zod:
         specifier: ^3.24.0
         version: 3.25.76

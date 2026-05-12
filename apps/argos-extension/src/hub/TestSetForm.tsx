@@ -1,5 +1,5 @@
+import type { TestVaultTestSet } from "@atconseil/argos-types";
 import type { ITestSetService, TestSetDraft } from "@atconseil/testvault-sdk";
-import type { TestVaultTestSet } from "@atconseil/testvault-types";
 import { Button, Field, Input, Text, Textarea } from "@fluentui/react-components";
 import { useState } from "react";
 

@@ -1,4 +1,4 @@
-import type { TestVaultTestCase, TestVaultTestExecution } from "@atconseil/testvault-types";
+import type { TestVaultTestCase, TestVaultTestExecution } from "@atconseil/argos-types";
 import type { IAdoClient, WorkItemFieldPatch } from "./ado-client.js";
 import type { ITestExecutionService } from "./test-execution-service.js";
 

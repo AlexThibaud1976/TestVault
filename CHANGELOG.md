@@ -9,6 +9,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.9] - 2026-05-13
+
+### Changed (Sprint 6a - feat/rename-testvault-types-to-argos-types)
+
+- **`@atconseil/testvault-types` renomme en `@atconseil/argos-types`** (premier sprint du renaming Groupe 1, MIGRATION-PLAN.md section 1.4).
+  - Dossier : `packages/testvault-types/` -> `packages/argos-types/` (via `git mv`, historique preserve).
+  - 7 consommateurs internes mis a jour (package.json + imports) : testvault-wit-schema, testvault-sdk, testvault-importers, testvault-exporters, testvault-cli, testpulse-ui-shared, argos-extension.
+  - Note : testvault-gherkin et argos-functions ne referencaient pas testvault-types (confirme via grep).
+  - Aucune modification fonctionnelle de l'extension Argos.
+
+### Added (Sprint 6a)
+
+- **`tools/regression/CFG-2026-05-13-package-naming.test.ts`** : test regression naming convention. 4 assertions :
+  - Au moins 1 package dans packages/
+  - Aucun package avec prefixe `@atconseil/testvault-*` (sera fully green apres Sprint 6f)
+  - Tous les packages avec prefixe approuve (`@atconseil/argos-*` ou allowed legacy)
+  - Consistance nom-dossier
+- Le test compte actuellement 6 violations attendues (cli, exporters, gherkin, importers, sdk, wit-schema) qui disparaitront Sprints 6b a 6f.
+
+### Notes (Sprint 6a)
+
+- Sprint le plus risque du renaming Groupe 1 (9 consommateurs reels, testvault-gherkin et argos-functions sans dependance directe).
+- Methodologie TDD-first appliquee : test naming convention cree avant renaming (7 violations), renaming fait (6 violations = decrease attendue).
+- `git mv` utilise pour preserver l'historique git des fichiers.
+- 34 fichiers source mis a jour (16 dans testvault-sdk/src, 18 dans argos-extension/src/hub).
+- Bump 0.4.8 -> 0.4.9 (patch : renaming sans changement fonctionnel utilisateur).
+
+### Backlog
+
+- **Sprint 6b NEXT** : Renaming `testvault-wit-schema` -> `argos-wit-schema` (1 consommateur, faible risque)
+- Sprint 6c : Renaming `testvault-sdk` -> `argos-sdk` (4 consommateurs)
+- Sprints 6d, 6e, 6f : importers, exporters, gherkin (parallele possible apres 6c)
+
+### Changed (Sprint 6a follow-up)
+
+- **`CFG-2026-05-13-package-naming` test : ALLOWED_LEGACY_NAMES etendu** pour accepter les 6 packages testvault-* encore a renommer (Sprints 6b a 7a) + testpulse-ui-shared (Sprint 7b). Le test passe de 2/4 failing a **4/4 passing**.
+- **Test 2 modifie** : la verification "no testvault-* prefix" exclut maintenant les noms dans ALLOWED_LEGACY_NAMES. Le test devient un tracker visuel : chaque sprint de renaming retirera une entree de la liste, et a Sprint 7b la liste sera vide.
+- **Effet** : suite regression passe de 49/51 a **51/51 passing**. CI verte sur la PR Sprint 6a.
+
+### Lessons learned (Sprint 6a + follow-up)
+
+- **TDD-first sur naming convention** : creer le test avant la transformation rend la progression mesurable.
+- **`git mv` sur Windows PowerShell** fonctionne correctement pour les renames lowercase. Pas de probleme de sensibilite casse.
+- **testvault-gherkin et argos-functions** ne consomment pas testvault-types en direct -- confirme via grep (MONOREPO.md avait liste argos-functions comme consommateur potentiel, c'etait inexact).
+- **Le TDD "rouge progressif" est un anti-pattern pour CI**. Un test qui valide une transformation multi-sprints doit etre vert a chaque etape via une liste explicite (ALLOWED_LEGACY_NAMES), pas via une diminution lente vers zero.
+- **A retenir pour les futurs sprints de migration** : introduire le test avec la liste complete des etapes futures inscrite explicitement. Chaque sprint suivant retire une entree.
+
+---
+
 ## [0.4.8] - 2026-05-12
 
 ### Added (TECH-DEBT-015C - docs/phase-0-gaps)

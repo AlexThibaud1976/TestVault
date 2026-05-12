@@ -1,13 +1,13 @@
 import type {
+	TestVaultPrecondition,
+	TestVaultTestCase,
+	TestVaultTestExecution,
+} from "@atconseil/argos-types";
+import type {
 	IBugCreationService,
 	ITestExecutionService,
 	InProgressExecution,
 } from "@atconseil/testvault-sdk";
-import type {
-	TestVaultPrecondition,
-	TestVaultTestCase,
-	TestVaultTestExecution,
-} from "@atconseil/testvault-types";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";

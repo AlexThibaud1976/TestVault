@@ -1,4 +1,4 @@
-import type { EvidenceRef } from "@atconseil/testvault-types";
+import type { EvidenceRef } from "@atconseil/argos-types";
 import type { IAdoClient } from "./ado-client.js";
 import type { ITestExecutionService } from "./test-execution-service.js";
 

@@ -1,6 +1,6 @@
 {
 	"name": "argosTesting",
-	"version": "0.4.8",
+	"version": "0.4.9",
 	"private": false,
 	"type": "module",
 	"scripts": {
@@ -16,7 +16,7 @@
 		"@atconseil/testvault-gherkin": "workspace:*",
 		"@atconseil/testvault-importers": "workspace:^",
 		"@atconseil/testvault-sdk": "workspace:^",
-		"@atconseil/testvault-types": "workspace:^",
+		"@atconseil/argos-types": "workspace:^",
 		"@fluentui/react-components": "^9.54.0",
 		"azure-devops-extension-api": "^4.0.2",
 		"azure-devops-extension-sdk": "^4.0.2",

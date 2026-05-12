@@ -20,7 +20,7 @@
 	},
 	"dependencies": {
 		"@atconseil/testvault-sdk": "workspace:^",
-		"@atconseil/testvault-types": "workspace:*",
+		"@atconseil/argos-types": "workspace:*",
 		"exceljs": "^4.4.0"
 	},
 	"devDependencies": {
