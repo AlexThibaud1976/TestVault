@@ -1,5 +1,5 @@
+import type { ITestSetService, TestSetDraft } from "@atconseil/argos-sdk";
 import type { TestVaultTestSet } from "@atconseil/argos-types";
-import type { ITestSetService, TestSetDraft } from "@atconseil/testvault-sdk";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";

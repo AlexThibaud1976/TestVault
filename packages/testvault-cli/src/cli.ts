@@ -3,7 +3,7 @@ import {
 	createAdoClient,
 	createTestCaseService,
 	createTestPlanService,
-} from "@atconseil/testvault-sdk";
+} from "@atconseil/argos-sdk";
 import { Command } from "commander";
 import { processUploadResults } from "./upload-results.js";
 

@@ -1,4 +1,4 @@
-import type { IEnvironmentConfigService } from "@atconseil/testvault-sdk";
+import type { IEnvironmentConfigService } from "@atconseil/argos-sdk";
 import { Button, Input, Text } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
 

@@ -1,7 +1,7 @@
 /**
  * T-1.9 — CRUD Test Plan against Cloud ADO instance.
  */
-import { AdoNotFoundError } from "@atconseil/testvault-sdk";
+import { AdoNotFoundError } from "@atconseil/argos-sdk";
 import { expect, test } from "../fixtures/index.js";
 
 test.describe("Test Plan CRUD", () => {

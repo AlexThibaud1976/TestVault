@@ -1,9 +1,9 @@
-import type { GlobalStatus } from "@atconseil/argos-types";
 import type {
 	ExecutionPage,
 	ITestExecutionService,
 	ListExecutionsOptions,
-} from "@atconseil/testvault-sdk";
+} from "@atconseil/argos-sdk";
+import type { GlobalStatus } from "@atconseil/argos-types";
 import { Button, Text } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
 

@@ -1,4 +1,4 @@
-import type { CoverageMatrix } from "@atconseil/testvault-sdk";
+import type { CoverageMatrix } from "@atconseil/argos-sdk";
 import ExcelJS from "exceljs";
 
 // ARGB format: FF + RGB (e.g. FFC6EFCE = opaque green)

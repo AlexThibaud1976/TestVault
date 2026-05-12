@@ -9,7 +9,7 @@ import {
 	createTestCaseService,
 	createTestPlanService,
 	createTestSetService,
-} from "@atconseil/testvault-sdk";
+} from "@atconseil/argos-sdk";
 import { createAiSettingsStore } from "./ai-settings-store-adapter.js";
 import { createExtensionDataClient } from "./extension-data-store.js";
 import { type ILlmProviderService, createLlmProviderService } from "./llm-provider-service.js";

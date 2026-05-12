@@ -8,7 +8,7 @@ const mockList = vi.fn();
 const mockCreate = vi.fn();
 const mockUpdate = vi.fn();
 
-vi.mock("@atconseil/testvault-sdk", () => ({
+vi.mock("@atconseil/argos-sdk", () => ({
 	createAdoClient: vi.fn(() => ({})),
 	createTestCaseService: vi.fn(() => ({
 		list: mockList,

@@ -1,5 +1,14 @@
 # argos-extension
 
+## 0.4.11
+
+### Patch Changes
+
+- Sprint 6c: rename @atconseil/testvault-sdk -> @atconseil/argos-sdk (5 consumers, 47 source files)
+- Updated dependencies
+  - @atconseil/argos-sdk@0.3.4
+  - @atconseil/testvault-exporters@0.3.3
+
 ## 0.4.10
 
 ### Patch Changes

@@ -1,4 +1,4 @@
-import type { IExtensionDataClient } from "@atconseil/testvault-sdk";
+import type { IExtensionDataClient } from "@atconseil/argos-sdk";
 import type { IAiSettingsStore } from "./llm-provider-service.js";
 
 type StoredDoc = { id: string } & Record<string, unknown>;

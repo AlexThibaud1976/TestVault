@@ -1,4 +1,4 @@
-import type { TestVaultTestCaseVersion } from "@atconseil/testvault-sdk";
+import type { TestVaultTestCaseVersion } from "@atconseil/argos-sdk";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { SnapshotDiffPanel } from "./SnapshotDiffPanel.js";

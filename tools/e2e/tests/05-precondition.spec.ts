@@ -1,7 +1,7 @@
 /**
  * T-1.9 — CRUD Precondition against Cloud ADO instance.
  */
-import { AdoNotFoundError } from "@atconseil/testvault-sdk";
+import { AdoNotFoundError } from "@atconseil/argos-sdk";
 import { expect, test } from "../fixtures/index.js";
 
 test.describe("Precondition CRUD", () => {

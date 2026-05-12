@@ -3,7 +3,7 @@ import type {
 	IProcessInstallService,
 	InstallProgressStep,
 	ProcessInstallState,
-} from "@atconseil/testvault-sdk";
+} from "@atconseil/argos-sdk";
 import {
 	Button,
 	Divider,

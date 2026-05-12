@@ -1,4 +1,4 @@
-import type { CoverageMatrix } from "@atconseil/testvault-sdk";
+import type { CoverageMatrix } from "@atconseil/argos-sdk";
 import { describe, expect, it } from "vitest";
 import { exportMatrixToExcel, exportMatrixToPdf } from "./matrix-export.js";
 

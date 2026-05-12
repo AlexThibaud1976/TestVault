@@ -1,4 +1,4 @@
-import type { IExtensionDataClient } from "@atconseil/testvault-sdk";
+import type { IExtensionDataClient } from "@atconseil/argos-sdk";
 import type { IExtensionDataService } from "azure-devops-extension-api";
 import * as SDK from "azure-devops-extension-sdk";
 

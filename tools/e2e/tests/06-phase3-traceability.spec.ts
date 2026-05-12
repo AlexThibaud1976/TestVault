@@ -1,10 +1,10 @@
+import { buildCoverageMatrix } from "@atconseil/argos-sdk";
 /**
  * T-3.7 — Phase 3 E2E: Snapshots, Plan lock with auto-snapshot, Coverage Matrix export.
  * Requires: ADO_CLOUD_ORG_URL, ADO_CLOUD_PROJECT, ADO_CLOUD_PAT env vars.
  * Each test is self-contained and cleans up after itself.
  */
 import { exportMatrixToExcel, exportMatrixToPdf } from "@atconseil/testvault-exporters";
-import { buildCoverageMatrix } from "@atconseil/testvault-sdk";
 import { expect, test } from "../fixtures/index.js";
 
 test.describe("Phase 3 — Traceability & Versioning", () => {
@@ -35,7 +35,7 @@ test.describe("Phase 3 — Traceability & Versioning", () => {
 			expect(list.some((s) => s.id === snap.id)).toBe(true);
 
 			// Duplicate name must throw SnapshotNameConflictError
-			const { SnapshotNameConflictError } = await import("@atconseil/testvault-sdk");
+			const { SnapshotNameConflictError } = await import("@atconseil/argos-sdk");
 			await expect(
 				versionService.createSnapshot(tc, { name: `snap-${uid}`, parentTestCaseId: tc.id })
 			).rejects.toThrow(SnapshotNameConflictError);

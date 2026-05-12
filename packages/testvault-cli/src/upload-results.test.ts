@@ -20,7 +20,7 @@ const mockStartRun = vi.fn();
 const mockSaveStepResult = vi.fn();
 const mockFinalizeRun = vi.fn();
 
-vi.mock("@atconseil/testvault-sdk", () => ({
+vi.mock("@atconseil/argos-sdk", () => ({
 	createAdoClient: vi.fn(() => ({})),
 	createTestCaseService: vi.fn(() => ({
 		list: mockList,

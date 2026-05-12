@@ -1,6 +1,6 @@
+import type { ITestCaseVersionService, TestVaultTestCaseVersion } from "@atconseil/argos-sdk";
+import { SnapshotNameConflictError } from "@atconseil/argos-sdk";
 import type { TestVaultTestCase } from "@atconseil/argos-types";
-import type { ITestCaseVersionService, TestVaultTestCaseVersion } from "@atconseil/testvault-sdk";
-import { SnapshotNameConflictError } from "@atconseil/testvault-sdk";
 import { Button, Text, Textarea } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
 

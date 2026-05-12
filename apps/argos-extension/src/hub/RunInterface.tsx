@@ -1,15 +1,15 @@
 import type {
-	TestVaultPrecondition,
-	TestVaultTestCase,
-	TestVaultTestExecution,
-} from "@atconseil/argos-types";
-import type {
 	IBugCreationService,
 	IEvidenceUploadService,
 	ITestExecutionService,
 	InProgressExecution,
-} from "@atconseil/testvault-sdk";
-import { buildBugDraft } from "@atconseil/testvault-sdk";
+} from "@atconseil/argos-sdk";
+import { buildBugDraft } from "@atconseil/argos-sdk";
+import type {
+	TestVaultPrecondition,
+	TestVaultTestCase,
+	TestVaultTestExecution,
+} from "@atconseil/argos-types";
 import { Button, Text, Textarea } from "@fluentui/react-components";
 import { useState } from "react";
 import { CreateBugForm } from "./CreateBugForm.js";
