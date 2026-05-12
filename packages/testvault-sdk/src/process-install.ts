@@ -1,4 +1,4 @@
-import { TESTVAULT_SCHEMA } from "@atconseil/testvault-wit-schema";
+import { TESTVAULT_SCHEMA } from "@atconseil/argos-wit-schema";
 
 // ─── Known ADO system process GUIDs ──────────────────────────────────────────
 
