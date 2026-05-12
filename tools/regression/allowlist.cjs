@@ -44,6 +44,7 @@ const SHARED_DOC_ALLOWLIST = new Set([
 	"tools/claude-prompts/CLAUDE_TASK_sprint-6a.md",
 	"tools/claude-prompts/CLAUDE_TASK_sprint-6a-followup.md",
 	"tools/claude-prompts/CLAUDE_TASK_sprint-6b.md",
+	"tools/claude-prompts/CLAUDE_TASK_tech-debt-015a-followup.md",
 ]);
 
 module.exports = { SHARED_DOC_ALLOWLIST };

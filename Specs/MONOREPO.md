@@ -22,7 +22,9 @@
 | `packages/testvault-types` | Bibliotheque | Types TypeScript + schemas Zod pour les WIT |
 | `packages/testvault-ui` | Bibliotheque | Placeholder vide (export {} uniquement) |
 | `packages/testvault-wit-schema` | Bibliotheque | Definitions des 7 Custom Work Item Types ADO |
-| `tools/regression` | Outils dev | Suite de tests regression (12 fichiers, 47 assertions) |
+| `tools/azure-pipelines-task` | **Livrable produit** | Azure DevOps Pipeline Task (`testvault-azure-pipelines-task` v1.0.0) |
+| `tools/e2e` | Tests | Suite Playwright E2E contre ADO Cloud (`testvault-e2e` v0.3.3, 11 specs) |
+| `tools/regression` | Outils dev | Suite de tests regression (13 fichiers, 51 assertions) |
 | `tools/preflight` | Outils dev | Checklist + script auto-validation manifest |
 | `tools/claude-prompts` | Outils dev | Archive des prompts Claude Code par sprint |
 | `Specs/` | Specifications | Spec-kit (constitution, spec, plan, tasks, MONOREPO) |
@@ -465,12 +467,18 @@ testvault-cli        -> testvault-exporters, testvault-gherkin, testvault-import
 testpulse-ui-shared  -> testvault-types
 argos-extension      -> testvault-exporters, testvault-gherkin, testvault-importers, testvault-sdk, testvault-types
 argos-functions      -> testvault-gherkin, testvault-importers, testvault-sdk
+tools/e2e            -> testvault-cli, testvault-exporters (workspace:^), testvault-gherkin, testvault-importers, testvault-sdk
+tools/azure-pipelines-task -> (aucune dependance interne)
+tools/regression     -> (aucune dependance interne)
 ```
 
 **Packages sans consommateur interne** :
 - `@atconseil/testpulse-ui-shared`
 - `@atconseil/testvault-ui`
 - `@atconseil/testvault-cli`
+- `@atconseil/testvault-azure-pipelines-task` (livrable produit, pas de consumer interne)
+- `@atconseil/testvault-e2e` (suite de tests, pas de consumer interne)
+- `@atconseil/regression-suite` (suite de tests, pas de consumer interne)
 
 **Package racine de toutes les dependances** : `@atconseil/testvault-types` (consomme par tous les autres packages).
 
@@ -494,6 +502,8 @@ Verifie le 2026-05-12 via `npm view <package> version` :
 | `argosTesting` (argos-extension) | false | Non applicable (VSIX, pas npm) |
 
 **Observation factuelle** : 4 packages sont marques `private: false` mais aucun n'est publie sur le registre npm public. La flag `private: false` sur `argosTesting` (argos-extension) est sans consequence car ce package est distribue via Marketplace VSIX et non via npm.
+
+**Note sur `@atconseil/testvault-azure-pipelines-task`** : `private: true`. Les Azure Pipeline Tasks ne se publient PAS sur npm -- elles se publient sur le Marketplace Azure DevOps dans la categorie "Pipeline Tasks" via tfx-cli (distinct de la categorie Extensions hub utilisee par argosTesting). Statut Marketplace a verifier dans un sprint dedie (Sprint 6g).
 
 ---
 
@@ -575,6 +585,114 @@ Les observations suivantes sont des faits constates sans proposition de correcti
 9. **`argos-extension` marque `private: false`** : ce package est le seul app marque `private: false`. Il n'est pas publie sur npm (distribue via VSIX).
 
 10. **Dossiers non-standards a la racine** : `dist/` et `vsix-debug-3.2/` sont presents a la racine mais ne sont pas references dans `pnpm-workspace.yaml`.
+
+11. **TECH-DEBT-015A initial etait incomplet** : 3 packages dans `tools/*` n'avaient pas ete inventories initialement (`azure-pipelines-task`, `e2e`, `regression-suite`). Decouvert Sprint 6b lors du grep des consommateurs. Cause : assimilation incorrecte "packages monorepo" = `packages/` alors que le workspace pnpm englobe aussi `tools/*` via `pnpm-workspace.yaml`. Section "Packages dans tools/" ajoutee 2026-05-13.
+
+---
+
+## Packages dans tools/ -- Inventaire detaille (added 2026-05-13)
+
+> Note : ces 3 packages font partie du workspace pnpm via `pnpm-workspace.yaml`
+> (glob `tools/*`) mais n'avaient pas ete inventories dans la version initiale
+> de ce document. Decouverte Sprint 6b lors de l'investigation des dependances
+> croisees.
+
+### tools/azure-pipelines-task
+
+| Champ | Valeur |
+|---|---|
+| Nom npm | `@atconseil/testvault-azure-pipelines-task` |
+| Version | 1.0.0 |
+| private | true |
+| Description | (absente dans package.json) |
+| Role | **Azure DevOps Pipeline Task** (livrable produit) |
+
+**Fichiers source** :
+
+- `src/index.ts` -- entrypoint de la task
+- `src/index.test.ts` -- tests unitaires
+
+**Manifests** :
+
+- `task.json` -- manifest Azure DevOps Pipeline Task (different de `vss-extension.json`)
+
+**Dependance externe principale** : `azure-pipelines-task-lib@^4.1.0` (SDK officiel Microsoft pour les Pipeline Tasks)
+
+**Dependances internes** : aucune
+
+**Consommateurs internes** : aucun
+
+**Statut publication** : a verifier. Les Azure Pipeline Tasks se publient via tfx-cli sur le Marketplace Azure DevOps dans la categorie "Pipeline Tasks" (distinct de la categorie Extensions hub utilisee par argosTesting).
+
+**Observation factuelle** : livrable produit autonome permettant aux utilisateurs Argos d'integrer une task dans leurs pipelines YAML Azure DevOps (analogue au `testvault-cli` mais natif Pipelines au lieu de CLI generale). Non documente dans les tasks.md Phase 0.
+
+### tools/e2e
+
+| Champ | Valeur |
+|---|---|
+| Nom npm | `@atconseil/testvault-e2e` |
+| Version | 0.3.3 (note : different de 0.3.2 des autres au 2026-05-12) |
+| private | true |
+| Description | "Playwright E2E suite against real ADO instances" |
+| Role | Suite de tests End-to-End contre Azure DevOps Cloud |
+
+**Fichiers source** :
+
+- `playwright.config.ts` -- configuration Playwright (projet `cloud`)
+- `fixtures/index.ts` -- fixtures partages
+- `tests/01-process-verify.spec.ts` -- verification process ADO
+- `tests/02-test-case.spec.ts` -- E2E TestCase WIT
+- `tests/03-test-set.spec.ts` -- E2E TestSet WIT
+- `tests/04-test-plan.spec.ts` -- E2E TestPlan WIT
+- `tests/05-precondition.spec.ts` -- E2E Precondition WIT
+- `tests/06-phase3-traceability.spec.ts` -- Phase 3 (tracabilite)
+- `tests/07-phase4-import-export-cli.spec.ts` -- Phase 4 (CLI)
+- `tests/08-phase5-bdd-sync.spec.ts` -- Phase 5 (BDD sync)
+- `tests/09-phase6-ai-admin.spec.ts` -- Phase 6 (IA admin)
+- `tests/10-accessibility.spec.ts` -- accessibilite
+- `tests/11-responsive.spec.ts` -- responsive
+
+**Total** : 11 fichiers de tests E2E couvrant les phases 0 a 6 + a11y + responsive.
+
+**Dependances externes principales** :
+
+- `@playwright/test@^1.49.0`
+
+**Dependances internes** (5 packages) :
+
+- `@atconseil/testvault-cli` (workspace:*)
+- `@atconseil/testvault-exporters` (workspace:^)
+- `@atconseil/testvault-gherkin` (workspace:*)
+- `@atconseil/testvault-importers` (workspace:*)
+- `@atconseil/testvault-sdk` (workspace:*)
+
+**Note** : `testvault-exporters` est reference en `workspace:^` (caret) tandis que les autres sont en `workspace:*` (sans contrainte de version). Discrepance a noter.
+
+**Consommateurs internes** : aucun (suite de tests autonome)
+
+**Reference CI** : utilise dans `.github/workflows/ci-main.yml` job `e2e-cloud` (conditionnel sur secrets `ADO_CLOUD_*`).
+
+### tools/regression
+
+| Champ | Valeur |
+|---|---|
+| Nom npm | `@atconseil/regression-suite` |
+| Version | 0.1.0 |
+| private | true |
+| Description | (absente dans package.json) |
+| Role | Suite de tests regression Vitest |
+
+**Contenu** : 13 fichiers `.test.ts` couvrant 51 assertions (au 2026-05-13).
+
+**Detail** : voir `tools/regression/REGISTRY.md` pour la liste exhaustive des tests et leur description.
+
+**Dependances internes** : aucune
+
+**Consommateurs internes** : aucun
+
+**Reference CI** : lance par `ci-main.yml` et `ci-pr.yml` via `pnpm --filter @atconseil/regression-suite test`.
+
+**Observation factuelle** : ce package est **argos-agnostique** par son nom (`regression-suite` sans prefixe `testvault-` ni `argos-`). Il n'a pas a etre renomme dans le portfolio migration.
 
 ---
 

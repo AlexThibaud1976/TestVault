@@ -144,6 +144,27 @@ de documentation, les webhooks. Le nom "TestVault" devient le nom technique du m
 Etat actuel : placeholder vide (scripts = commandes `echo`, pas de `src/`). Un site de doc
 sera cree si et quand la priorite produit le justifie. Inscrire au backlog comme TECH-DEBT-019.
 
+### 1.8 Packages dans tools/* (added 2026-05-13)
+
+TECH-DEBT-015A initial avait omis les 3 packages dans `tools/*` qui font partie du workspace pnpm.
+Decision pour chacun :
+
+| Package | Decision | Sprint dedie |
+| --- | --- | --- |
+| `@atconseil/testvault-azure-pipelines-task` | A renommer en `@atconseil/argos-azure-pipelines-task` | **Sprint 6g** |
+| `@atconseil/testvault-e2e` | A renommer en `@atconseil/argos-e2e` | **Sprint 6h** |
+| `@atconseil/regression-suite` | Pas a renommer (already argos-agnostic) | N/A |
+
+**Note importante sur testvault-e2e** : ce package depend de 5 packages testvault-*
+(cli, exporters, gherkin, importers, sdk). Donc **chaque Sprint 6c a 7a doit aussi mettre
+a jour `tools/e2e/package.json`** :
+
+- Sprint 6c (`testvault-sdk` -> `argos-sdk`) : update `tools/e2e/package.json`
+- Sprint 6d (`testvault-importers` -> `argos-importers`) : update `tools/e2e/package.json`
+- Sprint 6e (`testvault-exporters` -> `argos-exporters`) : update `tools/e2e/package.json` (noter : `workspace:^` a conserver)
+- Sprint 6f (`testvault-gherkin` -> `argos-gherkin`) : update `tools/e2e/package.json`
+- Sprint 7a (`testvault-cli` -> `argos-cli`) : update `tools/e2e/package.json`
+
 ---
 
 ## 2. Mapping de migration detaille
@@ -247,11 +268,13 @@ n'est execute dans 015B** -- ce sont des reservations pour des sessions futures.
 | Sprint 5a | Suppression `packages/testvault-ui` | ~10 min | Tres faible | Premier |
 | Sprint 5b | Cleanup `dist/` et `vsix-debug-3.2/` a la racine | ~10 min | Tres faible | Premier |
 | Sprint 6a | Renaming `testvault-types` -> `argos-types` | ~45 min | Eleve (9 consommateurs) | **DONE 2026-05-13** |
-| Sprint 6b | Renaming `testvault-wit-schema` -> `argos-wit-schema` | ~20 min | Faible (1 consommateur) | **DONE 2026-05-13** |
+| Sprint 6b | Renaming `testvault-wit-schema` -> `argos-wit-schema` | ~20 min | Faible (1 consommateur) | **DONE 2026-05-13** (incident corruption index Windows, mitige par exclusion Defender) |
 | Sprint 6c | Renaming `testvault-sdk` -> `argos-sdk` | ~30 min | Moyen (4 consommateurs) | Apres 6b |
 | Sprint 6d | Renaming `testvault-importers` -> `argos-importers` | ~20 min | Faible (3 consommateurs) | Apres 6c |
 | Sprint 6e | Renaming `testvault-exporters` -> `argos-exporters` | ~20 min | Faible (2 consommateurs) | Apres 6c |
 | Sprint 6f | Renaming `testvault-gherkin` -> `argos-gherkin` | ~20 min | Faible (3 consommateurs) | Apres 6c |
+| Sprint 6g | Renaming `testvault-azure-pipelines-task` -> `argos-azure-pipelines-task` | ~30 min | Faible (0 consommateur interne, livrable produit) | Apres Groupe 1 |
+| Sprint 6h | Renaming `testvault-e2e` -> `argos-e2e` | ~20 min | Faible (0 consommateur, mais consomme 5 packages updates) | Apres 6c-6f, 7a |
 | Sprint 7a | Renaming `testvault-cli` -> `argos-cli` | ~30 min | Faible (0 consommateur interne) | Apres Groupe 1 |
 | Sprint 7b | Renaming `testpulse-ui-shared` -> `argos-detection-api` | ~30 min | Faible (0 consommateur interne) | Apres Groupe 1 |
 | Sprint 8 | Realignement versioning + config Changesets | ~30 min | Moyen (version decisions) | Apres Groupe 1+2 |
@@ -260,7 +283,7 @@ n'est execute dans 015B** -- ce sont des reservations pour des sessions futures.
 **Total renaming + cleanup** : environ 5h sur sprints courts et testables.
 La migration peut s'etaler sur plusieurs jours ou semaines selon les priorites produit.
 
-**Chemin critique** : 5a/5b -> 6a -> 6b -> 6c -> (6d, 6e, 6f en parallele possible) -> 7a, 7b -> 8 -> 9.
+**Chemin critique** : 5a/5b -> 6a -> 6b -> 6c -> (6d, 6e, 6f en parallele possible) -> 6g/6h/7a/7b en parallele -> 8 -> 9.
 
 **Note sur Sprint 6a** : c'est le sprint le plus risque car `testvault-types` est consomme par
 tous les autres packages. Le recommander en premier (apres les suppressions triviales) permet
@@ -315,6 +338,7 @@ Chaque sprint de renaming doit respecter les regles suivantes sans exception.
 | `tools/preflight/` mentionne `testvault-` | `marketplace-check.md` et `microsoft-docs-snippets.md` a verifier apres Groupe 1 |
 | `.changeset/config.json` reference les anciens noms | A updater lors du sprint 8 (post-renaming) |
 | Build CI casse par chemin hardcode | Verifier `.github/workflows/*.yml` et `turbo.json` -- ces fichiers ne referencent pas les noms de packages directement |
+| tools/* packages oublies dans grep consommateurs | Tout grep doit couvrir `packages/`, `apps/`, ET `tools/`. Verifier explicitement dans chaque sprint 6c-6f que `tools/e2e/package.json` est mis a jour. |
 | `argos-functions` depend de `testvault-sdk` (Groupe 1) | Sprint 6c mettra a jour `argos-functions/package.json` en meme temps que les autres consommateurs |
 | Version `0.3.2` dans les tests regression | Verifier si des tests assertent des versions specifiques ; mettre a jour lors du Sprint 8 |
 
