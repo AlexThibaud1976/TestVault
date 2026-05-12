@@ -1,5 +1,11 @@
 # argos-extension
 
+## 0.4.15
+
+### Patch Changes
+
+- Sprint 6h: rename @atconseil/testvault-e2e to @atconseil/argos-e2e (package name + CI workflow). Option A: tools/e2e/ folder unchanged.
+
 ## 0.4.14
 
 ### Patch Changes
