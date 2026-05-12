@@ -13,6 +13,9 @@ coverage/
 # Extension packaging
 *.vsix
 
+# Debug artifacts
+vsix-debug-*/
+
 # Environment files
 .env
 .env.local

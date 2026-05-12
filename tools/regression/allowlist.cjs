@@ -39,6 +39,7 @@ const SHARED_DOC_ALLOWLIST = new Set([
 	"tools/preflight/microsoft-docs-snippets.md",
 	"tools/preflight/manifest-check.cjs",
 	"tools/regression/CFG-2026-05-12-preflight-rules.test.ts",
+	"tools/claude-prompts/CLAUDE_TASK_sprint-5ab.md",
 ]);
 
 module.exports = { SHARED_DOC_ALLOWLIST };

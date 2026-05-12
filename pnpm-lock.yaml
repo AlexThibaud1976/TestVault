@@ -259,19 +259,6 @@ importers:
         specifier: ^3.1.0
         version: 3.2.4(@types/node@22.19.18)(jsdom@25.0.1)(msw@2.14.5(@types/node@22.19.18)(typescript@5.9.3))(yaml@2.8.4)
 
-  packages/testvault-ui:
-    dependencies:
-      '@atconseil/testvault-types':
-        specifier: workspace:*
-        version: link:../testvault-types
-    devDependencies:
-      typescript:
-        specifier: ^5.7.0
-        version: 5.9.3
-      vitest:
-        specifier: ^3.1.0
-        version: 3.2.4(@types/node@22.19.18)(jsdom@25.0.1)(msw@2.14.5(@types/node@22.19.18)(typescript@5.9.3))(yaml@2.8.4)
-
   packages/testvault-wit-schema:
     dependencies:
       '@atconseil/testvault-types':
