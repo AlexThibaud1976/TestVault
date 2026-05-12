@@ -1,5 +1,11 @@
 # argos-extension
 
+## 0.4.13
+
+### Patch Changes
+
+- Sprint 6e: rename @atconseil/testvault-exporters -> @atconseil/argos-exporters
+
 ## 0.4.12
 
 ### Patch Changes

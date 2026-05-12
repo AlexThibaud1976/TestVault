@@ -1,5 +1,5 @@
 {
-	"name": "@atconseil/testvault-exporters",
+	"name": "@atconseil/argos-exporters",
 	"version": "0.3.3",
 	"private": true,
 	"type": "module",

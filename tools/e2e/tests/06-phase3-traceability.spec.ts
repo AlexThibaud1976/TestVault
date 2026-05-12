@@ -1,10 +1,10 @@
-import { buildCoverageMatrix } from "@atconseil/argos-sdk";
 /**
  * T-3.7 — Phase 3 E2E: Snapshots, Plan lock with auto-snapshot, Coverage Matrix export.
  * Requires: ADO_CLOUD_ORG_URL, ADO_CLOUD_PROJECT, ADO_CLOUD_PAT env vars.
  * Each test is self-contained and cleans up after itself.
  */
-import { exportMatrixToExcel, exportMatrixToPdf } from "@atconseil/testvault-exporters";
+import { exportMatrixToExcel, exportMatrixToPdf } from "@atconseil/argos-exporters";
+import { buildCoverageMatrix } from "@atconseil/argos-sdk";
 import { expect, test } from "../fixtures/index.js";
 
 test.describe("Phase 3 — Traceability & Versioning", () => {

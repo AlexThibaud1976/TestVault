@@ -19,7 +19,7 @@
 		"lint": "biome check src/"
 	},
 	"dependencies": {
-		"@atconseil/testvault-exporters": "workspace:*",
+		"@atconseil/argos-exporters": "workspace:*",
 		"@atconseil/testvault-gherkin": "workspace:*",
 		"@atconseil/argos-importers": "workspace:*",
 		"@atconseil/argos-sdk": "workspace:*",

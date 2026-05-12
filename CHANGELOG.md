@@ -9,6 +9,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.13] - 2026-05-13
+
+### Changed (Sprint 6e - feat/rename-testvault-exporters-to-argos-exporters)
+
+- **`@atconseil/testvault-exporters` renomme en `@atconseil/argos-exporters`** (5eme sprint Groupe 1).
+  - Dossier : `packages/testvault-exporters/` -> `packages/argos-exporters/` (git mv, historique preserve).
+  - 3 consommateurs internes mis a jour :
+    - `apps/argos-extension/package.json` (workspace:^) + 1 fichier (CoverageMatrix.tsx)
+    - `packages/testvault-cli/package.json` (workspace:*) + 1 fichier (cli.ts -- import() dynamique)
+    - `tools/e2e/package.json` (workspace:^) + 2 fichiers (tests 06 + 07)
+  - Aucune modification fonctionnelle de l'extension Argos.
+
+- **CFG-2026-05-13-package-naming** : retire `"@atconseil/testvault-exporters"` de `ALLOWED_LEGACY_NAMES`.
+  La liste contient maintenant 3 entrees restantes (gherkin, cli, testpulse-ui-shared).
+
+### Notes (Sprint 6e)
+
+- Sprint court (~20 min). 4 fichiers source.
+- Workspace prefixes preserves : testvault-cli (workspace:*), argos-extension et e2e (workspace:^).
+- Bump 0.4.12 -> 0.4.13 (patch : renaming sans changement fonctionnel).
+- Garde-fou ASCII commit : pre-check execute, message 100% ASCII.
+- Note : pnpm install --force requis apres Move-Item (symlinks vitest).
+
+### Backlog enrichi (0.4.13)
+
+- **Sprint 6f NEXT** : `testvault-gherkin` -> `argos-gherkin`
+- **TECH-DEBT-022 NEW** : Cleanup automatique artefacts orphelins post-git-mv (dist/, .turbo/).
+- **TECH-DEBT-023 NEW** : Etendre scan-mojibake pour scanner les commits recents.
+- (autres items inchanges)
+
+---
+
 ## [0.4.12] - 2026-05-13
 
 ### Changed (Sprint 6d - feat/rename-testvault-importers-to-argos-importers)

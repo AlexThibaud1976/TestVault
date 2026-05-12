@@ -191,7 +191,7 @@ plan
 			const p = await planSvc.read(Number.parseInt(opts.planId, 10));
 
 			const { exportReleaseReadinessToPdf, exportReleaseReadinessToExcel } = await import(
-				"@atconseil/testvault-exporters"
+				"@atconseil/argos-exporters"
 			);
 			const { writeFileSync } = await import("node:fs");
 
