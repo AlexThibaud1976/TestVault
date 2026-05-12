@@ -95,10 +95,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build SDK (E2E depends on compiled output)
-        run: pnpm turbo build --filter=@atconseil/testvault-sdk
+        run: pnpm turbo build --filter=@atconseil/argos-sdk
 
       - name: Run E2E — Cloud
-        run: pnpm --filter @atconseil/testvault-e2e test:cloud
+        run: pnpm --filter @atconseil/argos-e2e test:cloud
         env:
           ADO_CLOUD_ORG_URL: ${{ secrets.ADO_CLOUD_ORG_URL }}
           ADO_CLOUD_PAT: ${{ secrets.ADO_CLOUD_PAT }}

@@ -9,6 +9,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.15] - 2026-05-13
+
+### Changed (Sprint 6h - feat/rename-testvault-e2e-to-argos-e2e)
+
+- **`@atconseil/testvault-e2e` renomme en `@atconseil/argos-e2e`** (7eme sprint de la serie renaming).
+  - **Option A appliquee** : le dossier `tools/e2e/` reste inchange. Seul le `name` du package npm est modifie.
+  - Aucun consommateur interne (le package est une suite E2E, non consomme par d'autres packages).
+  - Modifications :
+    - `tools/e2e/package.json` : champ `name` seulement
+    - `.github/workflows/ci-main.yml` ligne 101 : `--filter @atconseil/testvault-e2e` -> `--filter @atconseil/argos-e2e`
+    - `.github/workflows/ci-main.yml` ligne 98 (bonus) : `testvault-sdk` -> `argos-sdk` (stale ref de Sprint 6c)
+
+### Notes (Sprint 6h)
+
+- Sprint le plus court de la serie renaming (~15 min). Surface minimale.
+- **Option A vs Option B** : le dossier `tools/e2e/` porte le nom de sa fonction, pas du produit. Coherence avec `tools/regression/`, `tools/preflight/`.
+- **Test regression naming non touche** : sa portee est `packages/`, pas `tools/`. Aucune entree `testvault-e2e` dans `ALLOWED_LEGACY_NAMES`.
+- **Validation --force** : `pnpm turbo lint/typecheck/test/build --force` tous verts (lecon Sprint 6f : eviter faux verts cache turbo).
+- Bump 0.4.14 -> 0.4.15 (patch : renaming sans changement fonctionnel).
+
+### Backlog enrichi (0.4.15)
+
+- **Sprint 6g NEXT** : `testvault-azure-pipelines-task` -> `argos-azure-pipelines-task` (necessite reflexion versioning)
+- **Sprint 7a** : `testvault-cli` -> `argos-cli`
+- **Sprint 7b** : `testpulse-ui-shared` -> `argos-detection-api`
+- **TECH-DEBT-024** : Regenerer sbom.json (stale depuis Sprint 6d)
+- (autres items inchanges)
+
+---
+
 ## [0.4.14] - 2026-05-13
 
 ### Changed (Sprint 6f - feat/rename-testvault-gherkin-to-argos-gherkin)

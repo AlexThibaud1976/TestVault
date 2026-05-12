@@ -1,5 +1,5 @@
 {
-	"name": "@atconseil/testvault-e2e",
+	"name": "@atconseil/argos-e2e",
 	"private": true,
 	"version": "0.3.4",
 	"type": "module",

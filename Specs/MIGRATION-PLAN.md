@@ -274,7 +274,7 @@ n'est execute dans 015B** -- ce sont des reservations pour des sessions futures.
 | Sprint 6e | Renaming `testvault-exporters` -> `argos-exporters` | ~20 min | Faible (3 consommateurs, 4 fichiers source) | **DONE 2026-05-13** |
 | Sprint 6f | Renaming `testvault-gherkin` -> `argos-gherkin` | ~20 min | Faible (4 consommateurs, 5 fichiers source) | **DONE 2026-05-13** -- Jalon : Groupe 1 packages/ 6/8 complet |
 | Sprint 6g | Renaming `testvault-azure-pipelines-task` -> `argos-azure-pipelines-task` | ~30 min | Faible (0 consommateur interne, livrable produit) | Apres Groupe 1 |
-| Sprint 6h | Renaming `testvault-e2e` -> `argos-e2e` | ~20 min | Faible (0 consommateur, mais consomme 5 packages updates) | Apres 6c-6f, 7a |
+| Sprint 6h | Renaming `testvault-e2e` -> `argos-e2e` | ~15 min | Faible (0 consommateur, package name only, Option A dossier inchange) | **DONE 2026-05-13** -- Bonus: testvault-sdk ref dans ci-main.yml L98 aussi fixee |
 | Sprint 7a | Renaming `testvault-cli` -> `argos-cli` | ~30 min | Faible (0 consommateur interne) | Apres Groupe 1 |
 | Sprint 7b | Renaming `testpulse-ui-shared` -> `argos-detection-api` | ~30 min | Faible (0 consommateur interne) | Apres Groupe 1 |
 | Sprint 8 | Realignement versioning + config Changesets | ~30 min | Moyen (version decisions) | Apres Groupe 1+2 |
