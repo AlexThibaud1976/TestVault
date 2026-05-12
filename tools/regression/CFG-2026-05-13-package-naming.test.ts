@@ -14,9 +14,15 @@
  * reintroduction of legacy "testvault-*" names in future packages.
  *
  * Lifecycle:
- *   - Sprint 6a (this test introduction): testvault-types renamed -> 1 fewer violation
- *   - Sprints 6b-6f: 5 other testvault-* renamed -> 0 violations
- *   - Sprint 7b: testpulse-ui-shared renamed to argos-detection-api -> no impact on this test
+ *   - Sprint 6a (this test introduction): testvault-types renamed; 6 legacy names accepted
+ *   - Sprint 6b: testvault-wit-schema renamed; remove from ALLOWED_LEGACY_NAMES
+ *   - Sprint 6c: testvault-sdk renamed; remove from ALLOWED_LEGACY_NAMES
+ *   - Sprint 6d: testvault-importers renamed; remove from ALLOWED_LEGACY_NAMES
+ *   - Sprint 6e: testvault-exporters renamed; remove from ALLOWED_LEGACY_NAMES
+ *   - Sprint 6f: testvault-gherkin renamed; remove from ALLOWED_LEGACY_NAMES
+ *   - Sprint 7a: testvault-cli renamed; remove from ALLOWED_LEGACY_NAMES
+ *   - Sprint 7b: testpulse-ui-shared -> argos-detection-api; remove from ALLOWED_LEGACY_NAMES
+ *   - After Sprint 7b: ALLOWED_LEGACY_NAMES is empty; test enforces argos-* only
  *
  * DO NOT delete without explicit spec-kit decision.
  *
@@ -37,8 +43,16 @@ const PACKAGES_DIR = join(REPO_ROOT, "packages");
 
 const FORBIDDEN_PREFIX = "@atconseil/testvault-";
 const ALLOWED_LEGACY_NAMES = new Set([
-	// testpulse-ui-shared will be renamed in Sprint 7b
-	"@atconseil/testpulse-ui-shared",
+	// Legacy names accepted during the testvault-* -> argos-* migration wave.
+	// Each future sprint will remove its entry as the package is renamed.
+	// See Specs/MIGRATION-PLAN.md (TECH-DEBT-015B section 1.4).
+	"@atconseil/testvault-wit-schema", // Sprint 6b: rename to argos-wit-schema
+	"@atconseil/testvault-sdk", // Sprint 6c: rename to argos-sdk
+	"@atconseil/testvault-importers", // Sprint 6d: rename to argos-importers
+	"@atconseil/testvault-exporters", // Sprint 6e: rename to argos-exporters
+	"@atconseil/testvault-gherkin", // Sprint 6f: rename to argos-gherkin
+	"@atconseil/testvault-cli", // Sprint 7a: rename to argos-cli
+	"@atconseil/testpulse-ui-shared", // Sprint 7b: rename to argos-detection-api
 ]);
 
 interface PackageJson {
@@ -57,7 +71,7 @@ describe("CFG-2026-05-13-package-naming regression", () => {
 		expect(packageFolders.length).toBeGreaterThan(0);
 	});
 
-	it("no package may use the legacy @atconseil/testvault-* prefix (migration in progress)", () => {
+	it("no package may use the legacy @atconseil/testvault-* prefix (excluding allowed legacy in transition)", () => {
 		const violations: string[] = [];
 
 		for (const folder of packageFolders) {
@@ -66,6 +80,9 @@ describe("CFG-2026-05-13-package-naming regression", () => {
 
 			const pkg: PackageJson = JSON.parse(readFileSync(pkgPath, "utf8"));
 			if (!pkg.name) continue;
+
+			// Skip names explicitly allowed during migration
+			if (ALLOWED_LEGACY_NAMES.has(pkg.name)) continue;
 
 			if (pkg.name.startsWith(FORBIDDEN_PREFIX)) {
 				violations.push(`${folder} -> ${pkg.name}`);

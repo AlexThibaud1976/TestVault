@@ -42,11 +42,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sprint 6c : Renaming `testvault-sdk` -> `argos-sdk` (4 consommateurs)
 - Sprints 6d, 6e, 6f : importers, exporters, gherkin (parallele possible apres 6c)
 
-### Lessons learned (Sprint 6a)
+### Changed (Sprint 6a follow-up)
 
-- **TDD-first sur naming convention** : creer le test avant la transformation rend la progression mesurable. Le test passe progressivement du rouge total au vert total au fil des Sprints 6b-6f.
+- **`CFG-2026-05-13-package-naming` test : ALLOWED_LEGACY_NAMES etendu** pour accepter les 6 packages testvault-* encore a renommer (Sprints 6b a 7a) + testpulse-ui-shared (Sprint 7b). Le test passe de 2/4 failing a **4/4 passing**.
+- **Test 2 modifie** : la verification "no testvault-* prefix" exclut maintenant les noms dans ALLOWED_LEGACY_NAMES. Le test devient un tracker visuel : chaque sprint de renaming retirera une entree de la liste, et a Sprint 7b la liste sera vide.
+- **Effet** : suite regression passe de 49/51 a **51/51 passing**. CI verte sur la PR Sprint 6a.
+
+### Lessons learned (Sprint 6a + follow-up)
+
+- **TDD-first sur naming convention** : creer le test avant la transformation rend la progression mesurable.
 - **`git mv` sur Windows PowerShell** fonctionne correctement pour les renames lowercase. Pas de probleme de sensibilite casse.
 - **testvault-gherkin et argos-functions** ne consomment pas testvault-types en direct -- confirme via grep (MONOREPO.md avait liste argos-functions comme consommateur potentiel, c'etait inexact).
+- **Le TDD "rouge progressif" est un anti-pattern pour CI**. Un test qui valide une transformation multi-sprints doit etre vert a chaque etape via une liste explicite (ALLOWED_LEGACY_NAMES), pas via une diminution lente vers zero.
+- **A retenir pour les futurs sprints de migration** : introduire le test avec la liste complete des etapes futures inscrite explicitement. Chaque sprint suivant retire une entree.
 
 ---
 
