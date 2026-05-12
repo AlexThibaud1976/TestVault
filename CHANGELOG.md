@@ -9,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.10] - 2026-05-13
+
+### Changed (Sprint 6b - feat/rename-testvault-wit-schema-to-argos-wit-schema)
+
+- **`@atconseil/testvault-wit-schema` renomme en `@atconseil/argos-wit-schema`** (2eme sprint du renaming Groupe 1).
+  - Dossier : `packages/testvault-wit-schema/` -> `packages/argos-wit-schema/` (historique git preserve).
+  - 1 consommateur interne mis a jour : `testvault-sdk` (package.json + 1 import dans `process-install.ts`).
+  - Aucune modification fonctionnelle de l'extension Argos.
+
+- **`tools/regression/CFG-2026-05-13-package-naming.test.ts`** : retire `"@atconseil/testvault-wit-schema"` de `ALLOWED_LEGACY_NAMES`. La liste contient maintenant 6 entrees restantes (sdk, importers, exporters, gherkin, cli, testpulse-ui-shared).
+
+### Notes (Sprint 6b)
+
+- Sprint court (~20 min). Surface d'impact minimale : 1 consommateur, 1 fichier source.
+- Methodologie identique au Sprint 6a (template valide).
+- Bump 0.4.9 -> 0.4.10 (patch : renaming sans changement fonctionnel).
+
+### Backlog enrichi (0.4.10)
+
+- **Sprint 6c NEXT** : Renaming `testvault-sdk` -> `argos-sdk` (4 consommateurs : argos-extension, argos-functions, testvault-cli, testvault-exporters)
+- Sprint 6d, 6e, 6f : importers, exporters, gherkin (parallelisable apres 6c)
+- (autres items inchanges)
+
+---
+
 ## [0.4.9] - 2026-05-13
 
 ### Changed (Sprint 6a - feat/rename-testvault-types-to-argos-types)

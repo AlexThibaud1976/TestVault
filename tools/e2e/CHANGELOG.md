@@ -1,5 +1,13 @@
 # @atconseil/testvault-e2e
 
+## 0.3.3
+
+### Patch Changes
+
+- Updated dependencies
+  - @atconseil/testvault-sdk@0.3.3
+  - @atconseil/testvault-cli@0.3.3
+
 ## 0.3.2
 
 ### Patch Changes

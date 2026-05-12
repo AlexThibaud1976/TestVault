@@ -1,5 +1,11 @@
 # argos-extension
 
+## 0.4.10
+
+### Patch Changes
+
+- Sprint 6b: rename @atconseil/testvault-wit-schema -> @atconseil/argos-wit-schema
+
 ## 0.4.9
 
 ### Patch Changes

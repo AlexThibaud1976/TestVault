@@ -1,5 +1,11 @@
 # @atconseil/testvault-wit-schema
 
+## 0.3.3
+
+### Patch Changes
+
+- feat(packages): rename @atconseil/testvault-wit-schema -> @atconseil/argos-wit-schema (Sprint 6b)
+
 ## 0.3.2
 
 ### Patch Changes
