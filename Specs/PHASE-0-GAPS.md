@@ -218,6 +218,32 @@ Si tu decouvres `apps/argos-functions` et te demandes pourquoi ce backend existe
 
 ---
 
+## 6. Observation methodologique (added 2026-05-13)
+
+**TECH-DEBT-015A initial avait deux angles morts** :
+
+1. **`tools/*` non inventorie** : 3 packages dans `tools/` (`azure-pipelines-task`, `e2e`,
+   `regression-suite`) font partie du workspace pnpm mais n'avaient pas ete documentes.
+   Decouvert Sprint 6b lors du grep des consommateurs. Correction dans `Specs/MONOREPO.md`
+   section "Packages dans tools/" (added 2026-05-13).
+
+2. **Carte de dependances incomplete** : `tools/e2e` depend de 5 packages `testvault-*`,
+   ce qui impacte les sprints 6c-6f-7a. Correction dans `Specs/MIGRATION-PLAN.md` section
+   1.8 et tableau risques (added 2026-05-13).
+
+**Cause racine probable** : assimilation culturelle "packages d'un monorepo" = `packages/`
+alors que `pnpm-workspace.yaml` englobe aussi `apps/*` et `tools/*` via les globs. A noter
+pour les futurs audits de monorepo.
+
+**Lecon pour les futurs sprints** :
+
+- Toute commande de grep de consommateurs doit explicitement inclure les 3 dossiers :
+  `packages/`, `apps/`, `tools/`.
+- Tout audit de workspace doit commencer par lire `pnpm-workspace.yaml` pour identifier les
+  globs reels avant de supposer quels dossiers sont inclus.
+
+---
+
 ## References
 
 - `Specs/MONOREPO.md` (TECH-DEBT-015A) -- source de l'inventaire des modules argos-functions
