@@ -1,5 +1,5 @@
+import type { TestVaultTestCase } from "@atconseil/argos-types";
 import type { ITestCaseService, TestCaseDraft } from "@atconseil/testvault-sdk";
-import type { TestVaultTestCase } from "@atconseil/testvault-types";
 import { Button, Field, Input, Select, Text, Textarea } from "@fluentui/react-components";
 import { useState } from "react";
 import { GherkinEditor } from "./GherkinEditor.js";

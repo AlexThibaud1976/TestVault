@@ -1,4 +1,4 @@
-import type { TestVaultPrecondition } from "@atconseil/testvault-types";
+import type { TestVaultPrecondition } from "@atconseil/argos-types";
 import type { IAdoClient, RawWorkItem, WorkItemFieldPatch } from "./ado-client.js";
 
 export type PreconditionDraft = {

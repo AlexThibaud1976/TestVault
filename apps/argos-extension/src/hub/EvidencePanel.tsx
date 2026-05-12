@@ -1,4 +1,4 @@
-import type { EvidenceRef } from "@atconseil/testvault-types";
+import type { EvidenceRef } from "@atconseil/argos-types";
 import { Button, Text } from "@fluentui/react-components";
 import { useRef } from "react";
 

@@ -25,7 +25,7 @@
 		"docs": "typedoc"
 	},
 	"dependencies": {
-		"@atconseil/testvault-types": "workspace:*",
+		"@atconseil/argos-types": "workspace:*",
 		"@atconseil/testvault-wit-schema": "workspace:^",
 		"azure-devops-extension-api": "^4.0.2",
 		"azure-devops-extension-sdk": "^4.0.2"

@@ -1,4 +1,4 @@
-import type { GlobalStatus } from "@atconseil/testvault-types";
+import type { GlobalStatus } from "@atconseil/argos-types";
 
 // ─── Input / Output types ─────────────────────────────────────────────────────
 

@@ -19,7 +19,7 @@
 		"lint": "biome check src/"
 	},
 	"dependencies": {
-		"@atconseil/testvault-types": "workspace:*"
+		"@atconseil/argos-types": "workspace:*"
 	},
 	"devDependencies": {
 		"typescript": "^5.7.0",

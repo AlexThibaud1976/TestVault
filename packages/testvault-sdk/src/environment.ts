@@ -1,4 +1,4 @@
-import type { AdoEnvironment } from "@atconseil/testvault-types";
+import type { AdoEnvironment } from "@atconseil/argos-types";
 import { getHost } from "azure-devops-extension-sdk";
 
 export function detectEnvironment(serverCollectionUrl?: string): AdoEnvironment {

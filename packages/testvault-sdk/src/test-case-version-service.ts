@@ -1,4 +1,4 @@
-import type { TestVaultTestCase } from "@atconseil/testvault-types";
+import type { TestVaultTestCase } from "@atconseil/argos-types";
 import { AdoForbiddenError } from "./ado-client.js";
 import type { IAdoClient, RawWorkItem, WorkItemFieldPatch } from "./ado-client.js";
 

@@ -246,7 +246,7 @@ n'est execute dans 015B** -- ce sont des reservations pour des sessions futures.
 |---|---|---|---|---|
 | Sprint 5a | Suppression `packages/testvault-ui` | ~10 min | Tres faible | Premier |
 | Sprint 5b | Cleanup `dist/` et `vsix-debug-3.2/` a la racine | ~10 min | Tres faible | Premier |
-| Sprint 6a | Renaming `testvault-types` -> `argos-types` | ~45 min | Eleve (10 consommateurs) | Apres 5a/5b |
+| Sprint 6a | Renaming `testvault-types` -> `argos-types` | ~45 min | Eleve (9 consommateurs) | **DONE 2026-05-13** |
 | Sprint 6b | Renaming `testvault-wit-schema` -> `argos-wit-schema` | ~20 min | Faible (1 consommateur) | Apres 6a |
 | Sprint 6c | Renaming `testvault-sdk` -> `argos-sdk` | ~30 min | Moyen (4 consommateurs) | Apres 6b |
 | Sprint 6d | Renaming `testvault-importers` -> `argos-importers` | ~20 min | Faible (3 consommateurs) | Apres 6c |

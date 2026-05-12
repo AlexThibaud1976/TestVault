@@ -3,7 +3,7 @@ import type {
 	GlobalStatus,
 	TestStepResult,
 	TestVaultTestExecution,
-} from "@atconseil/testvault-types";
+} from "@atconseil/argos-types";
 import { AdoForbiddenError } from "./ado-client.js";
 import type { IAdoClient, RawWorkItem, WorkItemFieldPatch } from "./ado-client.js";
 

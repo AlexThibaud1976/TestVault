@@ -1,4 +1,4 @@
-import type { TestStep } from "@atconseil/testvault-types";
+import type { TestStep } from "@atconseil/argos-types";
 import type { TestVaultTestCaseVersion } from "./test-case-version-service.js";
 
 // ─── Public types ─────────────────────────────────────────────────────────────

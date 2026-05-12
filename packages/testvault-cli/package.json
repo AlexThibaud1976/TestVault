@@ -23,7 +23,7 @@
 		"@atconseil/testvault-gherkin": "workspace:*",
 		"@atconseil/testvault-importers": "workspace:*",
 		"@atconseil/testvault-sdk": "workspace:*",
-		"@atconseil/testvault-types": "workspace:*",
+		"@atconseil/argos-types": "workspace:*",
 		"commander": "^13.0.0"
 	},
 	"devDependencies": {

@@ -1,5 +1,5 @@
+import type { TestVaultTestPlan } from "@atconseil/argos-types";
 import type { ITestPlanService, TestPlanDraft } from "@atconseil/testvault-sdk";
-import type { TestVaultTestPlan } from "@atconseil/testvault-types";
 import { Button, Field, Input } from "@fluentui/react-components";
 import { useState } from "react";
 

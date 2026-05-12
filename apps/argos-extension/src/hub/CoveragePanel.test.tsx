@@ -1,10 +1,10 @@
+import type { TestVaultTestExecution } from "@atconseil/argos-types";
 import type {
 	ExecutionPage,
 	ITestExecutionService,
 	IWorkItemLinkService,
 	WorkItemLink,
 } from "@atconseil/testvault-sdk";
-import type { TestVaultTestExecution } from "@atconseil/testvault-types";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CoveragePanel } from "./CoveragePanel.js";

@@ -1,5 +1,11 @@
 # argos-extension
 
+## 0.4.9
+
+### Patch Changes
+
+- Sprint 6a: rename @atconseil/testvault-types -> @atconseil/argos-types
+
 ## 0.4.8
 
 ### Patch Changes

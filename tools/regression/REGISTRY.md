@@ -34,6 +34,7 @@ Format : `<TYPE>-<DATE-OU-TASK>-<short-slug>`
 | CFG-2026-05-10-no-xray-references | 2026-05-10 | CFG-branding | no-xray-references | Empeche la reintroduction de references a la marque Xray dans les fichiers publics et le spec-kit. Decision 2026-05-10 : la terminologie "Xray-class" est remplacee par "industrial-grade test management". | Sprint 3 branding cleanup | AT |
 
 | CFG-2026-05-12-preflight-rules | 2026-05-12 (TECH-DEBT-011 v3) | CFG-config | preflight-rules | 7 regles mecaniques du manifest vss-extension.json : version coherence (package.json = vss-extension.json), publisher dans whitelist [AlexThibaud, ATConseil], aucun SVG dans static/, categories non-vides, icons.default PNG, aucune contribution utilisant la target invalide ms.vss-web.project-hub-group (fausse premisse Sprint 3), toute reference relative hub-group resolue. Premier test a avoir detecte la desynchronisation 1.0.0 / 0.4.1 (PR #30 bump errone). | TECH-DEBT-011 v3 / Sprint 4.x / tools/preflight/ | AT |
+| CFG-2026-05-13-package-naming | 2026-05-13 (Sprint 6a) | CFG-config | package-naming | Asserte qu'aucun package dans packages/ n'utilise le prefixe legacy @atconseil/testvault-*. 4 assertions : count packages > 0, no testvault-* prefix, approved prefixes (argos-* ou allowed legacy), folder-name consistency. Test introduit avec Sprint 6a, deviendra fully green apres Sprint 6f. testpulse-ui-shared en ALLOWED_LEGACY (renaming Sprint 7b). | Sprint 6a (PR feat/rename-testvault-types-to-argos-types) / Specs/MIGRATION-PLAN.md (TECH-DEBT-015B section 1.4) | AT |
 
 ## Tests retirés
 
