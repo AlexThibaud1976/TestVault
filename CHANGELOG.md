@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation 2026-05-14 -- TECH-DEBT-026 audit resync tasks.md Phase 0/0.5/1
+
+No version bump -- documentation only.
+
+**New file** : `Specs/audit-resync-2026-05-14.md` -- audit detaille avec tableau Markdown des taches Phase 0/0.5/1 (DONE/PARTIAL/NOT-DONE/OBSOLETE).
+
+**Changes to `Specs/tasks.md`** :
+
+- T-0.8 (Phase 0) : 6 lignes corrigees (caractere U+FFFD remplace par equivalents corrects -- em-dash, fleches, guillemets)
+- Phase 0.5 :
+  - T-0.5.1 coche (DONE TECH-DEBT-015A)
+  - T-0.5.3 coche (DONE Sprint 2.5a, 5 tests WIRING)
+  - T-0.5.2 reste non-coche mais annote PARTIAL (5/8 sections wirees)
+  - Refs cassees restaurees : "(App.tsx)" L165 + L169, "(README.md)" L172
+- Phase 1 (T-1.1 a T-1.9) : 59 sous-taches cochees
+  - Phase 1 etait 0/59 cochee, audit factuel montre 100% DONE
+  - T-1.9 partie "Server" marquee OBSOLETE (Cloud-only depuis v0.2.0)
+
+**Changes to `Specs/MIGRATION-PLAN.md`** : note TECH-DEBT-026 livre.
+
+**TECH-DEBT noted** :
+
+- TECH-DEBT-030 NEW : `scan-mojibake.cjs` ne detecte pas U+FFFD
+- TECH-DEBT-031 NEW : T-1.9 mentionne "Server" obsolete depuis v0.2.0
+- TECH-DEBT-032 NEW : Phase 0.5 avait 3 refs cassees (App.tsx, README.md) -- corrigees
+
+### Lessons learned (TECH-DEBT-026)
+
+- **`tasks.md` etait massivement desaligne** : Phase 1 a 0% cochee alors que 100% DONE en realite. Cause probable : sprints intensifs sans reflexe de revenir cocher tasks.md.
+- **CHANGELOGs sont la source de verite des sprints** mais tasks.md est devenu un outil de reference non-maintenu.
+- **Recommandation organisationnelle** : a partir de Sprint 2.5b, integrer dans "DONE" : (1) Tests passing + commit, (2) CHANGELOG entry, (3) Update Specs/tasks.md.
+- **U+FFFD est invisible aux outils heuristiques classiques** : il faut un test strict comme `ENC-2026-05-14-utf8-validity` (TextDecoder fatal) ou un scan dedie (TECH-DEBT-030).
+
+### Implications pour Sprint 2.5b
+
+Phase 1 etant 100% DONE, Sprint 2.5b doit se concentrer sur :
+
+1. Phase 0.5 T-0.5.2 reste : wirer Audit log + AI-Config (Reports backlog WIRING-CLOUD-PLUS)
+2. Settings non-LLM : Repo Mapping, Quotas, Webhooks, Beta opt-in
+3. Audit rapide Phase 2 avant le sprint (peut-etre aussi PARTIAL/DONE)
+
+---
+
 ### Infrastructure 2026-05-14 -- Dependabot batch (12 PR merged)
 
 No version bump -- dev/CI dependencies only, no runtime product changes.
