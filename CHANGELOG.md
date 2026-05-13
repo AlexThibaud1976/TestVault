@@ -9,6 +9,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.17] - 2026-05-14
+
+### Added (TECH-DEBT-015A follow-up #2 - docs/monorepo-inventory-followup-2)
+
+- **Specs/MONOREPO.md** : nouvelle sous-section "Dossiers utilitaires dans tools/" inventoriant 5
+  dossiers oublies (testvault-action, preflight, claude-prompts, load-testing, migration-scripts).
+  Mise a jour des sections "Vue d'ensemble" (+5 lignes), "Observations factuelles" (+observation 12),
+  "Carte des dependances internes" (+5 lignes).
+- **Specs/MIGRATION-PLAN.md** : nouvelle section 1.9 listant les 5 dossiers non-package. Ajout du
+  **Sprint 7d** (rename testvault-action -> argos-action). Mise a jour du tableau d'execution et
+  du chemin critique. 2 lignes ajoutees a la section Risques.
+- **Specs/PHASE-0-GAPS.md** : nouvelle sous-section 6.1 documentant la regle methodologique
+  d'inventaire monorepo (lister TOUS les dossiers, pas seulement ceux avec package.json).
+
+### Notes (TECH-DEBT-015A follow-up #2)
+
+- Sprint purement documentaire. Aucune modification de code, package.json, ou test regression.
+- Decouverte declenchee par Sprint 7a investigation (rename testvault-cli) : variables d'env
+  `TESTVAULT_*` dans `tools/testvault-action/action.yml` ont revele un dossier non documente.
+- **2eme correction** du TECH-DEBT-015A. La premiere correction (2026-05-13) avait deja ajoute
+  3 packages tools/ avec package.json. Cette correction ajoute 5 dossiers tools/ SANS package.json.
+- **Note encoding** : l'em-dash dans `action.yml` est UTF-8 valide (E2 80 94 = U+2014), pas de
+  mojibake reel. Le risque scan-mojibake reste ouvert pour .yml (TECH-DEBT-025).
+- Lecon racine : un inventaire monorepo doit lister TOUS les dossiers du workspace glob.
+
+### Lessons learned
+
+- **TECH-DEBT-015A initial avait DEUX angles morts cumules** : (1) tools/* complet rate, (2) dossiers
+  sans package.json rates.
+- **Le follow-up #1 (2026-05-13) n'avait corrige que l'angle mort #1**. Cette correction (2026-05-14)
+  finalise l'inventaire.
+- **Pour les futurs audits** : explorer chaque chemin du workspace glob avec `Get-ChildItem -Directory`
+  et categoriser chaque dossier (npm package / action composite / scripts / doc / placeholder).
+
+### Backlog enrichi
+
+- **Sprint 7a NEXT** : `testvault-cli` -> `argos-cli`. Surface clarifiee :
+  1 consommateur package.json (tools/e2e), 2 imports source (tools/e2e tests),
+  binaire `testvault` -> `argos`, 7 variables d'env `TESTVAULT_*` dans cli.ts -> `ARGOS_*`,
+  test regression : retirer entree ALLOWED_LEGACY_NAMES.
+- **Sprint 7b** : `testpulse-ui-shared` -> `argos-detection-api`
+- **Sprint 6g/7c** : `testvault-azure-pipelines-task` (fix mojibake + GUID + alignement)
+- **Sprint 7d NEW** : `tools/testvault-action/` -> `tools/argos-action/` (alignement CLI + variables env)
+- TECH-DEBT-025 (deja inscrit) : scan-mojibake.cjs ne couvre pas les .yml et .json
+- TECH-DEBT-026 (deja inscrit) : Resync Specs/tasks.md avec realite du code
+
+---
+
 ## [0.4.15] - 2026-05-13
 
 ### Changed (Sprint 6h - feat/rename-testvault-e2e-to-argos-e2e)

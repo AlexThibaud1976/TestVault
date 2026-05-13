@@ -242,6 +242,32 @@ pour les futurs audits de monorepo.
 - Tout audit de workspace doit commencer par lire `pnpm-workspace.yaml` pour identifier les
   globs reels avant de supposer quels dossiers sont inclus.
 
+### 6.1 Methodologie d'inventaire monorepo (added 2026-05-14)
+
+**Observation Sprint 7a** : meme apres le TECH-DEBT-015A follow-up #1 (2026-05-13) qui avait corrige
+l'omission de `tools/*` packages, l'inventaire restait incomplet. 5 dossiers dans `tools/` n'avaient
+pas de package.json et n'avaient pas ete documentes :
+
+- `tools/testvault-action/` (action.yml, GitHub Action composite)
+- `tools/preflight/` (scripts cjs + docs md)
+- `tools/claude-prompts/` (archive md)
+- `tools/load-testing/` (placeholder .gitkeep)
+- `tools/migration-scripts/` (placeholder .gitkeep)
+
+**Cause racine** : les outils de grep et d'inventaire ont focalise sur les `package.json`. Un
+"package monorepo" a ete confondu avec "un package npm". Mais le glob `tools/*` de
+`pnpm-workspace.yaml` englobe TOUS les dossiers.
+
+**Regle methodologique** : pour un inventaire monorepo complet :
+
+1. Lister `Get-ChildItem -Directory` sur chaque chemin du glob workspace
+2. NE PAS filtrer sur la presence d'un `package.json`
+3. Identifier le type de chaque dossier (npm package, action composite, scripts, doc, placeholder)
+4. Documenter le role et le sort de chaque dossier
+
+**Application future** : `Specs/MONOREPO.md` doit etre regenere periodiquement avec ce processus
+exhaustif (recommande a chaque release majeure).
+
 ---
 
 ## References

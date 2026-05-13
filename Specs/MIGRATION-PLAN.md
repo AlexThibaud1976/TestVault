@@ -165,6 +165,31 @@ a jour `tools/e2e/package.json`** :
 - Sprint 6f (`testvault-gherkin` -> `argos-gherkin`) : update `tools/e2e/package.json`
 - Sprint 7a (`testvault-cli` -> `argos-cli`) : update `tools/e2e/package.json`
 
+### 1.9 Dossiers utilitaires dans tools/* (added 2026-05-14)
+
+Inventaire complet revele lors de l'investigation Sprint 7a. 5 dossiers presents dans `tools/`
+mais sans package.json :
+
+| Dossier | Decision | Sprint dedie |
+|---|---|---|
+| `tools/testvault-action/` | Renommer en `tools/argos-action/`, aligner avec rebrand argos | **Sprint 7d (NEW)** |
+| `tools/preflight/` | Garder tel quel (deja argos-agnostic) | N/A |
+| `tools/claude-prompts/` | Garder tel quel | N/A |
+| `tools/load-testing/` | Garder placeholder, activer Phase 7 | N/A |
+| `tools/migration-scripts/` | Garder placeholder, activer si migration WIT majeure | N/A |
+
+**Sprint 7d -- testvault-action -> argos-action** :
+
+- Dossier : `tools/testvault-action/` -> `tools/argos-action/`
+- `action.yml` : `name:` mettre a jour vers `"Argos - Upload CI Results"` (em-dash -> tiret simple, plus neutre)
+- `action.yml` : variables d'env `TESTVAULT_*` -> `ARGOS_*` (lignes 60-62)
+- `action.yml` : install `@atconseil/testvault-cli` -> `@atconseil/argos-cli` (ligne 55)
+- `action.yml` : `testvault tc upload-results` -> `argos tc upload-results` (ligne 68)
+- `docs/integrations/github-actions.md` : mise a jour exemples utilisateur
+- **Prerequis** : Sprint 7a (rename CLI + binaire) doit etre fait AVANT Sprint 7d
+
+**Sprint 7d planifie apres Sprint 7a, 7b et 6g/7c**.
+
 ---
 
 ## 2. Mapping de migration detaille
@@ -273,8 +298,9 @@ n'est execute dans 015B** -- ce sont des reservations pour des sessions futures.
 | Sprint 6d | Renaming `testvault-importers` -> `argos-importers` | ~25 min | Faible (4 consommateurs, 6 fichiers source) | **DONE 2026-05-13** |
 | Sprint 6e | Renaming `testvault-exporters` -> `argos-exporters` | ~20 min | Faible (3 consommateurs, 4 fichiers source) | **DONE 2026-05-13** |
 | Sprint 6f | Renaming `testvault-gherkin` -> `argos-gherkin` | ~20 min | Faible (4 consommateurs, 5 fichiers source) | **DONE 2026-05-13** -- Jalon : Groupe 1 packages/ 6/8 complet |
-| Sprint 6g | Renaming `testvault-azure-pipelines-task` -> `argos-azure-pipelines-task` | ~30 min | Faible (0 consommateur interne, livrable produit) | Apres Groupe 1 |
+| Sprint 6g | Renaming `testvault-azure-pipelines-task` -> `argos-azure-pipelines-task` | ~30 min | Faible (0 consommateur interne, livrable produit) | Apres 7a |
 | Sprint 6h | Renaming `testvault-e2e` -> `argos-e2e` | ~15 min | Faible (0 consommateur, package name only, Option A dossier inchange) | **DONE 2026-05-13** -- Bonus: testvault-sdk ref dans ci-main.yml L98 aussi fixee |
+| Sprint 7d | Renaming `tools/testvault-action/` -> `tools/argos-action/` (GitHub Action) | ~25 min | Faible (0 consommateur interne, action composite) | Apres 7a |
 | Sprint 7a | Renaming `testvault-cli` -> `argos-cli` | ~30 min | Faible (0 consommateur interne) | Apres Groupe 1 |
 | Sprint 7b | Renaming `testpulse-ui-shared` -> `argos-detection-api` | ~30 min | Faible (0 consommateur interne) | Apres Groupe 1 |
 | Sprint 8 | Realignement versioning + config Changesets | ~30 min | Moyen (version decisions) | Apres Groupe 1+2 |
@@ -283,7 +309,7 @@ n'est execute dans 015B** -- ce sont des reservations pour des sessions futures.
 **Total renaming + cleanup** : environ 5h sur sprints courts et testables.
 La migration peut s'etaler sur plusieurs jours ou semaines selon les priorites produit.
 
-**Chemin critique** : 5a/5b -> 6a -> 6b -> 6c -> (6d, 6e, 6f en parallele possible) -> 6g/6h/7a/7b en parallele -> 8 -> 9.
+**Chemin critique** : 5a/5b -> 6a -> 6b -> 6c -> (6d, 6e, 6f) -> 6h -> 7a -> (7b, 6g/7c, 7d en parallele apres 7a) -> 8 -> 9.
 
 **Note sur Sprint 6a** : c'est le sprint le plus risque car `testvault-types` est consomme par
 tous les autres packages. Le recommander en premier (apres les suppressions triviales) permet
@@ -341,6 +367,8 @@ Chaque sprint de renaming doit respecter les regles suivantes sans exception.
 | tools/* packages oublies dans grep consommateurs | Tout grep doit couvrir `packages/`, `apps/`, ET `tools/`. Verifier explicitement dans chaque sprint 6c-6f que `tools/e2e/package.json` est mis a jour. |
 | `argos-functions` depend de `testvault-sdk` (Groupe 1) | Sprint 6c mettra a jour `argos-functions/package.json` en meme temps que les autres consommateurs |
 | Version `0.3.2` dans les tests regression | Verifier si des tests assertent des versions specifiques ; mettre a jour lors du Sprint 8 |
+| `tools/*` dossiers sans package.json oublies dans inventaire | Tout audit monorepo doit lister TOUS les dossiers (pas juste les packages npm). |
+| Mojibake invisible dans .yml / .json | scan-mojibake.cjs (TECH-DEBT-025) doit etre etendu aux .yml et .json pour couvrir action.yml et task.json. |
 
 ---
 
