@@ -7,6 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Infrastructure 2026-05-14 -- Dependabot batch (12 PR merged)
+
+No version bump -- dev/CI dependencies only, no runtime product changes.
+
+**GitHub Actions (4 PR)** :
+
+- `actions/checkout` v4 -> v6 (#1)
+- `actions/setup-node` v4 -> v6 (#2)
+- `pnpm/action-setup` v4 -> v6 (#3)
+- `actions/upload-artifact` v4 -> v7 (#36)
+- Resolves Node.js 20 deprecation warnings (Node 24 default from June 2026).
+
+**npm dev dependencies (8 PR)** :
+
+- `typescript` 5.9.3 -> 6.0.3 (#9) -- MAJOR, full monorepo typecheck/build validated locally with `--force`
+- `jsdom` 25.0.1 -> 29.1.1 (#23) -- MAJOR
+- `@types/node` 22.19.18 -> 25.7.0 (#24) -- MAJOR typedef
+- `lint-staged` 15.5.2 -> 17.0.4 (#26) -- MAJOR
+- `esbuild` 0.25.12 -> 0.28.0 (#22)
+- `secretlint` 9.3.4 -> 13.0.0 (#8) -- MAJOR (new file discovery + 3 credential rules)
+- `@secretlint/secretlint-rule-preset-recommend` 9.3.4 -> 13.0.0 (#5) -- MAJOR pair with #8
+- `turbo` 2.9.10 -> 2.9.12 + `msw` patch (#53 patch-updates group)
+
+**Skipped / Deferred to dedicated sprint** :
+
+- `@biomejs/biome` 1.9.4 -> 2.4.15 (#25) -- MAJOR with config breaking changes (`biome.json` schema)
+- `zod` 3.25.76 -> 4.4.3 (#7) -- MAJOR with API breaking changes
+
+### Validation post-batch
+
+- Tests regression : 57/57 passing
+- Preflight : PASSED (argos@0.5.0)
+- Mojibake scan : 0 file
+- `pnpm turbo lint --force` : 12/12 OK
+- `pnpm turbo typecheck --force` : 20/20 OK
+- `pnpm turbo test --force` : 20/20 OK
+- `pnpm turbo build --force` : 12/12 OK
+- `pnpm secretlint` : exit 0 (config coherent after #8 + #5 duo merge)
+
+### Methodology lessons learned (Dependabot batch)
+
+- Stale CI on old Dependabot PRs is usually stale base, not real failures. `@dependabot rebase` resolves cleanly in 2-3 min.
+- Lockfile conflicts on consecutive merges are normal in monorepos. `@dependabot rebase` regenerates the lockfile each time.
+- `--force` on turbo is critical for major bumps (TypeScript) -- cache can mask issues.
+- Secretlint pair (#8 + #5) must be merged as a duo -- config incoherent in between.
+- Some MAJOR bumps with green CI from old base merge cleanly (TypeScript 6), others have real breaking changes (biome 2.x config, zod 4.x API) and need dedicated sprints.
+
+### TECH-DEBT-029 NEW
+
+- `docs-site#build` task has `outputs` config in `turbo.json` but no actual build outputs. Warning during turbo build : `WARNING  no output files found for task docs-site#build`. Either fix `outputs` array or remove `docs-site#build` from turbo.json if it's intentionally a no-op.
+
 ---
 
 ## [0.5.0] - 2026-05-14
