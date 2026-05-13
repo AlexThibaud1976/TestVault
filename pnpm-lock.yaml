@@ -18,8 +18,8 @@ importers:
         specifier: ^2.27.0
         version: 2.31.0(@types/node@25.7.0)
       '@secretlint/secretlint-rule-preset-recommend':
-        specifier: ^9.3.0
-        version: 9.3.4
+        specifier: ^13.0.0
+        version: 13.0.0
       '@vitest/coverage-v8':
         specifier: ^3.1.0
         version: 3.2.4(vitest@3.2.4(@types/node@25.7.0)(jsdom@29.1.1)(msw@2.14.6(@types/node@25.7.0)(typescript@6.0.3))(yaml@2.9.0))
@@ -1683,9 +1683,9 @@ packages:
   '@secretlint/resolver@13.0.0':
     resolution: {integrity: sha512-5mUTxb+CPl/589Efq5L4SBqJ2yDguKNVZ7udCPiQasI9jS0h1P/CBWfqp+eoKlSoEggu2RKbMHdRiidRfnRXQQ==}
 
-  '@secretlint/secretlint-rule-preset-recommend@9.3.4':
-    resolution: {integrity: sha512-RvzrLNN2A0B2bYQgRSRjh2dkdaIDuhXjj4SO5bElK1iBtJNiD6VBTxSSY1P3hXYaBeva7MEF+q1PZ3cCL8XYOA==}
-    engines: {node: ^14.13.1 || >=16.0.0}
+  '@secretlint/secretlint-rule-preset-recommend@13.0.0':
+    resolution: {integrity: sha512-aKjoMnyMmQ1wDxLPUH0IdnM7yPOwSopT4ZhWoctthAW7nfYQoLmHKiTI8bUKOGU9n4VfVPG8N84vXmT3sG7d/g==}
+    engines: {node: '>=22.0.0'}
 
   '@secretlint/source-creator@13.0.0':
     resolution: {integrity: sha512-+whDtfudstqU0/rt787EDdqvNCna/c2REw9BOHYAcylZ2tpyL35gi0z7byUcqu4aJcI1z5epG7APcM0nd50PGg==}
@@ -5404,7 +5404,7 @@ snapshots:
 
   '@secretlint/resolver@13.0.0': {}
 
-  '@secretlint/secretlint-rule-preset-recommend@9.3.4': {}
+  '@secretlint/secretlint-rule-preset-recommend@13.0.0': {}
 
   '@secretlint/source-creator@13.0.0':
     dependencies:
