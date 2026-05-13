@@ -1,6 +1,7 @@
 {
-	"name": "@atconseil/testpulse-ui-shared",
+	"name": "@atconseil/argos-detection-api",
 	"version": "0.3.2",
+	"description": "Argos detection API - public client for consumers reading Argos Custom WIT schema from Azure DevOps. Designed for external integrators (TestPulse v2.0+).",
 	"private": true,
 	"type": "module",
 	"exports": {

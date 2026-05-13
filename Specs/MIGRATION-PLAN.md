@@ -302,7 +302,7 @@ n'est execute dans 015B** -- ce sont des reservations pour des sessions futures.
 | Sprint 6h | Renaming `testvault-e2e` -> `argos-e2e` | ~15 min | Faible (0 consommateur, package name only, Option A dossier inchange) | **DONE 2026-05-13** -- Bonus: testvault-sdk ref dans ci-main.yml L98 aussi fixee |
 | Sprint 7d | Renaming `tools/testvault-action/` -> `tools/argos-action/` (GitHub Action) | ~25 min | Faible (0 consommateur interne, action composite) | Apres 7a |
 | Sprint 7a | Renaming `testvault-cli` -> `argos-cli` (CLI + binaire + 7 vars env) | ~45 min | Moyen (1 consommateur interne, binaire shell, vars env publiques) | **DONE 2026-05-14** |
-| Sprint 7b | Renaming `testpulse-ui-shared` -> `argos-detection-api` | ~30 min | Faible (0 consommateur interne) | Apres Groupe 1 |
+| Sprint 7b | **Rebrand** `testpulse-ui-shared` -> `argos-detection-api` (rename + 9 identifiants TS + 2 docs + section Consumer API) | ~60 min | Moyen (rebrand semantique + preparation API TestPulse v2.0+) | **DONE 2026-05-14** |
 | Sprint 8 | Realignement versioning + config Changesets | ~30 min | Moyen (version decisions) | Apres Groupe 1+2 |
 | Sprint 9 | Publication npm `argos-cli` et `argos-detection-api` | ~1h | Moyen (config CI, semver, README) | Quand pret commercialement |
 
@@ -316,6 +316,15 @@ La migration peut s'etaler sur plusieurs jours ou semaines selon les priorites p
 > Les 3 consommateurs externes du binaire (tools/azure-pipelines-task, tools/testvault-action,
 > docs/integrations/*) restent INALIGNES jusqu'aux Sprints 6g/7c (task ADO) et 7d (GitHub Action).
 > Ce desalignement est temporaire et intentionnel : les sprints dedies les aligneront.
+
+> **Sprint 7b livre 2026-05-14** : dernier package de `packages/` a renommer. Ce sprint est un
+> **REBRAND** (pas simple renaming).
+> 9 identifiants TypeScript renommes (sauf strings "TestVault.*" lockees par constitution),
+> description du package ajoutee, section "Consumer API for external integrators" ajoutee a
+> `docs/wit-schema.md`, preparation explicite pour TestPulse v2.0+ comme futur consommateur.
+> Apres Sprint 7b, `ALLOWED_LEGACY_NAMES` est vide : tous les packages utilisent `argos-*`.
+> Renaming DES PACKAGES complete. Restent Sprints 6g/7c (azure-pipelines-task) et 7d
+> (testvault-action) qui sont des renamings de DOSSIERS dans `tools/`, pas des packages.
 
 **Note sur Sprint 6a** : c'est le sprint le plus risque car `testvault-types` est consomme par
 tous les autres packages. Le recommander en premier (apres les suppressions triviales) permet

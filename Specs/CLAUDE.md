@@ -91,7 +91,7 @@ testvault/
 │   ├── testvault-ui/              # Shared UI components (Fluent UI 2 wrappers)
 │   ├── testvault-importers/       # Parsers: CSV, Excel, JUnit, NUnit, xUnit, TestNG, Cucumber
 │   ├── testvault-exporters/       # Generators: Excel, PDF
-│   └── testpulse-ui-shared/       # Shared components with TestPulse standalone
+│   └── argos-detection-api/       # Public client API for external consumers (TestPulse v2.0+ etc.) -- reads Argos WIT schema from ADO
 ├── tools/
 │   ├── e2e/                       # Playwright suites against real ADO instances
 │   ├── load-testing/              # k6 stress tests

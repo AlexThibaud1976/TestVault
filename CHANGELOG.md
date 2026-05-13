@@ -9,6 +9,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.19] - 2026-05-14
+
+### Changed (Sprint 7b - feat/rebrand-testpulse-ui-shared-to-argos-detection-api)
+
+- **`@atconseil/testpulse-ui-shared` renomme en `@atconseil/argos-detection-api`** (9eme sprint de la serie renaming, dernier package de `packages/`).
+- **REBRAND semantique** (pas simple renaming) :
+  - Le nom reflete la fonction reelle : detection d'Argos sur ADO + lecture du schema WIT
+  - 9 identifiants TypeScript renommes :
+    - Constante `TESTVAULT_WIT_NAMES` -> `ARGOS_WIT_NAMES`
+    - Type `TestVaultWorkItemType` -> `ArgosWorkItemType`
+    - Interface `TestVaultWitField` -> `ArgosWitField`
+    - Interface `ITestVaultSchemaReader` -> `IArgosSchemaReader`
+    - Factory `createTestVaultSchemaReader` -> `createArgosSchemaReader`
+    - Tests `describe("createTestVaultSchemaReader", ...)` -> `describe("createArgosSchemaReader", ...)`
+  - **Strings `"TestVault.*"` INCHANGEES** : les references WIT (`"TestVault.TestCase"`, etc.) restent verrouillees par constitution section 3.4 + section 9 (retrocompatibilite chez les clients ayant deja Argos installe)
+- **Description du package ajoutee** (etait vide auparavant)
+- **Documentation enrichie** :
+  - Section "Consumer API for external integrators" ajoutee a `docs/wit-schema.md`
+  - Exemple de code d'integration
+  - Tableau de stabilite API (versioning rule)
+  - Note explicative sur le prefixe `TestVault.*` immutable
+  - `Specs/CLAUDE.md` ligne 94 mise a jour
+- **`ALLOWED_LEGACY_NAMES` est maintenant VIDE** : tous les packages utilisent `argos-*`.
+- **Preparation publication future** : le package reste `private: true` mais l'API est prete pour TestPulse v2.0+
+
+### Modifications
+
+- `packages/testpulse-ui-shared/` -> `packages/argos-detection-api/` (git mv)
+- `packages/argos-detection-api/package.json` : `name` + `description`
+- `packages/argos-detection-api/src/wit-schema-reader.ts` : 9 identifiants renommes
+- `packages/argos-detection-api/src/index.ts` : exports updates (+ IArgosSchemaReader, IAdoWorkItemClient exposes)
+- `packages/argos-detection-api/src/wit-schema-reader.test.ts` : tests alignes
+- `tools/regression/CFG-2026-05-13-package-naming.test.ts` : ALLOWED_LEGACY_NAMES vide + commentaires
+- `docs/wit-schema.md` : section "Consumer API" ajoutee (~60 lignes)
+- `Specs/CLAUDE.md` ligne 94 : description du package
+- `Specs/MIGRATION-PLAN.md` : Sprint 7b DONE + note rebrand
+
+### Notes (Sprint 7b)
+
+- **TestPulse** (le produit) reste mentionne dans Specs et docs comme consommateur futur. C'est le **package** testpulse-ui-shared qui est renomme, pas le produit.
+- **TestPulse v1.x** consomme uniquement Microsoft Test Plans natifs ADO. **TestPulse v2.0+** consommera aussi Argos via `@atconseil/argos-detection-api`.
+- Apres Sprint 7b, renaming des **PACKAGES** complete. Restent Sprints 6g/7c (azure-pipelines-task) et 7d (testvault-action) qui renomment des **DOSSIERS** dans `tools/`.
+- Bump 0.4.18 -> 0.4.19.
+
+### Lessons learned (Sprint 7b)
+
+- **Un rebrand n'est pas un renaming** : Sprint 7b a touche 9 identifiants TS, 2 docs et une section dediee API. Beaucoup plus large que Sprints 6a-7a.
+- **La distinction produit/package est critique** : "TestPulse" reste dans la doc, "testpulse-ui-shared" devient `argos-detection-api`.
+- **Les decisions constitutionnelles sont des locks** : meme dans un rebrand massif, les strings `"TestVault.*"` restent (constitution section 3.4 immutability).
+- **Documenter l'intention future** dans le sprint : la section "Consumer API" cristallise pour TestPulse v2.0+ comment integrer Argos.
+
+### Backlog renaming -- etat post-Sprint 7b
+
+**Packages dans `packages/`** : RENAMING COMPLETE (8/8) :
+argos-cli, argos-detection-api, argos-exporters, argos-gherkin, argos-importers, argos-sdk, argos-types, argos-wit-schema
+
+**Restant (dossiers `tools/*`)** :
+
+- Sprint 6g/7c NEXT : `tools/azure-pipelines-task/` -- regen GUID + alignement vars env + binaire argos
+- Sprint 7d : `tools/testvault-action/` -> `tools/argos-action/` -- alignement install CLI + vars env + binaire argos
+
+**TECH-DEBT actifs** : TECH-DEBT-021, 022, 024, 026, 027
+
+---
+
 ## [0.4.18] - 2026-05-14
 
 ### Changed (Sprint 7a - feat/rename-testvault-cli-to-argos-cli)

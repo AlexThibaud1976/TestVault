@@ -13,7 +13,7 @@
 | `apps/argos-extension` | Application | Extension ADO Argos (publiee Marketplace, publisher AlexThibaud) |
 | `apps/argos-functions` | Application | Backend Azure Functions (LLM proxy, webhooks, license, Stripe) |
 | `apps/docs-site` | Application | Placeholder -- aucun contenu src |
-| `packages/testpulse-ui-shared` | Bibliotheque | Lecteur de schema WIT (pas de composants UI) |
+| `packages/argos-detection-api` | Bibliotheque | Client public de detection Argos + lecture schema WIT (pour TestPulse v2.0+) |
 | `packages/testvault-cli` | Bibliotheque | CLI : upload results + BDD sync |
 | `packages/testvault-exporters` | Bibliotheque | Generateurs Excel/PDF (3 formats) |
 | `packages/testvault-gherkin` | Bibliotheque | Parse/valide/genere des fichiers Gherkin .feature |
@@ -63,14 +63,17 @@ packages:
 
 ## Packages -- Inventaire detaille
 
-### packages/testpulse-ui-shared
+### packages/argos-detection-api
+
+> Renomme depuis `testpulse-ui-shared` en Sprint 7b (2026-05-14). REBRAND semantique :
+> la fonction reelle est detection d'Argos + lecture WIT schema, pas un partage de composants UI.
 
 | Champ | Valeur |
 |---|---|
-| Nom npm | `@atconseil/testpulse-ui-shared` |
+| Nom npm | `@atconseil/argos-detection-api` |
 | Version | 0.3.2 |
 | private | true |
-| Description | (absente dans package.json) |
+| Description | Argos detection API - public client for consumers reading Argos Custom WIT schema from Azure DevOps. Designed for external integrators (TestPulse v2.0+). |
 | Export principal | `./dist/index.js` + `./dist/index.d.ts` |
 
 **Fichiers source** (hors dist, node_modules) :
@@ -287,7 +290,7 @@ Chaque fichier de service dispose d'un fichier de test correspondant (17 fichier
 
 **Dependances internes** : aucune (`@atconseil/*`)
 
-**Consommateurs internes** : tous les autres packages (testvault-sdk, testvault-sdk, testvault-wit-schema, testvault-importers, testvault-exporters, testvault-ui, testvault-cli, testpulse-ui-shared, argosTesting, argos-functions)
+**Consommateurs internes** : tous les autres packages (testvault-sdk, testvault-sdk, testvault-wit-schema, testvault-importers, testvault-exporters, testvault-ui, testvault-cli, argos-detection-api, argosTesting, argos-functions)
 
 **Statut publication npm** : NON publie (npm view retourne 404, verifie 2026-05-12)
 
@@ -467,7 +470,7 @@ testvault-exporters  -> testvault-sdk, testvault-types
 testvault-gherkin       (aucune dependance interne)
 testvault-ui         -> testvault-types
 testvault-cli        -> testvault-exporters, testvault-gherkin, testvault-importers, testvault-sdk, testvault-types
-testpulse-ui-shared  -> testvault-types
+argos-detection-api  -> testvault-types
 argos-extension      -> testvault-exporters, testvault-gherkin, testvault-importers, testvault-sdk, testvault-types
 argos-functions      -> testvault-gherkin, testvault-importers, testvault-sdk
 tools/e2e            -> testvault-cli, testvault-exporters (workspace:^), testvault-gherkin, testvault-importers, testvault-sdk
@@ -481,7 +484,7 @@ tools/claude-prompts   -> (documentation, pas de dependency npm)
 ```
 
 **Packages sans consommateur interne** :
-- `@atconseil/testpulse-ui-shared`
+- `@atconseil/argos-detection-api`
 - `@atconseil/testvault-ui`
 - `@atconseil/testvault-cli`
 - `@atconseil/testvault-azure-pipelines-task` (livrable produit, pas de consumer interne)
@@ -506,7 +509,7 @@ Verifie le 2026-05-12 via `npm view <package> version` :
 | `@atconseil/testvault-importers` | true | Non applicable |
 | `@atconseil/testvault-ui` | true | Non applicable |
 | `@atconseil/testvault-wit-schema` | true | Non applicable |
-| `@atconseil/testpulse-ui-shared` | true | Non applicable |
+| `@atconseil/argos-detection-api` | true | Non applicable |
 | `argosTesting` (argos-extension) | false | Non applicable (VSIX, pas npm) |
 
 **Observation factuelle** : 4 packages sont marques `private: false` mais aucun n'est publie sur le registre npm public. La flag `private: false` sur `argosTesting` (argos-extension) est sans consequence car ce package est distribue via Marketplace VSIX et non via npm.
@@ -559,8 +562,8 @@ Trois workflows GitHub Actions dans `.github/workflows/` :
 
 - **Repo** : distinct de AlexThibaud1976/TestVault (pas confirme, mais mentionne comme produit independant dans constitution et spec-kit)
 - **Publisher Marketplace** : ATConseil (mentionne dans constitution v0.3.0, Sprint 3.1)
-- **Code dans ce repo** : uniquement `packages/testpulse-ui-shared` (WIT schema reader)
-- **Partage de code actuel** : `testpulse-ui-shared` depend de `@atconseil/testvault-types`
+- **Code dans ce repo** : uniquement `packages/argos-detection-api` (WIT schema reader, rebrand depuis `testpulse-ui-shared` Sprint 7b 2026-05-14)
+- **Partage de code actuel** : `argos-detection-api` depend de `@atconseil/testvault-types`
 
 ### TestVault
 
@@ -576,7 +579,7 @@ Les observations suivantes sont des faits constates sans proposition de correcti
 
 1. **Versioning desaligne** : tous les packages dans `packages/` sont a la version `0.3.2`. `apps/argos-extension` est a `0.4.7`. `apps/argos-functions` et `apps/docs-site` sont a `0.3.2`. Les 3 versions coexistent dans le repo.
 
-2. **`testpulse-ui-shared` -- nom trompeur et sans consommateur interne** : le nom suggere des composants UI partages, mais le code contient exclusivement un lecteur de schema WIT (`wit-schema-reader.ts`). Aucun composant React, aucune logique UI. Aucun package ou app du repo ne l'importe, ni via `package.json` dependencies, ni via import relatif, ni via workspace alias (verifie par grep dans `apps/argos-extension/src` et `apps/argos-functions/src` -- 0 match). Ce package est orphelin dans le repo au 2026-05-12.
+2. **`testpulse-ui-shared` -- nom trompeur [RESOLU Sprint 7b, 2026-05-14]** : le nom suggerait des composants UI partages, mais le code contenait exclusivement un lecteur de schema WIT. Renomme en `argos-detection-api` (REBRAND semantique) dans Sprint 7b : 9 identifiants TypeScript renommes, description ajoutee, section Consumer API documentee dans `docs/wit-schema.md`.
 
 3. **`testvault-ui` vide et sans consommateur** : le seul fichier source contient `export {}`. Aucun consommateur interne. Le package figure dans les dependances de `testvault-types` (il consomme `testvault-types`).
 
@@ -813,7 +816,7 @@ Les observations suivantes sont des faits constates sans proposition de correcti
 
 | Package | Fichiers TS/TSX (prod) | Fichiers TS/TSX (test) |
 |---|---|---|
-| testpulse-ui-shared | 2 | 1 |
+| argos-detection-api | 2 | 1 |
 | testvault-cli | 4 | 2 |
 | testvault-exporters | 5 | 3 |
 | testvault-gherkin | 4 | 3 |

@@ -1,5 +1,11 @@
 # argos-extension
 
+## 0.4.19
+
+### Patch Changes
+
+- Sprint 7b: rebrand testpulse-ui-shared to argos-detection-api
+
 ## 0.4.18
 
 ### Patch Changes
