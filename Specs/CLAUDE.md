@@ -256,4 +256,81 @@ pnpm test --coverage                 # Run with coverage; fails if below thresho
 
 ---
 
+## Windows / PowerShell 5.1 encoding gotcha
+
+PowerShell 5.1 (Windows default, used by this project on Windows hosts)
+reads files in the **active code page** by default, NOT UTF-8. On
+French Windows installations, this is typically **CP850** (DOS Western
+European) -- even older than CP-1252. This means a valid UTF-8 file
+containing non-ASCII characters appears as "mojibake" in the console.
+
+Snapshot terrain 2026-05-14:
+
+```text
+[Console]::OutputEncoding : ibm850 (CP850, DOS Western European)
+$OutputEncoding          : us-ascii
+chcp                     : 850
+PowerShell version       : 5.1.26100.8115 Desktop
+```
+
+**These are display artifacts, NOT corrupted files.** Byte verification
+confirms UTF-8 validity:
+
+```powershell
+$bytes = [System.IO.File]::ReadAllBytes("path/to/file.md")
+"{0:X2} {1:X2} {2:X2}" -f $bytes[N], $bytes[N+1], $bytes[N+2]
+# E2 80 94 = valid UTF-8 em-dash (U+2014)
+# C3 A9    = valid UTF-8 e acute (U+00E9)
+```
+
+### How to read files correctly
+
+Always use explicit UTF-8 encoding:
+
+```powershell
+# Wrong (uses CP850 / CP-1252 by default):
+Get-Content file.md
+
+# Right (explicit UTF-8):
+Get-Content file.md -Encoding UTF8
+```
+
+### How to configure your PowerShell session
+
+Add to your PowerShell profile (`notepad $PROFILE`):
+
+```powershell
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
+$OutputEncoding = [System.Text.UTF8Encoding]::new()
+```
+
+Restart your terminal to apply.
+
+### Source files convention
+
+`.gitattributes` enforces UTF-8 + LF line endings for all text files in this
+repository, via `working-tree-encoding=UTF-8` directives. See `.gitattributes`.
+
+### Test regression
+
+The test `tools/regression/ENC-2026-05-14-utf8-validity.test.ts`
+scans all text files in the repo and fails if any has invalid UTF-8
+bytes. This complements the existing `scan-mojibake.cjs` which uses
+heuristic pattern matching.
+
+### History
+
+This gotcha cost 1 day of investigation during the testvault -> argos
+rebrand (2026-05-13/14). Apparent "mojibake" in `Specs/plan.md`,
+`tools/argos-action/action.yml`, and `tools/azure-pipelines-task/task.json`
+turned out to be PowerShell 5.1 console display artifacts, not real
+corruption. The byte verification (E2 80 94 = valid UTF-8 em-dash)
+proved all files were valid UTF-8. See TECH-DEBT-023 and TECH-DEBT-025
+(both cancelled as false positives).
+
+ASCII strict commit messages remain mandatory (pre-commit check) to avoid
+any ambiguity in commit logs across different terminal configurations.
+
+---
+
 > ⚠️ This file evolves with the project. Update it (with a PR) when stack, conventions, or hard rules change. Always keep it in sync with the spec-kit version numbers cited at the top.
