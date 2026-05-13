@@ -2,10 +2,27 @@
 	"$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
 	"changelog": "@changesets/cli/changelog",
 	"commit": false,
-	"fixed": [],
+	"fixed": [
+		[
+			"argos",
+			"argosTesting",
+			"argos-functions",
+			"docs-site",
+			"@atconseil/argos-cli",
+			"@atconseil/argos-detection-api",
+			"@atconseil/argos-exporters",
+			"@atconseil/argos-gherkin",
+			"@atconseil/argos-importers",
+			"@atconseil/argos-sdk",
+			"@atconseil/argos-types",
+			"@atconseil/argos-wit-schema",
+			"@atconseil/argos-azure-pipelines-task",
+			"@atconseil/argos-e2e"
+		]
+	],
 	"linked": [],
 	"access": "public",
 	"baseBranch": "main",
 	"updateInternalDependencies": "patch",
-	"ignore": []
+	"ignore": ["@atconseil/regression-suite"]
 }

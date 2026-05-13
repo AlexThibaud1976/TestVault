@@ -9,6 +9,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.0] - 2026-05-14
+
+### Changed (Sprint 8 - chore/sprint-8-versioning-alignement)
+
+- **JALON VERSIONING** : alignement complet sur 0.5.0 + Changesets fixed mode.
+- **Racine renommee** : `testvault@0.3.2` -> `argos@0.5.0` (coherence finale rebrand).
+- **14 packages alignes sur 0.5.0** (etaient 0.3.2 a 1.0.0 disparates) :
+  - racine `argos` : 0.3.2 -> 0.5.0
+  - `argosTesting` : 0.4.22 -> 0.5.0
+  - `argos-functions` : 0.3.4 -> 0.5.0
+  - `docs-site` : 0.3.2 -> 0.5.0
+  - `@atconseil/argos-cli` : 0.3.4 -> 0.5.0
+  - `@atconseil/argos-detection-api` : 0.3.2 -> 0.5.0
+  - `@atconseil/argos-exporters` : 0.3.3 -> 0.5.0
+  - `@atconseil/argos-gherkin` : 0.3.2 -> 0.5.0
+  - `@atconseil/argos-importers` : 0.3.2 -> 0.5.0
+  - `@atconseil/argos-sdk` : 0.3.4 -> 0.5.0
+  - `@atconseil/argos-types` : 0.3.2 -> 0.5.0
+  - `@atconseil/argos-wit-schema` : 0.3.3 -> 0.5.0
+  - `@atconseil/argos-azure-pipelines-task` : 1.0.0 -> 0.5.0 (regression visible, task non publiee)
+  - `@atconseil/argos-e2e` : 0.3.4 -> 0.5.0
+- **Mode Changesets fixed** active dans `.changeset/config.json` :
+  - 1 fixed group avec les 14 packages
+  - `ignore: ["@atconseil/regression-suite"]` (outil dev independant)
+- **Test regression versioning** : `tools/regression/CFG-2026-05-14-fixed-versioning.test.ts` (4 tests) :
+  - Tous les packages du fixed group partagent la meme version
+  - Tous matchent la version racine
+  - Racine s'appelle `argos`
+  - regression-suite est correctement exclu
+- **Inchanges intentionnellement** :
+  - `@atconseil/regression-suite` reste 0.1.0 (outil dev)
+  - `tools/azure-pipelines-task/task.json` champ `version` reste `{1,0,0}` (Marketplace ADO)
+  - `apps/argos-extension/vss-extension.json` version aligne sur 0.5.0
+
+### Notes (Sprint 8)
+
+- **0.5.0 et pas 1.0.0** : 1.0.0 est reserve pour la vraie GA produit. 0.5.0 signale "transition complete post-rebrand, pret pour wiring fonctionnel".
+- **Regression visible 1.0.0 -> 0.5.0** sur `argos-azure-pipelines-task` : intentionnel. La task n'est pas publiee sur Marketplace ADO.
+- **`task.json` version Marketplace ADO** reste `{1,0,0}` : version visible aux utilisateurs des pipelines (`ArgosUploadResults@1`). Inchangee tant que la task n'est pas publiee.
+
+### Lessons learned (Sprint 8)
+
+- **Mode fixed** simplifie le raisonnement versioning pour un solo dev : un seul nombre a se rappeler.
+- **Test regression versioning** : critique pour eviter le drift accidentel.
+- **`task.json` Marketplace version** != **`package.json` npm version** : deux semantiques independantes.
+
+---
+
 ## [0.4.22] - 2026-05-14
 
 ### Added (TECH-DEBT-027 - chore/tech-debt-027-encoding-hygiene)
