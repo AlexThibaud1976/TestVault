@@ -9,6 +9,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.20] - 2026-05-14
+
+### Changed (Sprint 6g/7c - feat/rename-testvault-azure-pipelines-task-to-argos)
+
+- **`@atconseil/testvault-azure-pipelines-task` renomme en `@atconseil/argos-azure-pipelines-task`** (10eme sprint de la serie renaming, avant-dernier).
+- **GUID regenere** : `a1b2c3d4-e5f6-7890-abcd-ef1234567890` (placeholder) -> `c9e5088e-8f72-438d-8afe-704bedcf95a9` (vrai GUID v4)
+- **Alignement post-Sprint 7a** :
+  - Commande shell : `testvault tc upload-results` -> `argos tc upload-results`
+  - Variables d'env : `TESTVAULT_PAT/ORG_URL/PROJECT` -> `ARGOS_PAT/ORG_URL/PROJECT`
+- **task.json textes** mis a jour (ASCII strict, dash `-` au lieu d'em-dash) :
+  - `friendlyName` : "TestVault - Upload CI Results" -> "Argos - Upload CI Results"
+  - `description` : "to TestVault (Argos) in Azure DevOps" -> "to Argos test management in Azure DevOps"
+  - `instanceNameFormat` : "Upload results to TestVault plan" -> "Upload results to Argos plan"
+  - `inputs[planId].helpMarkDown` : "TestVault Test Plan work item ID" -> "Argos Test Plan work item ID"
+- **Description du package.json** ajoutee (etait vide)
+- **Documentation utilisateur** `docs/integrations/azure-pipelines.md` aligne (9 occurrences) :
+  - Titre + intro (dash ASCII)
+  - `displayName` dans les exemples YAML
+  - Variable group exemple (TestVault -> Argos)
+  - `$(TESTVAULT_PLAN_ID)` -> `$(ARGOS_PLAN_ID)` dans l'exemple Maven
+
+### Files changed (Sprint 6g/7c)
+
+- `tools/azure-pipelines-task/package.json` : `name` + `description`
+- `tools/azure-pipelines-task/task.json` : `id` (nouveau GUID), `friendlyName`, `description`, `instanceNameFormat`, `inputs[planId].helpMarkDown`
+- `tools/azure-pipelines-task/src/index.ts` : cmd shell + 3 vars env
+- `docs/integrations/azure-pipelines.md` : 9 occurrences testvault alignees + `$(ARGOS_PLAN_ID)`
+- `Specs/MIGRATION-PLAN.md` : Sprint 6g/7c DONE + note
+- `Specs/MONOREPO.md` : nom package + description mis a jour
+
+### Notes (Sprint 6g/7c)
+
+- **Task non publiee** sur Marketplace ADO Pipeline Tasks : 0 utilisateur externe impacte.
+- **GUID immutable une fois publie** : le nouveau GUID `c9e5088e-8f72-438d-8afe-704bedcf95a9` sera son identifiant officiel lors de la publication future.
+- **Em-dash UTF-8 valide remplace par dash ASCII** (decision D6) : `TestVault — Upload CI Results` contenait un vrai em-dash (E2 80 94), pas un mojibake. Remplace par `-` ASCII pour coherence et zero ambiguite d'affichage dans l'UI ADO.
+- **Cross-package** : `tools/testvault-action/action.yml` reste avec testvault + TESTVAULT_* (Sprint 7d, dernier sprint).
+- Bump 0.4.19 -> 0.4.20.
+
+### Backlog renaming -- post-Sprint 6g/7c
+
+**Packages dans `packages/`** : RENAMING COMPLETE (8/8) - depuis Sprint 7b
+
+**Dossiers tools/ alignement** :
+
+- Sprint 6g/7c : `tools/azure-pipelines-task/` -- DONE
+- **Sprint 7d NEXT** : `tools/testvault-action/` -> `tools/argos-action/` (rename dossier + alignement)
+
+Apres Sprint 7d, **renaming GLOBAL TERMINE** (11 sprints au total).
+
+---
+
 ## [0.4.19] - 2026-05-14
 
 ### Changed (Sprint 7b - feat/rebrand-testpulse-ui-shared-to-argos-detection-api)
@@ -34,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`ALLOWED_LEGACY_NAMES` est maintenant VIDE** : tous les packages utilisent `argos-*`.
 - **Preparation publication future** : le package reste `private: true` mais l'API est prete pour TestPulse v2.0+
 
-### Modifications
+### Files changed (Sprint 7b)
 
 - `packages/testpulse-ui-shared/` -> `packages/argos-detection-api/` (git mv)
 - `packages/argos-detection-api/package.json` : `name` + `description`
