@@ -28,7 +28,7 @@
 		"lint-staged": "^17.0.4",
 		"simple-git-hooks": "^2.11.0",
 		"turbo": "^2.9.12",
-		"typescript": "^5.7.0",
+		"typescript": "^6.0.3",
 		"vitest": "^3.1.0"
 	},
 	"simple-git-hooks": {
