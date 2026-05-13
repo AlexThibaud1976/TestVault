@@ -1,7 +1,7 @@
 {
 	"entryPoints": ["src/index.ts"],
 	"out": "docs",
-	"name": "@atconseil/testvault-sdk",
+	"name": "@atconseil/argos-sdk",
 	"readme": "README.md",
 	"excludePrivate": true,
 	"excludeInternal": true,

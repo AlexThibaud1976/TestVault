@@ -9,6 +9,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.22] - 2026-05-14
+
+### Added (TECH-DEBT-027 - chore/tech-debt-027-encoding-hygiene)
+
+- **`.gitattributes` enrichi** : `working-tree-encoding=UTF-8` ajoute sur 13 extensions sources
+  (`.ts`, `.tsx`, `.js`, `.jsx`, `.cjs`, `.mjs`, `.json`, `.md`, `.yaml`, `.yml`, `.toml`,
+  `.html`, `.css`). Deux extensions nouvelles (`cjs`, `mjs`) aussi ajoutees.
+- **Section "Windows / PowerShell 5.1 encoding gotcha"** ajoutee a `Specs/CLAUDE.md` :
+  snapshot CP850 terrain, comment lire en UTF-8, config profil PowerShell, historique.
+- **Note Windows** ajoutee a `README.md` (pointeur vers `Specs/CLAUDE.md`).
+- **Nouveau test regression** `tools/regression/ENC-2026-05-14-utf8-validity.test.ts` (2 tests).
+  Utilise `TextDecoder` mode `fatal: true` pour validation stricte UTF-8 byte-level.
+  Complementaire au `scan-mojibake.cjs` heuristique existant.
+
+### Fixed (TECH-DEBT-027)
+
+- **Residu Sprint 6c** : `packages/argos-sdk/typedoc.json` contenait encore
+  `@atconseil/testvault-sdk` (avait echappe au grep d'epoque). Corrige en `@atconseil/argos-sdk`.
+
+### Notes (TECH-DEBT-027)
+
+- Snapshot terrain 2026-05-14 a revele PowerShell 5.1 en CP850 (ibm850) -- encore plus ancien
+  que CP-1252. Cout : 1 journee d'investigation sur faux mojibakes durant le rebrand argos.
+- TECH-DEBT-023 et TECH-DEBT-025 confirmes ANNULES (faux positifs).
+- Test regression total : 53 (etait 51, +2 tests UTF-8).
+- Bump 0.4.21 -> 0.4.22.
+
+### Lessons learned (TECH-DEBT-027)
+
+- **PowerShell 5.1 sur Windows FR utilise CP850 par defaut** (pas CP-1252).
+- **Toujours utiliser `-Encoding UTF8`** sur `Get-Content`, `Set-Content`, `Out-File`.
+- **`TextDecoder` mode `fatal: true`** est la verite ultime pour validite UTF-8 byte-level.
+- **`.gitattributes` `working-tree-encoding=UTF-8`** documente l'intention sans changer le comportement.
+
+---
+
 ## [0.4.21] - 2026-05-14
 
 ### Changed (Sprint 7d - feat/rename-testvault-action-to-argos-action) - DERNIER SPRINT RENAMING

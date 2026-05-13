@@ -479,7 +479,10 @@ Decision a prendre lors du Sprint 8 en fonction de la maturite percue de l'API i
 ---
 
 > **JALON 2026-05-14** : Sprint 7d livre. **Renaming testvault -> argos TOTALEMENT TERMINE**.
-> 11 sprints au total : 5a/5b cleanup, 6a + follow-up, 6b, 6c, 6d, 6e, 6f, 6h, 7a, 7b, 6g/7c, 7d.
-> Plus 2 sprints methodologiques : TECH-DEBT-015A follow-up #1 et #2.
-> Tous les packages et dossiers utilisent maintenant le prefixe `argos-*` (sauf nominal `TestVault.*`
-> pour les Custom WIT, locke par constitution sections 3.4 et 9 -- retrocompatibilite).
+> 11 sprints : 5a/5b, 6a + follow-up, 6b, 6c, 6d, 6e, 6f, 6h, 7a, 7b, 6g/7c, 7d + 2 sprints methodologiques.
+> Tous les packages utilisent `argos-*` (sauf `TestVault.*` WIT, locke constitution sections 3.4/9).
+> **TECH-DEBT-027 livre 2026-05-14** : `.gitattributes` enrichi (13 extensions `working-tree-encoding=UTF-8`),
+> section "PowerShell 5.1 encoding gotcha" ajoutee a `Specs/CLAUDE.md`, note Windows dans `README.md`,
+> test `ENC-2026-05-14-utf8-validity.test.ts` (2 tests, TextDecoder fatal mode), fix residu Sprint 6c
+> (`packages/argos-sdk/typedoc.json` : `testvault-sdk` -> `argos-sdk`). **53 tests (etait 51).**
+> Lecon : console CP850 a coute 1 journee sur faux mojibakes -- TextDecoder fatal mode valide UTF-8 byte-level.

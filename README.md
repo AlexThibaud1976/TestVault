@@ -89,6 +89,14 @@ pnpm turbo test --filter=@atconseil/testvault-sdk
 pnpm --filter argos-extension dev
 ```
 
+## Working on Windows?
+
+PowerShell 5.1 (Windows default) displays UTF-8 files with non-ASCII
+characters as "mojibake" by default. **These are display artifacts,
+not corrupted files.** See `Specs/CLAUDE.md` (section "Windows /
+PowerShell 5.1 encoding gotcha") for the explanation and how to
+configure your session to display UTF-8 correctly.
+
 ## Documentation
 
 - [User Guide](docs/user-guide.md)

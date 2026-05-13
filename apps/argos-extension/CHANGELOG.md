@@ -1,5 +1,11 @@
 # argos-extension
 
+## 0.4.22
+
+### Patch Changes
+
+- TECH-DEBT-027: encoding hygiene - gitattributes, PowerShell doc, UTF-8 regression test, typedoc fix
+
 ## 0.4.21
 
 ### Patch Changes
