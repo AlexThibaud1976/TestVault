@@ -20,9 +20,9 @@
  *   - Sprint 6d (done): testvault-importers renamed; removed from ALLOWED_LEGACY_NAMES
  *   - Sprint 6e (done): testvault-exporters renamed; removed from ALLOWED_LEGACY_NAMES
  *   - Sprint 6f (done): testvault-gherkin renamed; removed from ALLOWED_LEGACY_NAMES
- *   - Sprint 7a: testvault-cli renamed; remove from ALLOWED_LEGACY_NAMES
- *   - Sprint 7b: testpulse-ui-shared -> argos-detection-api; remove from ALLOWED_LEGACY_NAMES
- *   - After Sprint 7b: ALLOWED_LEGACY_NAMES is empty; test enforces argos-* only
+ *   - Sprint 7a (done): testvault-cli renamed; removed from ALLOWED_LEGACY_NAMES
+ *   - Sprint 7b (done): testpulse-ui-shared -> argos-detection-api; removed from ALLOWED_LEGACY_NAMES
+ *   - After Sprint 7b (DONE 2026-05-14): ALLOWED_LEGACY_NAMES is empty; test enforces argos-* only
  *
  * DO NOT delete without explicit spec-kit decision.
  *
@@ -42,11 +42,9 @@ const REPO_ROOT = join(__dirname, "..", "..");
 const PACKAGES_DIR = join(REPO_ROOT, "packages");
 
 const FORBIDDEN_PREFIX = "@atconseil/testvault-";
-const ALLOWED_LEGACY_NAMES = new Set([
-	// Legacy names accepted during the testvault-* -> argos-* migration wave.
-	// Each future sprint will remove its entry as the package is renamed.
+const ALLOWED_LEGACY_NAMES = new Set<string>([
+	// All packages renamed. ALLOWED_LEGACY_NAMES is intentionally empty after Sprint 7b.
 	// See Specs/MIGRATION-PLAN.md (TECH-DEBT-015B section 1.4).
-	"@atconseil/testpulse-ui-shared", // Sprint 7b: rename to argos-detection-api
 ]);
 
 interface PackageJson {

@@ -106,3 +106,62 @@ TestPulse reads the following ADO link types to reconstruct the test hierarchy:
 | Version | Date | Change |
 | --- | --- | --- |
 | 1.0.0 | 2026-05-08 | Initial stable release — all 7 WITs locked |
+
+---
+
+## Consumer API for external integrators
+
+External tools that need to detect Argos installation, list its Custom Work Item Types, or read field metadata on an Azure DevOps instance can use the public client package **`@atconseil/argos-detection-api`** (renamed from `testpulse-ui-shared` in Sprint 7b, 2026-05-14).
+
+This package is designed for stable, versioned consumption by **TestPulse v2.0+** and any future external integrators.
+
+### Installation
+
+```bash
+npm install @atconseil/argos-detection-api
+```
+
+> Note: as of the Sprint 7b rebrand (2026-05-14), the package remains `private: true` in the monorepo and is not yet published on npm. Publication will be planned alongside TestPulse v2.0 readiness.
+
+### Quick start
+
+```ts
+import {
+  createArgosSchemaReader,
+  ARGOS_WIT_NAMES,
+  type IAdoWorkItemClient,
+  type IArgosSchemaReader,
+} from "@atconseil/argos-detection-api";
+
+// Provide an ADO Work Item client implementation
+const adoClient: IAdoWorkItemClient = { /* ... your impl ... */ };
+
+const reader: IArgosSchemaReader = createArgosSchemaReader(adoClient);
+
+// Detect if Argos is installed on a given ADO project
+const installed = await reader.isArgosInstalled(orgUrl, project);
+
+// List Argos Custom WIT types available on this project
+const types = await reader.listWorkItemTypes(orgUrl, project);
+// types is a subset of ARGOS_WIT_NAMES that are actually installed
+
+// Read field metadata for a specific WIT
+const fields = await reader.getFields(orgUrl, project, "TestVault.TestCase");
+```
+
+### API contract stability
+
+| Symbol | Stability | Notes |
+| --- | --- | --- |
+| `ARGOS_WIT_NAMES` | STABLE | Adding a new WIT name is a minor version bump |
+| `ArgosWorkItemType` | STABLE | Union type derived from `ARGOS_WIT_NAMES` |
+| `ArgosWitField` | STABLE | Shape locked; new optional fields possible |
+| `IArgosSchemaReader` | STABLE | Methods locked; new optional methods possible |
+| `createArgosSchemaReader` | STABLE | Factory signature locked |
+| `IAdoWorkItemClient` | STABLE | Consumer-provided ADO client contract |
+
+> **Versioning rule** (constitution section 10): any breaking change to this API requires a major version bump of `@atconseil/argos-detection-api` AND a coordinated TestPulse migration plan with end-to-end tested migration scripts.
+
+### Why "TestVault.*" prefix in WIT strings
+
+Custom Work Item Type reference names use the technical prefix `TestVault.*` (e.g. `"TestVault.TestCase"`) even though the commercial product is **Argos**. This is intentional and locked by constitution section 3.4 + section 9 for backward compatibility: existing Argos installations have these WIT types persisted in customer Azure DevOps databases. Renaming them would break installed customers. The TypeScript identifiers were rebranded to `Argos*` in Sprint 7b, but the WIT reference strings remain `TestVault.*` indefinitely.

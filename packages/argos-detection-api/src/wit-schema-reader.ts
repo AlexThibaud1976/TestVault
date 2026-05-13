@@ -1,4 +1,4 @@
-export const TESTVAULT_WIT_NAMES = [
+export const ARGOS_WIT_NAMES = [
 	"TestVault.TestCase",
 	"TestVault.TestSet",
 	"TestVault.TestPlan",
@@ -8,22 +8,18 @@ export const TESTVAULT_WIT_NAMES = [
 	"TestVault.AuditLog",
 ] as const;
 
-export type TestVaultWorkItemType = (typeof TESTVAULT_WIT_NAMES)[number];
+export type ArgosWorkItemType = (typeof ARGOS_WIT_NAMES)[number];
 
-export interface TestVaultWitField {
+export interface ArgosWitField {
 	referenceName: string;
 	name: string;
 	type: "string" | "integer" | "double" | "boolean" | "dateTime" | "html" | "plainText";
 	readOnly: boolean;
 }
 
-export interface ITestVaultSchemaReader {
-	listWorkItemTypes(orgUrl: string, project: string): Promise<TestVaultWorkItemType[]>;
-	getFields(
-		orgUrl: string,
-		project: string,
-		witName: TestVaultWorkItemType
-	): Promise<TestVaultWitField[]>;
+export interface IArgosSchemaReader {
+	listWorkItemTypes(orgUrl: string, project: string): Promise<ArgosWorkItemType[]>;
+	getFields(orgUrl: string, project: string, witName: ArgosWorkItemType): Promise<ArgosWitField[]>;
 	isArgosInstalled(orgUrl: string, project: string): Promise<boolean>;
 }
 
@@ -36,12 +32,12 @@ export interface IAdoWorkItemClient {
 	): Promise<Array<{ referenceName: string; name: string; type: string; readOnly: boolean }>>;
 }
 
-export function createTestVaultSchemaReader(client: IAdoWorkItemClient): ITestVaultSchemaReader {
+export function createArgosSchemaReader(client: IAdoWorkItemClient): IArgosSchemaReader {
 	return {
 		async listWorkItemTypes(orgUrl, project) {
 			const all = await client.listWorkItemTypeNames(orgUrl, project);
-			return all.filter((n): n is TestVaultWorkItemType =>
-				(TESTVAULT_WIT_NAMES as readonly string[]).includes(n)
+			return all.filter((n): n is ArgosWorkItemType =>
+				(ARGOS_WIT_NAMES as readonly string[]).includes(n)
 			);
 		},
 
@@ -50,7 +46,7 @@ export function createTestVaultSchemaReader(client: IAdoWorkItemClient): ITestVa
 			return raw.map((f) => ({
 				referenceName: f.referenceName,
 				name: f.name,
-				type: f.type as TestVaultWitField["type"],
+				type: f.type as ArgosWitField["type"],
 				readOnly: f.readOnly,
 			}));
 		},
