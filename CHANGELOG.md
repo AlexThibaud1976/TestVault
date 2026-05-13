@@ -9,6 +9,90 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.21] - 2026-05-14
+
+### Changed (Sprint 7d - feat/rename-testvault-action-to-argos-action) - DERNIER SPRINT RENAMING
+
+- **`tools/testvault-action/` renomme en `tools/argos-action/`** (11eme et dernier sprint de la serie renaming).
+- **GitHub Action composite alignee** avec le rebrand argos :
+  - `name` : "TestVault - Upload CI Results" -> "Argos - Upload CI Results" (dash ASCII strict)
+  - `description` alignee
+  - `inputs.plan-id.description` : "TestVault Test Plan ID" -> "Argos Test Plan ID"
+  - `inputs.cli-version.description` : reference `@atconseil/argos-cli`
+  - Step `Install TestVault CLI` -> `Install Argos CLI`
+  - `npm install -g @atconseil/testvault-cli` -> `@atconseil/argos-cli`
+  - Variables env : `TESTVAULT_PAT/ORG_URL/PROJECT` -> `ARGOS_PAT/ORG_URL/PROJECT`
+  - Commande shell : `testvault tc upload-results` -> `argos tc upload-results`
+- **Em-dash UTF-8 valide remplace par dash ASCII** (coherence decision Sprint 6g/7c) :
+  - Verification byte : `name` contenait E2 80 94 (em-dash UTF-8 valide), pas mojibake
+  - Decision : ASCII strict pour textes utilisateurs visibles (GitHub Marketplace Actions)
+- **Documentation alignee** (2 fichiers utilisateur, 4 spec-kit) :
+  - `docs/integrations/github-actions.md` : 9 occurrences testvault -> Argos (titre, exemples YAML, table inputs, mentions texte)
+  - `docs/user-guide.md` L155 : `atconseil/testvault-action` -> `atconseil/argos-action`, `testvault` CLI -> `argos` CLI
+  - `Specs/tasks.md` L571 (ROADMAP T-4.6) : "Action GitHub publiee atconseil/testvault-action@v1" -> "atconseil/argos-action@v1"
+  - `Specs/MIGRATION-PLAN.md` : Sprint 7d DONE + jalon final "Renaming totalement termine"
+  - `Specs/MONOREPO.md` : 4 occurrences alignees
+  - `Specs/PHASE-0-GAPS.md` L251 : aligne
+
+### Files changed (Sprint 7d)
+
+- `tools/testvault-action/` -> `tools/argos-action/` (git mv)
+- `tools/argos-action/action.yml` : 10 modifications (name, description, inputs, CLI install, env vars, cmd shell)
+- `docs/integrations/github-actions.md` : 9 occurrences alignees
+- `docs/user-guide.md` L155 : aligne
+- `Specs/tasks.md` L571 : ROADMAP T-4.6 aligne
+- `Specs/MIGRATION-PLAN.md` : Sprint 7d DONE + jalon final
+- `Specs/MONOREPO.md` : 4 occurrences alignees
+- `Specs/PHASE-0-GAPS.md` L251 : aligne
+- `CHANGELOG.md` : [0.4.21]
+
+### JALON HISTORIQUE -- RENAMING TESTVAULT -> ARGOS TOTALEMENT TERMINE
+
+**11 sprints renaming livres** :
+
+1. Sprint 5a/5b (cleanup testvault-ui placeholder + dist/vsix-debug)
+2. Sprint 6a + follow-up (testvault-types -> argos-types)
+3. Sprint 6b (testvault-wit-schema -> argos-wit-schema)
+4. Sprint 6c (testvault-sdk -> argos-sdk, le plus large : 47 fichiers)
+5. Sprint 6d (testvault-importers -> argos-importers)
+6. Sprint 6e (testvault-exporters -> argos-exporters)
+7. Sprint 6f + fixup (testvault-gherkin -> argos-gherkin)
+8. Sprint 6h (testvault-e2e -> argos-e2e, Option A)
+9. Sprint 7a (testvault-cli -> argos-cli, binaire + 7 vars env)
+10. Sprint 7b (testpulse-ui-shared -> argos-detection-api, REBRAND semantique)
+11. Sprint 6g/7c (testvault-azure-pipelines-task + regen GUID + alignement)
+12. **Sprint 7d (CE SPRINT)** : testvault-action -> argos-action + alignement final
+
+**Plus 2 sprints methodologiques** :
+
+- TECH-DEBT-015A follow-up #1 (inventaire tools/ avec package.json)
+- TECH-DEBT-015A follow-up #2 (inventaire tools/ complet, 5 dossiers sans package.json)
+
+**Etat final** :
+
+- **8/8 packages** dans `packages/` utilisent `argos-*` (ALLOWED_LEGACY_NAMES vide)
+- **Tous les dossiers livrables produit** (`tools/azure-pipelines-task/`, `tools/argos-action/`) alignes argos
+- **Tous les binaires shell** : `argos tc upload-results` (anciennement `testvault`)
+- **Toutes les variables d'env publiques** : `ARGOS_*` (anciennement `TESTVAULT_*`)
+- **`TestVault.*` strings preservees** pour les Custom WIT (lock constitution sections 3.4 et 9, retrocompatibilite clients)
+- **Toute la documentation utilisateur** alignee Argos (azure-pipelines.md, github-actions.md, user-guide.md, wit-schema.md)
+- **Spec-kit propre** (MIGRATION-PLAN.md DONE, MONOREPO.md a jour, PHASE-0-GAPS.md a jour, tasks.md L571 aligne)
+
+### Notes (Sprint 7d)
+
+- **GitHub Action non publiee sur GitHub Marketplace Actions** : 0 utilisateur externe impacte. Liberte totale pour renommer.
+- **Quand cette action sera publiee** (decision produit future), le path sera `atconseil/argos-action@v1` (pas `atconseil/testvault-action@v1`), coherent avec le rebrand global.
+- **Em-dash UTF-8 valide -> dash ASCII** : continuite avec Sprint 6g/7c. ASCII strict pour textes utilisateurs visibles dans les UI (GitHub Marketplace, Azure DevOps Pipeline Designer).
+- **Cross-package** : aucun residual testvault-action ailleurs (tous les 6 fichiers spec/doc alignes).
+
+### Lessons learned (Sprint 7d)
+
+- **Spec-kit n'est pas que de la doc** : `Specs/tasks.md` L571 contenait une roadmap produit qui devait etre alignee. Le spec-kit fait partie du rebrand, pas un livrable a part.
+- **3 livrables produit coherents post-renaming** : `@atconseil/argos-cli` (binaire `argos`), `argos-azure-pipelines-task` (Azure DevOps Task `ArgosUploadResults@1`), `argos-action` (GitHub Action composite `atconseil/argos-action@v1` future publication). Les 3 partagent le meme contrat : variables `ARGOS_*` + commande `argos tc upload-results`.
+- **Em-dash UTF-8 valide remplace partout par dash ASCII** dans les textes utilisateurs visibles. Zero ambiguite future.
+
+---
+
 ## [0.4.20] - 2026-05-14
 
 ### Changed (Sprint 6g/7c - feat/rename-testvault-azure-pipelines-task-to-argos)

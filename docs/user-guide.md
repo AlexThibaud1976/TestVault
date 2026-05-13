@@ -152,7 +152,7 @@ The `automationKey` field enables matching when uploading CI results — a test 
 
 ### CI / CD integration
 
-Upload results from any CI system using the `testvault` CLI, the `atconseil/testvault-action` GitHub Action, or the `ArgosUploadResults` Azure Pipelines task. All three accept the same test result formats listed above and share the same matching logic. See `docs/integrations/` for quick-start examples.
+Upload results from any CI system using the `argos` CLI, the `atconseil/argos-action` GitHub Action, or the `ArgosUploadResults` Azure Pipelines task. All three accept the same test result formats listed above and share the same matching logic. See `docs/integrations/` for quick-start examples.
 
 ### Webhook ingestion (Cloud-Plus)
 

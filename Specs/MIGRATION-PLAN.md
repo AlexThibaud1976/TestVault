@@ -172,23 +172,24 @@ mais sans package.json :
 
 | Dossier | Decision | Sprint dedie |
 |---|---|---|
-| `tools/testvault-action/` | Renommer en `tools/argos-action/`, aligner avec rebrand argos | **Sprint 7d (NEW)** |
+| `tools/testvault-action/` | Renomme en `tools/argos-action/`, aligne avec rebrand argos | **Sprint 7d DONE 2026-05-14** |
 | `tools/preflight/` | Garder tel quel (deja argos-agnostic) | N/A |
 | `tools/claude-prompts/` | Garder tel quel | N/A |
 | `tools/load-testing/` | Garder placeholder, activer Phase 7 | N/A |
 | `tools/migration-scripts/` | Garder placeholder, activer si migration WIT majeure | N/A |
 
-**Sprint 7d -- testvault-action -> argos-action** :
+**Sprint 7d -- testvault-action -> argos-action (DONE 2026-05-14)** :
 
-- Dossier : `tools/testvault-action/` -> `tools/argos-action/`
-- `action.yml` : `name:` mettre a jour vers `"Argos - Upload CI Results"` (em-dash -> tiret simple, plus neutre)
-- `action.yml` : variables d'env `TESTVAULT_*` -> `ARGOS_*` (lignes 60-62)
-- `action.yml` : install `@atconseil/testvault-cli` -> `@atconseil/argos-cli` (ligne 55)
-- `action.yml` : `testvault tc upload-results` -> `argos tc upload-results` (ligne 68)
-- `docs/integrations/github-actions.md` : mise a jour exemples utilisateur
-- **Prerequis** : Sprint 7a (rename CLI + binaire) doit etre fait AVANT Sprint 7d
+- Dossier : `tools/testvault-action/` -> `tools/argos-action/` (git mv done)
+- `action.yml` : `name: "TestVault - Upload CI Results"` (em-dash UTF-8 valide E2 80 94) -> `name: "Argos - Upload CI Results"` (dash ASCII, decision D2)
+- `action.yml` : variables d'env `TESTVAULT_*` -> `ARGOS_*` (applique)
+- `action.yml` : install `@atconseil/testvault-cli` -> `@atconseil/argos-cli` (applique)
+- `action.yml` : `testvault tc upload-results` -> `argos tc upload-results` (applique)
+- `docs/integrations/github-actions.md` : 9 occurrences alignees (applique)
+- `docs/user-guide.md` L155 : aligne (applique)
+- `Specs/tasks.md` L571 ROADMAP T-4.6 : `atconseil/argos-action@v1` (applique)
 
-**Sprint 7d planifie apres Sprint 7a, 7b et 6g/7c**.
+**Sprint 7d LIVRE. DERNIER SPRINT RENAMING.**
 
 ---
 
@@ -300,7 +301,7 @@ n'est execute dans 015B** -- ce sont des reservations pour des sessions futures.
 | Sprint 6f | Renaming `testvault-gherkin` -> `argos-gherkin` | ~20 min | Faible (4 consommateurs, 5 fichiers source) | **DONE 2026-05-13** -- Jalon : Groupe 1 packages/ 6/8 complet |
 | Sprint 6g/7c | Rename + cleanup `testvault-azure-pipelines-task` -> `argos-azure-pipelines-task` (rename + regen GUID + alignement vars/cmd + doc) | ~30 min | Faible (0 consommateur, livrable produit non publie, GUID regenere) | **DONE 2026-05-14** |
 | Sprint 6h | Renaming `testvault-e2e` -> `argos-e2e` | ~15 min | Faible (0 consommateur, package name only, Option A dossier inchange) | **DONE 2026-05-13** -- Bonus: testvault-sdk ref dans ci-main.yml L98 aussi fixee |
-| Sprint 7d | Renaming `tools/testvault-action/` -> `tools/argos-action/` (GitHub Action) | ~25 min | Faible (0 consommateur interne, action composite) | Apres 7a |
+| Sprint 7d | Rename + alignement `tools/testvault-action/` -> `tools/argos-action/` (GitHub Action) | ~30 min | Faible (0 consommateur, GitHub Action composite non publiee) | **DONE 2026-05-14** |
 | Sprint 7a | Renaming `testvault-cli` -> `argos-cli` (CLI + binaire + 7 vars env) | ~45 min | Moyen (1 consommateur interne, binaire shell, vars env publiques) | **DONE 2026-05-14** |
 | Sprint 7b | **Rebrand** `testpulse-ui-shared` -> `argos-detection-api` (rename + 9 identifiants TS + 2 docs + section Consumer API) | ~60 min | Moyen (rebrand semantique + preparation API TestPulse v2.0+) | **DONE 2026-05-14** |
 | Sprint 8 | Realignement versioning + config Changesets | ~30 min | Moyen (version decisions) | Apres Groupe 1+2 |
@@ -313,7 +314,7 @@ La migration peut s'etaler sur plusieurs jours ou semaines selon les priorites p
 
 > **Sprint 7a livre 2026-05-14** : renommage CLI + binaire shell `testvault` -> `argos` +
 > variables d'env publiques `TESTVAULT_*` -> `ARGOS_*` (7 occurrences dans cli.ts).
-> Les 3 consommateurs externes du binaire (tools/azure-pipelines-task, tools/testvault-action,
+> Les 3 consommateurs externes du binaire (tools/azure-pipelines-task, tools/argos-action,
 > docs/integrations/*) restent INALIGNES jusqu'aux Sprints 6g/7c (task ADO) et 7d (GitHub Action).
 > Ce desalignement est temporaire et intentionnel : les sprints dedies les aligneront.
 
@@ -324,7 +325,7 @@ La migration peut s'etaler sur plusieurs jours ou semaines selon les priorites p
 > `docs/wit-schema.md`, preparation explicite pour TestPulse v2.0+ comme futur consommateur.
 > Apres Sprint 7b, `ALLOWED_LEGACY_NAMES` est vide : tous les packages utilisent `argos-*`.
 > Renaming DES PACKAGES complete. Restent Sprints 6g/7c (azure-pipelines-task) et 7d
-> (testvault-action) qui sont des renamings de DOSSIERS dans `tools/`, pas des packages.
+> (argos-action -- ex testvault-action) qui sont des renamings de DOSSIERS dans `tools/`, pas des packages.
 >
 > **Sprint 6g/7c livre 2026-05-14** : avant-dernier sprint renaming. Trois actions combinees :
 > (1) Rename package npm `testvault-azure-pipelines-task` -> `argos-azure-pipelines-task` (description ajoutee).
@@ -474,3 +475,11 @@ Decision a prendre lors du Sprint 8 en fonction de la maturite percue de l'API i
 - `tools/regression/allowlist.ts` et `allowlist.cjs` -- a mettre a jour lors des sprints
 - `tools/preflight/manifest-check.cjs` -- verifie publisher whitelist ; non affecte par renaming packages
 - `.changeset/config.json` -- a configurer lors du Sprint 8
+
+---
+
+> **JALON 2026-05-14** : Sprint 7d livre. **Renaming testvault -> argos TOTALEMENT TERMINE**.
+> 11 sprints au total : 5a/5b cleanup, 6a + follow-up, 6b, 6c, 6d, 6e, 6f, 6h, 7a, 7b, 6g/7c, 7d.
+> Plus 2 sprints methodologiques : TECH-DEBT-015A follow-up #1 et #2.
+> Tous les packages et dossiers utilisent maintenant le prefixe `argos-*` (sauf nominal `TestVault.*`
+> pour les Custom WIT, locke par constitution sections 3.4 et 9 -- retrocompatibilite).

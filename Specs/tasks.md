@@ -568,7 +568,7 @@ React + .test.tsx) mais ne sont pas wirés dans . La Phase 0.5 corrige
 
 📚 `spec.md` US-4.2
 
-- [ ] Action GitHub publiée `atconseil/testvault-action@v1`
+- [ ] Action GitHub publiée `atconseil/argos-action@v1`
 - [ ] Inputs : `pat`, `org-url`, `project`, `plan-id`, `results-file`, `environment`
 - [ ] Exemples documentés dans `docs/integrations/github-actions.md`
 
