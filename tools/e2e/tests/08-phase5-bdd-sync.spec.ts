@@ -7,13 +7,13 @@
 import { writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { processBddSync } from "@atconseil/argos-cli";
 import {
 	featureToTestCases,
 	generateFeature,
 	parseFeature,
 	testCasesToFeature,
 } from "@atconseil/argos-gherkin";
-import { processBddSync } from "@atconseil/testvault-cli";
 import { expect, test } from "../fixtures/index.js";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────

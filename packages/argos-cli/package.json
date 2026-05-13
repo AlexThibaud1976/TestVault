@@ -1,5 +1,5 @@
 {
-	"name": "@atconseil/testvault-cli",
+	"name": "@atconseil/argos-cli",
 	"version": "0.3.4",
 	"private": false,
 	"type": "module",
@@ -8,7 +8,7 @@
 		".": "./dist/index.js"
 	},
 	"bin": {
-		"testvault": "./dist/cli.js"
+		"argos": "./dist/cli.js"
 	},
 	"license": "Apache-2.0",
 	"files": ["dist"],

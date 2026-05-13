@@ -6,6 +6,7 @@
 import { writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { processUploadResults } from "@atconseil/argos-cli";
 import {
 	exportCatalogToExcel,
 	exportCatalogToPdf,
@@ -19,7 +20,6 @@ import {
 	parseNUnit,
 	parseXUnit,
 } from "@atconseil/argos-importers";
-import { processUploadResults } from "@atconseil/testvault-cli";
 import { expect, test } from "../fixtures/index.js";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
