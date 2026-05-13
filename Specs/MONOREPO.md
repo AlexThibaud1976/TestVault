@@ -22,7 +22,7 @@
 | `packages/testvault-types` | Bibliotheque | Types TypeScript + schemas Zod pour les WIT |
 | `packages/testvault-ui` | Bibliotheque | Placeholder vide (export {} uniquement) |
 | `packages/testvault-wit-schema` | Bibliotheque | Definitions des 7 Custom Work Item Types ADO |
-| `tools/azure-pipelines-task` | **Livrable produit** | Azure DevOps Pipeline Task (`testvault-azure-pipelines-task` v1.0.0) |
+| `tools/azure-pipelines-task` | **Livrable produit** | Azure DevOps Pipeline Task (`argos-azure-pipelines-task` v1.0.0) |
 | `tools/e2e` | Tests | Suite Playwright E2E contre ADO Cloud (`testvault-e2e` v0.3.3, 11 specs) |
 | `tools/regression` | Outils dev | Suite de tests regression (13 fichiers, 51 assertions) |
 | `tools/testvault-action` | **Livrable produit** | GitHub Action composite pour Marketplace Actions (TestVault upload results) |
@@ -487,7 +487,7 @@ tools/claude-prompts   -> (documentation, pas de dependency npm)
 - `@atconseil/argos-detection-api`
 - `@atconseil/testvault-ui`
 - `@atconseil/testvault-cli`
-- `@atconseil/testvault-azure-pipelines-task` (livrable produit, pas de consumer interne)
+- `@atconseil/argos-azure-pipelines-task` (livrable produit, pas de consumer interne)
 - `@atconseil/testvault-e2e` (suite de tests, pas de consumer interne)
 - `@atconseil/regression-suite` (suite de tests, pas de consumer interne)
 
@@ -514,7 +514,7 @@ Verifie le 2026-05-12 via `npm view <package> version` :
 
 **Observation factuelle** : 4 packages sont marques `private: false` mais aucun n'est publie sur le registre npm public. La flag `private: false` sur `argosTesting` (argos-extension) est sans consequence car ce package est distribue via Marketplace VSIX et non via npm.
 
-**Note sur `@atconseil/testvault-azure-pipelines-task`** : `private: true`. Les Azure Pipeline Tasks ne se publient PAS sur npm -- elles se publient sur le Marketplace Azure DevOps dans la categorie "Pipeline Tasks" via tfx-cli (distinct de la categorie Extensions hub utilisee par argosTesting). Statut Marketplace a verifier dans un sprint dedie (Sprint 6g).
+**Note sur `@atconseil/argos-azure-pipelines-task`** : `private: true`. Les Azure Pipeline Tasks ne se publient PAS sur npm -- elles se publient sur le Marketplace Azure DevOps dans la categorie "Pipeline Tasks" via tfx-cli (distinct de la categorie Extensions hub utilisee par argosTesting). Renommee en Sprint 6g/7c (2026-05-14) : GUID reel genere, commande shell et vars env alignees post-Sprint 7a.
 
 ---
 
@@ -619,10 +619,10 @@ Les observations suivantes sont des faits constates sans proposition de correcti
 
 | Champ | Valeur |
 |---|---|
-| Nom npm | `@atconseil/testvault-azure-pipelines-task` |
+| Nom npm | `@atconseil/argos-azure-pipelines-task` |
 | Version | 1.0.0 |
 | private | true |
-| Description | (absente dans package.json) |
+| Description | Argos Azure Pipelines task - upload CI test results to Argos test management in Azure DevOps |
 | Role | **Azure DevOps Pipeline Task** (livrable produit) |
 
 **Fichiers source** :

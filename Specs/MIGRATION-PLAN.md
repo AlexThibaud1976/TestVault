@@ -298,7 +298,7 @@ n'est execute dans 015B** -- ce sont des reservations pour des sessions futures.
 | Sprint 6d | Renaming `testvault-importers` -> `argos-importers` | ~25 min | Faible (4 consommateurs, 6 fichiers source) | **DONE 2026-05-13** |
 | Sprint 6e | Renaming `testvault-exporters` -> `argos-exporters` | ~20 min | Faible (3 consommateurs, 4 fichiers source) | **DONE 2026-05-13** |
 | Sprint 6f | Renaming `testvault-gherkin` -> `argos-gherkin` | ~20 min | Faible (4 consommateurs, 5 fichiers source) | **DONE 2026-05-13** -- Jalon : Groupe 1 packages/ 6/8 complet |
-| Sprint 6g | Renaming `testvault-azure-pipelines-task` -> `argos-azure-pipelines-task` | ~30 min | Faible (0 consommateur interne, livrable produit) | Apres 7a |
+| Sprint 6g/7c | Rename + cleanup `testvault-azure-pipelines-task` -> `argos-azure-pipelines-task` (rename + regen GUID + alignement vars/cmd + doc) | ~30 min | Faible (0 consommateur, livrable produit non publie, GUID regenere) | **DONE 2026-05-14** |
 | Sprint 6h | Renaming `testvault-e2e` -> `argos-e2e` | ~15 min | Faible (0 consommateur, package name only, Option A dossier inchange) | **DONE 2026-05-13** -- Bonus: testvault-sdk ref dans ci-main.yml L98 aussi fixee |
 | Sprint 7d | Renaming `tools/testvault-action/` -> `tools/argos-action/` (GitHub Action) | ~25 min | Faible (0 consommateur interne, action composite) | Apres 7a |
 | Sprint 7a | Renaming `testvault-cli` -> `argos-cli` (CLI + binaire + 7 vars env) | ~45 min | Moyen (1 consommateur interne, binaire shell, vars env publiques) | **DONE 2026-05-14** |
@@ -325,6 +325,14 @@ La migration peut s'etaler sur plusieurs jours ou semaines selon les priorites p
 > Apres Sprint 7b, `ALLOWED_LEGACY_NAMES` est vide : tous les packages utilisent `argos-*`.
 > Renaming DES PACKAGES complete. Restent Sprints 6g/7c (azure-pipelines-task) et 7d
 > (testvault-action) qui sont des renamings de DOSSIERS dans `tools/`, pas des packages.
+>
+> **Sprint 6g/7c livre 2026-05-14** : avant-dernier sprint renaming. Trois actions combinees :
+> (1) Rename package npm `testvault-azure-pipelines-task` -> `argos-azure-pipelines-task` (description ajoutee).
+> (2) GUID regenere : placeholder `a1b2c3d4-...` -> vrai GUID v4 `c9e5088e-8f72-438d-8afe-704bedcf95a9`.
+> (3) Alignement post-Sprint 7a : cmd `testvault tc upload-results` -> `argos tc upload-results`,
+> vars env `TESTVAULT_*` -> `ARGOS_*`, task.json textes en ASCII strict (dash `-`, pas d'em-dash).
+> Doc utilisateur `docs/integrations/azure-pipelines.md` aligne (9 occurrences + `$(ARGOS_PLAN_ID)`).
+> Task non publiee sur Marketplace ADO : 0 utilisateur externe impacte. GUID devient immutable a la publication.
 
 **Note sur Sprint 6a** : c'est le sprint le plus risque car `testvault-types` est consomme par
 tous les autres packages. Le recommander en premier (apres les suppressions triviales) permet

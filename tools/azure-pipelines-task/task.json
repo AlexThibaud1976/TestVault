@@ -1,13 +1,13 @@
 {
-	"id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+	"id": "c9e5088e-8f72-438d-8afe-704bedcf95a9",
 	"name": "ArgosUploadResults",
-	"friendlyName": "TestVault — Upload CI Results",
-	"description": "Upload JUnit/Cucumber/NUnit/xUnit/TestNG test results to TestVault (Argos) in Azure DevOps",
+	"friendlyName": "Argos - Upload CI Results",
+	"description": "Upload JUnit/Cucumber/NUnit/xUnit/TestNG test results to Argos test management in Azure DevOps",
 	"helpMarkDown": "See [documentation](https://github.com/AlexThibaud1976/TestVault/blob/main/docs/integrations/azure-pipelines.md)",
 	"category": "Test",
 	"author": "ATConseil",
 	"version": { "Major": 1, "Minor": 0, "Patch": 0 },
-	"instanceNameFormat": "Upload results to TestVault plan $(planId)",
+	"instanceNameFormat": "Upload results to Argos plan $(planId)",
 	"inputs": [
 		{
 			"name": "pat",
@@ -38,7 +38,7 @@
 			"type": "string",
 			"label": "Test Plan ID",
 			"required": true,
-			"helpMarkDown": "TestVault Test Plan work item ID"
+			"helpMarkDown": "Argos Test Plan work item ID"
 		},
 		{
 			"name": "resultsFile",

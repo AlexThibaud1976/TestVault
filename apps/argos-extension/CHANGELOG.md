@@ -1,5 +1,11 @@
 # argos-extension
 
+## 0.4.20
+
+### Patch Changes
+
+- Sprint 6g/7c: rename testvault-azure-pipelines-task to argos + regen GUID + align with Sprint 7a
+
 ## 0.4.19
 
 ### Patch Changes

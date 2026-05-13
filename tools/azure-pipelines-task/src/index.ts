@@ -49,15 +49,15 @@ async function run(): Promise<void> {
 		const inputs = getTaskInputs();
 		const args = buildCliArgs(inputs);
 
-		const cmd = `testvault tc upload-results ${args.map((a) => `"${a}"`).join(" ")}`;
+		const cmd = `argos tc upload-results ${args.map((a) => `"${a}"`).join(" ")}`;
 
 		execSync(cmd, {
 			stdio: "inherit",
 			env: {
 				...process.env,
-				TESTVAULT_PAT: inputs.pat,
-				TESTVAULT_ORG_URL: inputs.orgUrl,
-				TESTVAULT_PROJECT: inputs.project,
+				ARGOS_PAT: inputs.pat,
+				ARGOS_ORG_URL: inputs.orgUrl,
+				ARGOS_PROJECT: inputs.project,
 			},
 		});
 
