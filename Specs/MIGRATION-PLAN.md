@@ -486,3 +486,8 @@ Decision a prendre lors du Sprint 8 en fonction de la maturite percue de l'API i
 > test `ENC-2026-05-14-utf8-validity.test.ts` (2 tests, TextDecoder fatal mode), fix residu Sprint 6c
 > (`packages/argos-sdk/typedoc.json` : `testvault-sdk` -> `argos-sdk`). **53 tests (etait 51).**
 > Lecon : console CP850 a coute 1 journee sur faux mojibakes -- TextDecoder fatal mode valide UTF-8 byte-level.
+> **Sprint 8 livre 2026-05-14** : versioning alignement Changesets fixed mode.
+> Mode `fixed` active : 14 packages dans un seul groupe -- version cible **0.5.0** (signal "nouvelle ere post-rebrand").
+> Racine renommee `testvault@0.3.2` -> `argos@0.5.0`. Exclu : `@atconseil/regression-suite` (0.1.0, outil dev).
+> `task.json` Marketplace ADO version inchangee (1.0.0). Nouveau test `CFG-2026-05-14-fixed-versioning.test.ts` (4 tests).
+> **57 tests maintenant (etait 53).**
