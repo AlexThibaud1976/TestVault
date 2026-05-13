@@ -25,8 +25,11 @@
 | `tools/azure-pipelines-task` | **Livrable produit** | Azure DevOps Pipeline Task (`testvault-azure-pipelines-task` v1.0.0) |
 | `tools/e2e` | Tests | Suite Playwright E2E contre ADO Cloud (`testvault-e2e` v0.3.3, 11 specs) |
 | `tools/regression` | Outils dev | Suite de tests regression (13 fichiers, 51 assertions) |
-| `tools/preflight` | Outils dev | Checklist + script auto-validation manifest |
-| `tools/claude-prompts` | Outils dev | Archive des prompts Claude Code par sprint |
+| `tools/testvault-action` | **Livrable produit** | GitHub Action composite pour Marketplace Actions (TestVault upload results) |
+| `tools/preflight` | Outils dev | Scripts validation manifest VSS + checklist humaine + reference docs |
+| `tools/claude-prompts` | Documentation | Archive des prompts Claude Code apres chaque sprint |
+| `tools/load-testing` | Anticipe Phase 7 | Placeholder structurel (k6 scenarios) -- non implemente |
+| `tools/migration-scripts` | Anticipe migrations WIT | Placeholder structurel -- non implemente |
 | `Specs/` | Specifications | Spec-kit (constitution, spec, plan, tasks, MONOREPO) |
 | `.github/workflows/` | CI/CD | 3 workflows GitHub Actions |
 
@@ -470,6 +473,11 @@ argos-functions      -> testvault-gherkin, testvault-importers, testvault-sdk
 tools/e2e            -> testvault-cli, testvault-exporters (workspace:^), testvault-gherkin, testvault-importers, testvault-sdk
 tools/azure-pipelines-task -> (aucune dependance interne)
 tools/regression     -> (aucune dependance interne)
+tools/testvault-action -> appelle CLI testvault (binaire, pas dependency npm declaree)
+tools/load-testing     -> (placeholder vide)
+tools/migration-scripts -> (placeholder vide)
+tools/preflight        -> (scripts internes, pas de dependency npm)
+tools/claude-prompts   -> (documentation, pas de dependency npm)
 ```
 
 **Packages sans consommateur interne** :
@@ -588,6 +596,13 @@ Les observations suivantes sont des faits constates sans proposition de correcti
 
 11. **TECH-DEBT-015A initial etait incomplet** : 3 packages dans `tools/*` n'avaient pas ete inventories initialement (`azure-pipelines-task`, `e2e`, `regression-suite`). Decouvert Sprint 6b lors du grep des consommateurs. Cause : assimilation incorrecte "packages monorepo" = `packages/` alors que le workspace pnpm englobe aussi `tools/*` via `pnpm-workspace.yaml`. Section "Packages dans tools/" ajoutee 2026-05-13.
 
+12. **TECH-DEBT-015A a ete incomplet 2 fois consecutivement** : initial (audit Sprint 6c) avait oublie
+    `tools/*` complet. Follow-up #1 (Sprint 015A-followup, 2026-05-13) avait inventorie les 3 packages
+    avec package.json (azure-pipelines-task, e2e, regression-suite) mais oublie les 5 dossiers SANS
+    package.json (testvault-action, preflight, claude-prompts, load-testing, migration-scripts). Suite
+    decouverte Sprint 7a investigation, le 2026-05-14. **Lecon racine** : un inventaire monorepo doit
+    lister TOUS les dossiers, pas juste les packages npm. Sections ajoutees 2026-05-14.
+
 ---
 
 ## Packages dans tools/ -- Inventaire detaille (added 2026-05-13)
@@ -693,6 +708,102 @@ Les observations suivantes sont des faits constates sans proposition de correcti
 **Reference CI** : lance par `ci-main.yml` et `ci-pr.yml` via `pnpm --filter @atconseil/regression-suite test`.
 
 **Observation factuelle** : ce package est **argos-agnostique** par son nom (`regression-suite` sans prefixe `testvault-` ni `argos-`). Il n'a pas a etre renomme dans le portfolio migration.
+
+---
+
+## Dossiers utilitaires dans tools/ (added 2026-05-14)
+
+> Note : ces 5 dossiers sont presents dans `tools/` mais ne sont PAS des packages npm
+> (pas de `package.json`). Le glob `tools/*` de `pnpm-workspace.yaml` les englobe mais
+> pnpm les ignore. Ils ont ete oublies a la fois dans TECH-DEBT-015A initial et dans le
+> TECH-DEBT-015A follow-up #1. Lecon : pour un inventaire monorepo complet, lister TOUS
+> les dossiers, pas juste ceux avec package.json.
+
+### tools/testvault-action/
+
+| Champ | Valeur |
+|---|---|
+| Type | GitHub Action composite |
+| Fichier principal | `action.yml` |
+| package.json | aucun (action composite, pas npm) |
+| Role | **Livrable produit** : action GitHub Marketplace pour uploader les resultats CI dans Argos depuis un workflow GitHub Actions |
+
+**Inputs** : pat, org-url, project, plan-id, results-file, environment, auto-create, strict, area-path, cli-version
+
+**Mecanisme** :
+
+1. Installe globalement `@atconseil/testvault-cli@${cli-version}` via npm
+2. Set les variables d'env `TESTVAULT_PAT`, `TESTVAULT_ORG_URL`, `TESTVAULT_PROJECT`
+3. Appelle `testvault tc upload-results <args>` en shell
+
+**Etat connu (2026-05-14)** :
+
+- Encoding verifie : em-dash dans `name:` est UTF-8 valide (E2 80 94 = U+2014). Pas de mojibake detecte.
+- Variables `TESTVAULT_*` a renommer en `ARGOS_*` (decision validee 2026-05-13)
+- Reference `@atconseil/testvault-cli` a remplacer par `@atconseil/argos-cli` apres Sprint 7a
+- Commande shell `testvault` a remplacer par `argos` apres Sprint 7a (rename binaire CLI)
+- **Statut publication** : non publie sur GitHub Marketplace Actions (a confirmer)
+- **Note** : scan-mojibake.cjs ne scanne pas les .yml (TECH-DEBT-025) -- risque residuel non couvert
+
+**Sprint planifie** : **7d** (NEW, ajoute dans MIGRATION-PLAN.md section 1.9)
+
+### tools/load-testing/
+
+| Champ | Valeur |
+|---|---|
+| Type | Placeholder vide |
+| Fichier principal | `.gitkeep` uniquement |
+| Role | **Anticipe** pour Phase 7 -- tests de charge (k6) |
+
+**Reference** : `Specs/plan.md` section 9.8 mentionne k6 scenarios (100 users simultanes, import 10k TC, 1000 webhooks/min burst).
+
+**Etat** : aucun travail effectif. Le dossier sert de **placeholder structurel** cree en Phase 0 (T-0.1 scaffold monorepo).
+
+**Sprint planifie** : aucun a court terme. A activer en Phase 7 (T-7.x).
+
+### tools/migration-scripts/
+
+| Champ | Valeur |
+|---|---|
+| Type | Placeholder vide |
+| Fichier principal | `.gitkeep` uniquement |
+| Role | **Anticipe** pour les migrations de schema WIT (constitution section 9 retrocompatibilite) |
+
+**Reference** : `constitution.md` section 9 retrocompatibilite : "Une migration de schema majeure (vX -> vX+1) est documentee et accompagnee d'un script de migration teste end-to-end sur instance reelle."
+
+**Etat** : aucun travail effectif. Placeholder structurel.
+
+**Sprint planifie** : aucun a court terme. A activer quand une migration WIT majeure sera necessaire (post-GA).
+
+### tools/preflight/
+
+| Champ | Valeur |
+|---|---|
+| Type | Scripts utilitaires + documentation |
+| Contenu | `manifest-check.cjs`, `marketplace-check.md`, `microsoft-docs-snippets.md` |
+| Role | Validation manifest VSS pre-publication |
+
+**Detail des fichiers** :
+
+- `manifest-check.cjs` (5645 bytes) : script auto lance par `pnpm preflight`, valide les 7 regles du manifest VSS (publisher, public, scopes, version, etc.)
+- `marketplace-check.md` (5695 bytes) : checklist humaine de pre-publication Marketplace
+- `microsoft-docs-snippets.md` (4209 bytes) : extraits annotes de la doc Microsoft VSS-Manifest pour reference
+
+**Etat** : operationnel. Le script est lance dans la CI et localement avant chaque release.
+
+**Sprint planifie** : aucun. Pas a renommer (nom de dossier deja argos-agnostic, le contenu est de la documentation/scripts internes).
+
+### tools/claude-prompts/
+
+| Champ | Valeur |
+|---|---|
+| Type | Documentation prompts |
+| Contenu | Archive des `CLAUDE_TASK_*.md` apres chaque sprint (30 fichiers au 2026-05-14) |
+| Role | Tracabilite methodologique : conserver les prompts utilises pour chaque sprint Claude Code |
+
+**Etat** : artefact methodologique. Chaque sprint archive son prompt dans ce dossier.
+
+**Sprint planifie** : aucun. Pas a renommer.
 
 ---
 
