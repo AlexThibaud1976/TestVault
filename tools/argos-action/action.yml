@@ -1,5 +1,5 @@
-name: "TestVault — Upload CI Results"
-description: "Upload JUnit/Cucumber/NUnit/xUnit/TestNG test results to TestVault (Argos) in Azure DevOps"
+name: "Argos - Upload CI Results"
+description: "Upload JUnit/Cucumber/NUnit/xUnit/TestNG test results to Argos test management in Azure DevOps"
 author: "ATConseil"
 
 branding:
@@ -17,7 +17,7 @@ inputs:
     description: "Azure DevOps project name"
     required: true
   plan-id:
-    description: "TestVault Test Plan ID to associate results with"
+    description: "Argos Test Plan ID to associate results with"
     required: true
   results-file:
     description: "Path to the results file (JUnit .xml, Cucumber .json, NUnit .xml, etc.)"
@@ -38,7 +38,7 @@ inputs:
     required: false
     default: ""
   cli-version:
-    description: "Version of @atconseil/testvault-cli to install"
+    description: "Version of @atconseil/argos-cli to install"
     required: false
     default: "latest"
 
@@ -50,19 +50,19 @@ runs:
       with:
         node-version: "22"
 
-    - name: Install TestVault CLI
+    - name: Install Argos CLI
       shell: bash
-      run: npm install -g @atconseil/testvault-cli@${{ inputs.cli-version }}
+      run: npm install -g @atconseil/argos-cli@${{ inputs.cli-version }}
 
     - name: Upload test results
       shell: bash
       env:
-        TESTVAULT_PAT: ${{ inputs.pat }}
-        TESTVAULT_ORG_URL: ${{ inputs.org-url }}
-        TESTVAULT_PROJECT: ${{ inputs.project }}
+        ARGOS_PAT: ${{ inputs.pat }}
+        ARGOS_ORG_URL: ${{ inputs.org-url }}
+        ARGOS_PROJECT: ${{ inputs.project }}
       run: |
         ARGS="--file ${{ inputs.results-file }} --plan-id ${{ inputs.plan-id }} --env ${{ inputs.environment }}"
         if [ "${{ inputs.auto-create }}" = "true" ]; then ARGS="$ARGS --auto-create"; fi
         if [ "${{ inputs.strict }}" = "true" ]; then ARGS="$ARGS --strict"; fi
         if [ -n "${{ inputs.area-path }}" ]; then ARGS="$ARGS --area-path ${{ inputs.area-path }}"; fi
-        testvault tc upload-results $ARGS
+        argos tc upload-results $ARGS

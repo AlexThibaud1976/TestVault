@@ -248,7 +248,7 @@ pour les futurs audits de monorepo.
 l'omission de `tools/*` packages, l'inventaire restait incomplet. 5 dossiers dans `tools/` n'avaient
 pas de package.json et n'avaient pas ete documentes :
 
-- `tools/testvault-action/` (action.yml, GitHub Action composite)
+- `tools/argos-action/` (action.yml, GitHub Action composite) -- ex tools/testvault-action/, renomme Sprint 7d
 - `tools/preflight/` (scripts cjs + docs md)
 - `tools/claude-prompts/` (archive md)
 - `tools/load-testing/` (placeholder .gitkeep)

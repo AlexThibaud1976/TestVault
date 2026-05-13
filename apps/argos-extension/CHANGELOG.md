@@ -1,5 +1,11 @@
 # argos-extension
 
+## 0.4.21
+
+### Patch Changes
+
+- Sprint 7d (final): rename testvault-action to argos-action + rebrand complete
+
 ## 0.4.20
 
 ### Patch Changes

@@ -25,7 +25,7 @@
 | `tools/azure-pipelines-task` | **Livrable produit** | Azure DevOps Pipeline Task (`argos-azure-pipelines-task` v1.0.0) |
 | `tools/e2e` | Tests | Suite Playwright E2E contre ADO Cloud (`testvault-e2e` v0.3.3, 11 specs) |
 | `tools/regression` | Outils dev | Suite de tests regression (13 fichiers, 51 assertions) |
-| `tools/testvault-action` | **Livrable produit** | GitHub Action composite pour Marketplace Actions (TestVault upload results) |
+| `tools/argos-action` | **Livrable produit** | GitHub Action composite pour GitHub Marketplace Actions (Argos upload results) |
 | `tools/preflight` | Outils dev | Scripts validation manifest VSS + checklist humaine + reference docs |
 | `tools/claude-prompts` | Documentation | Archive des prompts Claude Code apres chaque sprint |
 | `tools/load-testing` | Anticipe Phase 7 | Placeholder structurel (k6 scenarios) -- non implemente |
@@ -476,7 +476,7 @@ argos-functions      -> testvault-gherkin, testvault-importers, testvault-sdk
 tools/e2e            -> testvault-cli, testvault-exporters (workspace:^), testvault-gherkin, testvault-importers, testvault-sdk
 tools/azure-pipelines-task -> (aucune dependance interne)
 tools/regression     -> (aucune dependance interne)
-tools/testvault-action -> appelle CLI testvault (binaire, pas dependency npm declaree)
+tools/argos-action -> appelle CLI argos (binaire, pas dependency npm declaree)
 tools/load-testing     -> (placeholder vide)
 tools/migration-scripts -> (placeholder vide)
 tools/preflight        -> (scripts internes, pas de dependency npm)
@@ -602,7 +602,7 @@ Les observations suivantes sont des faits constates sans proposition de correcti
 12. **TECH-DEBT-015A a ete incomplet 2 fois consecutivement** : initial (audit Sprint 6c) avait oublie
     `tools/*` complet. Follow-up #1 (Sprint 015A-followup, 2026-05-13) avait inventorie les 3 packages
     avec package.json (azure-pipelines-task, e2e, regression-suite) mais oublie les 5 dossiers SANS
-    package.json (testvault-action, preflight, claude-prompts, load-testing, migration-scripts). Suite
+    package.json (argos-action -- ex testvault-action, preflight, claude-prompts, load-testing, migration-scripts). Suite
     decouverte Sprint 7a investigation, le 2026-05-14. **Lecon racine** : un inventaire monorepo doit
     lister TOUS les dossiers, pas juste les packages npm. Sections ajoutees 2026-05-14.
 
@@ -722,7 +722,7 @@ Les observations suivantes sont des faits constates sans proposition de correcti
 > TECH-DEBT-015A follow-up #1. Lecon : pour un inventaire monorepo complet, lister TOUS
 > les dossiers, pas juste ceux avec package.json.
 
-### tools/testvault-action/
+### tools/argos-action/
 
 | Champ | Valeur |
 |---|---|
