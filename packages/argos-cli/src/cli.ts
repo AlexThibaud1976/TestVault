@@ -14,9 +14,9 @@ function getRequired(name: string, flagVal: string | undefined, envVar: string):
 }
 
 function makeClient(opts: { pat?: string; orgUrl?: string; project?: string }) {
-	const pat = getRequired("pat", opts.pat, "TESTVAULT_PAT");
-	const orgUrl = getRequired("org-url", opts.orgUrl, "TESTVAULT_ORG_URL");
-	const project = getRequired("project", opts.project, "TESTVAULT_PROJECT");
+	const pat = getRequired("pat", opts.pat, "ARGOS_PAT");
+	const orgUrl = getRequired("org-url", opts.orgUrl, "ARGOS_ORG_URL");
+	const project = getRequired("project", opts.project, "ARGOS_PROJECT");
 	return { client: createAdoClient({ baseUrl: orgUrl, project, pat }), project };
 }
 
@@ -41,7 +41,7 @@ auth
 		const { client, project } = makeClient(opts);
 		const tcSvc = createTestCaseService(client, project);
 		await tcSvc.list({ top: 1 });
-		const orgUrl = getRequired("org-url", opts.orgUrl, "TESTVAULT_ORG_URL");
+		const orgUrl = getRequired("org-url", opts.orgUrl, "ARGOS_ORG_URL");
 		console.log(`✔ Authenticated to ${orgUrl} / ${project}`);
 	});
 
@@ -129,9 +129,9 @@ tc.command("upload-results")
 			autoCreate?: boolean;
 			strict?: boolean;
 		}) => {
-			const pat = getRequired("pat", opts.pat, "TESTVAULT_PAT");
-			const orgUrl = getRequired("org-url", opts.orgUrl, "TESTVAULT_ORG_URL");
-			const project = getRequired("project", opts.project, "TESTVAULT_PROJECT");
+			const pat = getRequired("pat", opts.pat, "ARGOS_PAT");
+			const orgUrl = getRequired("org-url", opts.orgUrl, "ARGOS_ORG_URL");
+			const project = getRequired("project", opts.project, "ARGOS_PROJECT");
 			const summary = await processUploadResults({
 				file: opts.file,
 				planId: Number.parseInt(opts.planId, 10),

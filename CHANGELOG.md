@@ -9,6 +9,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.18] - 2026-05-14
+
+### Changed (Sprint 7a - feat/rename-testvault-cli-to-argos-cli)
+
+- **`@atconseil/testvault-cli` renomme en `@atconseil/argos-cli`** (8eme sprint de la serie renaming).
+- **Binaire shell renomme `testvault` -> `argos`** (changement public, mais 0 utilisateur externe car private:true).
+- **Variables d'env publiques renommees `TESTVAULT_*` -> `ARGOS_*`** (7 occurrences dans cli.ts) :
+  - `TESTVAULT_PAT` -> `ARGOS_PAT`
+  - `TESTVAULT_ORG_URL` -> `ARGOS_ORG_URL`
+  - `TESTVAULT_PROJECT` -> `ARGOS_PROJECT`
+- Modifications :
+  - `packages/testvault-cli/` -> `packages/argos-cli/` (git mv)
+  - `packages/argos-cli/package.json` : champ `name` + champ `bin`
+  - `packages/argos-cli/src/cli.ts` : 7 occurrences vars env
+  - `tools/e2e/package.json` : dependency mise a jour
+  - `tools/e2e/tests/07-phase4-import-export-cli.spec.ts` : import mis a jour
+  - `tools/e2e/tests/08-phase5-bdd-sync.spec.ts` : import mis a jour
+  - `tools/regression/CFG-2026-05-13-package-naming.test.ts` : entree testvault-cli retiree de ALLOWED_LEGACY_NAMES
+
+### Notes (Sprint 7a)
+
+- **Desalignement temporaire et intentionnel** : les 3 livrables externes qui consomment encore
+  le binaire `testvault` et les vars `TESTVAULT_*` restent INALIGNES jusqu'a leurs sprints dedies :
+  - `tools/azure-pipelines-task/src/index.ts` -> Sprint 6g/7c (en attente)
+  - `tools/testvault-action/action.yml` -> Sprint 7d (en attente)
+  - `docs/integrations/azure-pipelines.md` -> Sprint 6g/7c
+  - `docs/integrations/github-actions.md` -> Sprint 7d
+- Apres Sprint 7d, le rebrand argos sera **complet** et coherent.
+- Bump 0.4.17 -> 0.4.18 (patch : rename + env var rename, aucun changement fonctionnel).
+
+### TECH-DEBT actifs (recap Sprint 7a)
+
+- TECH-DEBT-021 : Migration `build:vsix` output-path
+- TECH-DEBT-022 : Cleanup auto artefacts orphelins post-`git mv`
+- TECH-DEBT-024 : Forcer `--force` sur turbo dans validation post-renaming (applique ici)
+- TECH-DEBT-026 : Resync `Specs/tasks.md` avec realite du code (avant Sprint 2.5b)
+- TECH-DEBT-027 NEW : Documenter encoding PowerShell 5.1 + `.gitattributes` (apres renaming complet)
+
+### Backlog renaming (post Sprint 7a)
+
+- Sprint 7b NEXT : `testpulse-ui-shared` -> `argos-detection-api`
+- Sprint 6g/7c : `testvault-azure-pipelines-task` -> `argos-azure-pipelines-task`
+- Sprint 7d : `tools/testvault-action/` -> `tools/argos-action/`
+- Sprint 8 : Versioning alignement (Changesets fixed mode)
+
+---
+
 ## [0.4.17] - 2026-05-14
 
 ### Added (TECH-DEBT-015A follow-up #2 - docs/monorepo-inventory-followup-2)

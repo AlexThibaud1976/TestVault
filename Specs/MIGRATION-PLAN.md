@@ -301,7 +301,7 @@ n'est execute dans 015B** -- ce sont des reservations pour des sessions futures.
 | Sprint 6g | Renaming `testvault-azure-pipelines-task` -> `argos-azure-pipelines-task` | ~30 min | Faible (0 consommateur interne, livrable produit) | Apres 7a |
 | Sprint 6h | Renaming `testvault-e2e` -> `argos-e2e` | ~15 min | Faible (0 consommateur, package name only, Option A dossier inchange) | **DONE 2026-05-13** -- Bonus: testvault-sdk ref dans ci-main.yml L98 aussi fixee |
 | Sprint 7d | Renaming `tools/testvault-action/` -> `tools/argos-action/` (GitHub Action) | ~25 min | Faible (0 consommateur interne, action composite) | Apres 7a |
-| Sprint 7a | Renaming `testvault-cli` -> `argos-cli` | ~30 min | Faible (0 consommateur interne) | Apres Groupe 1 |
+| Sprint 7a | Renaming `testvault-cli` -> `argos-cli` (CLI + binaire + 7 vars env) | ~45 min | Moyen (1 consommateur interne, binaire shell, vars env publiques) | **DONE 2026-05-14** |
 | Sprint 7b | Renaming `testpulse-ui-shared` -> `argos-detection-api` | ~30 min | Faible (0 consommateur interne) | Apres Groupe 1 |
 | Sprint 8 | Realignement versioning + config Changesets | ~30 min | Moyen (version decisions) | Apres Groupe 1+2 |
 | Sprint 9 | Publication npm `argos-cli` et `argos-detection-api` | ~1h | Moyen (config CI, semver, README) | Quand pret commercialement |
@@ -310,6 +310,12 @@ n'est execute dans 015B** -- ce sont des reservations pour des sessions futures.
 La migration peut s'etaler sur plusieurs jours ou semaines selon les priorites produit.
 
 **Chemin critique** : 5a/5b -> 6a -> 6b -> 6c -> (6d, 6e, 6f) -> 6h -> 7a -> (7b, 6g/7c, 7d en parallele apres 7a) -> 8 -> 9.
+
+> **Sprint 7a livre 2026-05-14** : renommage CLI + binaire shell `testvault` -> `argos` +
+> variables d'env publiques `TESTVAULT_*` -> `ARGOS_*` (7 occurrences dans cli.ts).
+> Les 3 consommateurs externes du binaire (tools/azure-pipelines-task, tools/testvault-action,
+> docs/integrations/*) restent INALIGNES jusqu'aux Sprints 6g/7c (task ADO) et 7d (GitHub Action).
+> Ce desalignement est temporaire et intentionnel : les sprints dedies les aligneront.
 
 **Note sur Sprint 6a** : c'est le sprint le plus risque car `testvault-types` est consomme par
 tous les autres packages. Le recommander en premier (apres les suppressions triviales) permet

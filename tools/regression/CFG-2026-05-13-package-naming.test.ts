@@ -46,7 +46,6 @@ const ALLOWED_LEGACY_NAMES = new Set([
 	// Legacy names accepted during the testvault-* -> argos-* migration wave.
 	// Each future sprint will remove its entry as the package is renamed.
 	// See Specs/MIGRATION-PLAN.md (TECH-DEBT-015B section 1.4).
-	"@atconseil/testvault-cli", // Sprint 7a: rename to argos-cli
 	"@atconseil/testpulse-ui-shared", // Sprint 7b: rename to argos-detection-api
 ]);
 

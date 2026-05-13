@@ -127,6 +127,34 @@ importers:
 
   apps/docs-site: {}
 
+  packages/argos-cli:
+    dependencies:
+      '@atconseil/argos-exporters':
+        specifier: workspace:*
+        version: link:../argos-exporters
+      '@atconseil/argos-gherkin':
+        specifier: workspace:*
+        version: link:../argos-gherkin
+      '@atconseil/argos-importers':
+        specifier: workspace:*
+        version: link:../argos-importers
+      '@atconseil/argos-sdk':
+        specifier: workspace:*
+        version: link:../argos-sdk
+      '@atconseil/argos-types':
+        specifier: workspace:*
+        version: link:../argos-types
+      commander:
+        specifier: ^13.0.0
+        version: 13.1.0
+    devDependencies:
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vitest:
+        specifier: ^3.1.0
+        version: 3.2.4(@types/node@22.19.18)(jsdom@25.0.1)(msw@2.14.5(@types/node@22.19.18)(typescript@5.9.3))(yaml@2.8.4)
+
   packages/argos-exporters:
     dependencies:
       '@atconseil/argos-sdk':
@@ -247,34 +275,6 @@ importers:
         specifier: ^3.1.0
         version: 3.2.4(@types/node@22.19.18)(jsdom@25.0.1)(msw@2.14.5(@types/node@22.19.18)(typescript@5.9.3))(yaml@2.8.4)
 
-  packages/testvault-cli:
-    dependencies:
-      '@atconseil/argos-exporters':
-        specifier: workspace:*
-        version: link:../argos-exporters
-      '@atconseil/argos-gherkin':
-        specifier: workspace:*
-        version: link:../argos-gherkin
-      '@atconseil/argos-importers':
-        specifier: workspace:*
-        version: link:../argos-importers
-      '@atconseil/argos-sdk':
-        specifier: workspace:*
-        version: link:../argos-sdk
-      '@atconseil/argos-types':
-        specifier: workspace:*
-        version: link:../argos-types
-      commander:
-        specifier: ^13.0.0
-        version: 13.1.0
-    devDependencies:
-      typescript:
-        specifier: ^5.7.0
-        version: 5.9.3
-      vitest:
-        specifier: ^3.1.0
-        version: 3.2.4(@types/node@22.19.18)(jsdom@25.0.1)(msw@2.14.5(@types/node@22.19.18)(typescript@5.9.3))(yaml@2.8.4)
-
   tools/azure-pipelines-task:
     dependencies:
       azure-pipelines-task-lib:
@@ -293,6 +293,9 @@ importers:
 
   tools/e2e:
     dependencies:
+      '@atconseil/argos-cli':
+        specifier: workspace:*
+        version: link:../../packages/argos-cli
       '@atconseil/argos-exporters':
         specifier: workspace:^
         version: link:../../packages/argos-exporters
@@ -305,9 +308,6 @@ importers:
       '@atconseil/argos-sdk':
         specifier: workspace:*
         version: link:../../packages/argos-sdk
-      '@atconseil/testvault-cli':
-        specifier: workspace:*
-        version: link:../../packages/testvault-cli
     devDependencies:
       '@playwright/test':
         specifier: ^1.49.0

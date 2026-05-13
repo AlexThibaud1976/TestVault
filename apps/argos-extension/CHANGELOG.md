@@ -1,5 +1,23 @@
 # argos-extension
 
+## 0.4.18
+
+### Patch Changes
+
+- Sprint 7a: rename testvault-cli to argos-cli (8th renaming sprint)
+
+## 0.4.17
+
+### Patch Changes
+
+- Sprint 7a: align version with CHANGELOG [0.4.17] (follow-up #2 docs)
+
+## 0.4.16
+
+### Patch Changes
+
+- Sprint 7a: rename testvault-cli to argos-cli (binary + env vars)
+
 ## 0.4.15
 
 ### Patch Changes
