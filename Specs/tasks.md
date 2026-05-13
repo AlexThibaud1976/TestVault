@@ -136,23 +136,24 @@ Ce document liste les tâches d'implémentation par phase. Chaque tâche est **a
 
 ---
 
-### T-0.8 � Manifest ADO-conforme : hub group, scopes, widget coverage-panel 🟡
+### T-0.8 — Manifest ADO-conforme : hub group, scopes, widget coverage-panel 🟡
 
-📚 `plan.md` �2.1 � alignement du manifest `vss-extension.json` avec l'architecture cible
+📚 `plan.md` §2.1 — alignement du manifest `vss-extension.json` avec l'architecture cible
 
-- [x] `scopes` → `[�vso.work_full�, �vso.profile�, �vso.code�, �vso.extension.data_write�, �vso.identity�]`
+- [x] `scopes` → `["vso.work_full", "vso.profile", "vso.code", "vso.extension.data_write", "vso.identity"]`
 - [x] `targets` → `[{ "id": "Microsoft.VisualStudio.Services.Cloud" }]` (Cloud-only, v0.2.0)
 - [x] Hub contribution target → `ms.vss-work-web.work-hub-group` (Boards tab, pas Project hub group)
 - [x] Coverage panel `uri` → `dist/widgets/coverage-panel/index.html`
-- [x] `files` → `{ �path�: �dist�, �addressable�: true }` (packager dist compl�te, y compris widgets/)
-- [x] Cr�er point d'entr�e `src/widgets/coverage-panel/index.tsx` + `index.html` (TDD)
+- [x] `files` → `{ "path": "dist", "addressable": true }` (packager dist complète, y compris widgets/)
+- [x] Créer point d'entrée `src/widgets/coverage-panel/index.tsx` + `index.html` (TDD)
 - [x] Adapter `scripts/build.mjs` pour produire `dist/widgets/coverage-panel/` bundle
 - [x] Bump version `0.1.1`
 - [x] CHANGELOG.md + `docs/operator-guide.md` (section hub groups ADO)
 - [x] CI publish green
 
 **Done quand :**
-- [x] L'onglet Argos appara�t dans Boards (ms.vss-work-web.work-hub-group)
+
+- [x] L'onglet Argos apparaît dans Boards (ms.vss-work-web.work-hub-group)
 - [x] Le panneau Test Coverage s'affiche sur le formulaire Work Item
 - [x] unzip -l argos.vsix liste dist/hub/hub.html et dist/widgets/coverage-panel/index.html
 - [x] CI publish-marketplace.yml verte
@@ -162,14 +163,14 @@ Ce document liste les tâches d'implémentation par phase. Chaque tâche est **a
 ## Phase 0.5 — Dette d'intégration (Sprint 2.5 ?)
 
 Conséquence de l'audit 2026-05-09 : les composants UI riches existent (40+ fichiers
-React + .test.tsx) mais ne sont pas wirés dans . La Phase 0.5 corrige
+React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 ça avant de poursuivre les développements neufs de Phase 1.
 
-- [ ] T-0.5.1 — Inventaire des composants riches non-wirés
-- [ ] T-0.5.2 —  : remplacer les stubs par les composants riches existants (Plans, Cases, Sets, Preconditions, Reports, AI-Config, Audit log, Settings)
-- [ ] T-0.5.3 — Tests de wiring (composant rendu réellement vs stub)
+- [x] T-0.5.1 — Inventaire des composants riches non-wirés (DONE TECH-DEBT-015A)
+- [ ] T-0.5.2 — (App.tsx) : remplacer les stubs par les composants riches existants (Plans, Cases, Sets, Preconditions, Reports, AI-Config, Audit log, Settings) -- PARTIAL : 5/8 sections wirees Sprint 2.5a
+- [x] T-0.5.3 — Tests de wiring (composant rendu réellement vs stub) (DONE Sprint 2.5a : 5 tests WIRING-2026-05-10)
 - [ ] T-0.5.4 — Vérifier accessibility (aria-* sur la sidebar, focus management)
-- [ ] T-0.5.5 — Mettre à jour  avec screenshots du hub réel
+- [ ] T-0.5.5 — Mettre à jour (README.md) avec screenshots du hub réel
 
 ---
 
@@ -182,123 +183,135 @@ React + .test.tsx) mais ne sont pas wirés dans . La Phase 0.5 corrige
 
 📚 `plan.md` §3.2, §3.3, §3.5
 
-- [ ] Créer `packages/testvault-wit-schema/` avec les définitions JSON de chaque Custom WIT
-- [ ] Inclure les champs (référence, type, contraintes), états et transitions, picklists
-- [ ] Générer un fichier `schema.json` exhaustif consommable par le wizard d'installation
-- [ ] Tests : validation que le schéma respecte le format attendu par l'API Process ADO
+- [x] Créer `packages/testvault-wit-schema/` avec les définitions JSON de chaque Custom WIT
+- [x] Inclure les champs (référence, type, contraintes), états et transitions, picklists
+- [x] Générer un fichier `schema.json` exhaustif consommable par le wizard d'installation
+- [x] Tests : validation que le schéma respecte le format attendu par l'API Process ADO
 
 **Done quand :**
-- [ ] Tous les 7 Custom WIT sont définis
-- [ ] Le `schema.json` est exporté
-- [ ] Tests unitaires couvrent la validité du schéma
+
+- [x] Tous les 7 Custom WIT sont définis
+- [x] Le `schema.json` est exporté
+- [x] Tests unitaires couvrent la validité du schéma
 
 ### T-1.2 — Adapter ADO (`IAdoClient`) — opérations CRUD WI 🔴
 
 📚 `plan.md` §2.3
 
-- [ ] Créer `packages/testvault-sdk/src/ado-client.ts` avec interface `IAdoClient`
-- [ ] Implémenter `fetchWorkItem(id)`, `createWorkItem(type, fields)`, `updateWorkItem(id, fields)`, `deleteWorkItem(id)`
-- [ ] Gestion des erreurs ADO standardisée (401, 403, 404, 429, 500) avec mapping vers exceptions typées
-- [ ] Tests d'intégration via msw : tous les codes d'erreur, payload malformé, timeout
+- [x] Créer `packages/testvault-sdk/src/ado-client.ts` avec interface `IAdoClient`
+- [x] Implémenter `fetchWorkItem(id)`, `createWorkItem(type, fields)`, `updateWorkItem(id, fields)`, `deleteWorkItem(id)`
+- [x] Gestion des erreurs ADO standardisée (401, 403, 404, 429, 500) avec mapping vers exceptions typées
+- [x] Tests d'intégration via msw : tous les codes d'erreur, payload malformé, timeout
 
 **Done quand :**
-- [ ] Toutes les opérations CRUD passent les tests msw
-- [ ] Couverture ≥ 90%
+
+- [x] Toutes les opérations CRUD passent les tests msw
+- [x] Couverture ≥ 90%
 
 ### T-1.3 — Wizard d'installation du Custom Process 🔴
 
 📚 `spec.md` US-6.1, `plan.md` §3.1
 
-- [ ] UI du wizard : étapes de détection permissions, choix process, preview, exécution, vérification
-- [ ] Implémentation des appels API Process ADO pour créer/modifier le process
-- [ ] Détection idempotente : un process avec schema TestVault existant n'est pas re-créé
-- [ ] Gestion des erreurs (permissions insuffisantes, conflit de nom, etc.)
-- [ ] Tests E2E sur instance Cloud
+- [x] UI du wizard : étapes de détection permissions, choix process, preview, exécution, vérification
+- [x] Implémentation des appels API Process ADO pour créer/modifier le process
+- [x] Détection idempotente : un process avec schema TestVault existant n'est pas re-créé
+- [x] Gestion des erreurs (permissions insuffisantes, conflit de nom, etc.)
+- [x] Tests E2E sur instance Cloud
 
 **Done quand :**
-- [ ] L'installation depuis zéro fonctionne sur Cloud
-- [ ] L'installation depuis zéro fonctionne sur Cloud
-- [ ] La réinstallation détecte le schéma existant et propose la bonne action
-- [ ] L'utilisateur sans droits voit un message clair sans tentative d'opération qui échouerait
+
+- [x] L'installation depuis zéro fonctionne sur Cloud
+- [x] L'installation depuis zéro fonctionne sur Cloud
+- [x] La réinstallation détecte le schéma existant et propose la bonne action
+- [x] L'utilisateur sans droits voit un message clair sans tentative d'opération qui échouerait
 
 ### T-1.4 — CRUD Test Case (UI + service) 🟡
 
 📚 `spec.md` US-1.1, `plan.md` §3.3
 
-- [ ] Service `TestCaseService` avec : `create`, `read`, `update`, `delete`, `list`
-- [ ] UI : formulaire de création/édition (Fluent UI 2)
-- [ ] Editeur de Steps avec drag & drop, markdown
-- [ ] Validation côté UI : Title obligatoire, Steps array, etc.
-- [ ] Tests unitaires (service) et tests E2E (UI complète)
+- [x] Service `TestCaseService` avec : `create`, `read`, `update`, `delete`, `list`
+- [x] UI : formulaire de création/édition (Fluent UI 2)
+- [x] Editeur de Steps avec drag & drop, markdown
+- [x] Validation côté UI : Title obligatoire, Steps array, etc.
+- [x] Tests unitaires (service) et tests E2E (UI complète)
 
 **Done quand :**
-- [ ] Création d'un TC complet sauvegarde correctement dans ADO
-- [ ] Édition d'un TC existant fonctionne, History ADO préservé
-- [ ] Suppression demande confirmation
-- [ ] Couverture service ≥ 90%
+
+- [x] Création d'un TC complet sauvegarde correctement dans ADO
+- [x] Édition d'un TC existant fonctionne, History ADO préservé
+- [x] Suppression demande confirmation
+- [x] Couverture service ≥ 90%
 
 ### T-1.5 — CRUD Test Set 🟡
 
 📚 `spec.md` US-1.2
 
-- [ ] Service `TestSetService` (composition statique + composition dynamique via WIQL sauvegardée)
-- [ ] UI : ajout par sélection multiple, drag-and-drop, query WIQL
-- [ ] Lien `contains` Test Set ↔ Test Case (n-n)
-- [ ] Tests
+- [x] Service `TestSetService` (composition statique + composition dynamique via WIQL sauvegardée)
+- [x] UI : ajout par sélection multiple, drag-and-drop, query WIQL
+- [x] Lien `contains` Test Set ↔ Test Case (n-n)
+- [x] Tests
 
 **Done quand :**
-- [ ] Composition statique fonctionne
-- [ ] Composition dynamique via WIQL fonctionne
-- [ ] La suppression d'un Set ne supprime pas les TC contenus
+
+- [x] Composition statique fonctionne
+- [x] Composition dynamique via WIQL fonctionne
+- [x] La suppression d'un Set ne supprime pas les TC contenus
 
 ### T-1.6 — CRUD Test Plan 🟡
 
 📚 `spec.md` US-1.3
 
-- [ ] Service `TestPlanService`
-- [ ] UI : formulaire avec Test Sets + TC supplémentaires + Environments
-- [ ] État `Draft` initial, transition vers `Locked` (cf. T-3.x pour le snapshot auto au lock)
-- [ ] Tests
+- [x] Service `TestPlanService`
+- [x] UI : formulaire avec Test Sets + TC supplémentaires + Environments
+- [x] État `Draft` initial, transition vers `Locked` (cf. T-3.x pour le snapshot auto au lock)
+- [x] Tests
 
 **Done quand :**
-- [ ] Création de plan avec mix Test Sets + TC fonctionne
-- [ ] L'état `Locked` est implémenté (snapshot auto déférré à la phase 3)
+
+- [x] Création de plan avec mix Test Sets + TC fonctionne
+- [x] L'état `Locked` est implémenté (snapshot auto déférré à la phase 3)
 
 ### T-1.7 — CRUD Precondition 🟢
 
 📚 `spec.md` US-1.5
 
-- [ ] Service + UI similaires aux précédents
-- [ ] Lien `precondition-of` bidirectionnel
-- [ ] Tests
+- [x] Service + UI similaires aux précédents
+- [x] Lien `precondition-of` bidirectionnel
+- [x] Tests
 
 **Done quand :**
-- [ ] Une Precondition peut être liée à N TC
-- [ ] La consultation d'un TC affiche ses Preconditions liées
+
+- [x] Une Precondition peut être liée à N TC
+- [x] La consultation d'un TC affiche ses Preconditions liées
 
 ### T-1.8 — Hub Argos avec navigation 🟡
 
 📚 `spec.md` §7.1
 
-- [ ] Layout du Hub avec navigation latérale (Plans, Cases, Sets, Preconditions, Reports, Settings)
-- [ ] Vue par défaut : liste des Test Plans actifs + Failed récents
-- [ ] Recherche globale (basique en phase 1, enrichie en phase 4)
+- [x] Layout du Hub avec navigation latérale (Plans, Cases, Sets, Preconditions, Reports, Settings)
+- [x] Vue par défaut : liste des Test Plans actifs + Failed récents
+- [x] Recherche globale (basique en phase 1, enrichie en phase 4)
 
 **Done quand :**
-- [ ] Le wireframe `spec.md` §7.1 est implémenté à l'identique fonctionnel
-- [ ] Navigation entre les vues fluide (< 500ms)
+
+- [x] Le wireframe `spec.md` §7.1 est implémenté à l'identique fonctionnel (architecture multi-hubs Sprint 4)
+- [x] Navigation entre les vues fluide (< 500ms)
 
 ### T-1.9 — Tests E2E phase 1 sur Cloud + Server 🔴
 
 📚 `plan.md` §9.4
 
-- [ ] Mettre en place les 2 instances ADO de test (Cloud `argos-test.dev.azure.com` + Server `argos-test-server.atconseil.io`)
-- [ ] Suite E2E couvrant : install Custom Process, CRUD complet TC/Plan/Set/Precondition
-- [ ] Intégration au workflow `ci-main.yml`
+- [x] Mettre en place les 2 instances ADO de test : Cloud DONE (`argos-test.dev.azure.com`), Server OBSOLETE depuis v0.2.0
+- [x] Suite E2E couvrant : install Custom Process, CRUD complet TC/Plan/Set/Precondition (11 specs files)
+- [x] Intégration au workflow `ci-main.yml`
 
 **Done quand :**
-- [ ] La suite E2E passe verte sur les 2 instances
-- [ ] Le temps total d'exécution < 15 min
+
+- [x] La suite E2E passe verte sur Cloud (Server OBSOLETE -- Cloud-only depuis v0.2.0)
+- [x] Le temps total d'exécution < 15 min
+
+> **Note 2026-05-14 (TECH-DEBT-026)** : La mention "Server" est OBSOLETE depuis Sprint 0.2.0
+> (décision Cloud-only). T-1.9 est considéré DONE pour Cloud uniquement. Voir TECH-DEBT-031.
 
 ---
 
@@ -980,7 +993,7 @@ T-7.1 → T-7.2 → T-7.3, T-7.4, T-7.5 → T-7.6 → T-7.7 → T-7.8 → T-7.9 
 
 ---
 
-> � **Cross-references :** voir `constitution.md` v0.3.0 pour les contraintes immuables. `spec.md` v0.1.0 pour le détail fonctionnel. `plan.md` v0.1.0 pour l'architecture technique.
+> — **Cross-references :** voir `constitution.md` v0.3.0 pour les contraintes immuables. `spec.md` v0.1.0 pour le détail fonctionnel. `plan.md` v0.1.0 pour l’architecture technique.
 
-> ⚠� Toute modification de ce document requiert l'approbation explicite d'Alexandre Thibaud (ATConseil — atconseil.info).
+> ⚠️ Toute modification de ce document requiert l’approbation explicite d’Alexandre Thibaud (ATConseil — atconseil.info).
 

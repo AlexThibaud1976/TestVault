@@ -491,3 +491,8 @@ Decision a prendre lors du Sprint 8 en fonction de la maturite percue de l'API i
 > Racine renommee `testvault@0.3.2` -> `argos@0.5.0`. Exclu : `@atconseil/regression-suite` (0.1.0, outil dev).
 > `task.json` Marketplace ADO version inchangee (1.0.0). Nouveau test `CFG-2026-05-14-fixed-versioning.test.ts` (4 tests).
 > **57 tests maintenant (etait 53).**
+> **TECH-DEBT-026 livre 2026-05-14** : Audit resync Specs/tasks.md Phase 0/0.5/1.
+> Phase 0 : 100% DONE confirme (deja cochee). Phase 0.5 : 2/5 DONE (T-0.5.1, T-0.5.3), 1 PARTIAL (T-0.5.2), 2 NOT-DONE (T-0.5.4, T-0.5.5).
+> Phase 1 : 100% DONE (etait 0/59 cochee -- massif desalignement corrige). `Specs/audit-resync-2026-05-14.md` cree.
+> Corrections encoding U+FFFD dans T-0.8 (6 lignes) + refs cassees Phase 0.5 (App.tsx, README.md).
+> Phases 2-7 reportees a un sprint dedie futur. 3 TECH-DEBT identifies : 030 (scan U+FFFD), 031 (T-1.9 Server obsolete), 032 (refs cassees).
