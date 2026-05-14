@@ -2,7 +2,7 @@ import type { WitDefinition } from "../model.js";
 
 export const TEST_EXECUTION_WIT: WitDefinition = {
 	referenceName: "TestVault.TestExecution",
-	displayName: "Test Execution (Argos)",
+	displayName: "TestVault Test Execution",
 	description:
 		"Immutable record of a single test run against a Test Case. Never modified after save.",
 	icon: "icon-run",
@@ -81,7 +81,7 @@ export const TEST_EXECUTION_WIT: WitDefinition = {
 		},
 		{
 			referenceName: "TestVault.DurationSeconds",
-			displayName: "Duration (seconds)",
+			displayName: "Duration Seconds",
 			type: "integer",
 			required: false,
 		},

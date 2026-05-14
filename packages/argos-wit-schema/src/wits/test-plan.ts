@@ -2,7 +2,7 @@ import type { WitDefinition } from "../model.js";
 
 export const TEST_PLAN_WIT: WitDefinition = {
 	referenceName: "TestVault.TestPlan",
-	displayName: "Test Plan (Argos)",
+	displayName: "TestVault Test Plan",
 	description: "Groups Test Sets and individual Test Cases for a release or sprint.",
 	icon: "icon-list",
 	color: "#773b93",

@@ -2,7 +2,7 @@ import type { WitDefinition } from "../model.js";
 
 export const TEST_CASE_VERSION_WIT: WitDefinition = {
 	referenceName: "TestVault.TestCaseVersion",
-	displayName: "Test Case Version (Argos)",
+	displayName: "TestVault Test Case Version",
 	description: "Immutable snapshot of a Test Case at a specific point in time.",
 	icon: "icon-tag",
 	color: "#5c2d91",
