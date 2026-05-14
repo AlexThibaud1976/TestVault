@@ -366,6 +366,44 @@ Toute publication sur le Marketplace exige que **TOUS** les points suivants soie
 
 ---
 
+## 12. Architecture extension vs Process API
+
+> Verifie et documente 2026-05-15 (Sprint 2.5f-fix, TECH-DEBT-041).
+
+L'extension Argos **NE PEUT PAS** appeler la Process API d'Azure DevOps.
+
+Preuves :
+
+- Liste officielle scopes extension ADO : aucun `vso.process_*` n'existe
+- Test Marketplace argos@0.5.4 : echec "Cannot mix uri based and modern scopes: 'vso.process_write'"
+- Doc Microsoft : Process API necessite OAuth user-context complet (admin avec PAT)
+
+### Consequence
+
+Toute installation ou modification de Custom WIT, fields, states, etc. doit etre deleguee a un installer externe.
+
+- **argos-cli** est l'installer officiel (D66-A, 2026-05-15)
+- L'extension fait : detection (via `wit/workitemtypes` API, scope `vso.work`) + guidance (UI wizard)
+- L'extension ne fait **PAS** : install, modify process, modify WIT schema
+
+### Regles non-negociables
+
+- Ne **JAMAIS** ajouter le scope `vso.process_write` au manifest (n'existe pas)
+- Ne **JAMAIS** appeler directement `/work/processes` API depuis l'extension
+- Ne **JAMAIS** appeler la Process API via `accessTokenFactory` de l'extension sandbox
+- Detection WIT via `/{org}/{project}/_apis/wit/workitemtypes` (scope `vso.work`) uniquement
+
+### Scopes d'extension ADO valides
+
+Extraits de la documentation officielle Microsoft :
+`vso.work`, `vso.work_full`, `vso.code`, `vso.code_full`, `vso.test`, `vso.profile`,
+`vso.extension`, `vso.extension.data`, `vso.extension.data_write`, `vso.gallery`,
+`vso.notification`, `vso.packaging`, `vso.release`, `vso.identity`
+
+Aucun `vso.process_*`.
+
+---
+
 ## Sprint 3.4 (v0.3.5) — Architecture hub-group dedie
 
 - 2026-05-11 : Refonte architecture top-level placement. Sprint 3 utilisait `ms.vss-web.project-hub-group` comme target, un ID invente sans verification doc Microsoft (3eme fausse premisse de la chaine). L'extension etait installee dans BCEE-QA mais le hub n'apparaissait pas (silent failure runtime ADO).

@@ -71,6 +71,7 @@ export const SHARED_DOC_ALLOWLIST: ReadonlySet<string> = new Set([
 	"tools/claude-prompts/CLAUDE_TASK_sprint-6h.md",
 	"tools/claude-prompts/CLAUDE_TASK_sprint-2-5d.md",
 	"tools/claude-prompts/CLAUDE_TASK_sprint-2-5e.md",
+	"tools/claude-prompts/CLAUDE_TASK_sprint-2-5f-fix.md",
 	"Specs/COMMERCIAL.md",
 ]);
 

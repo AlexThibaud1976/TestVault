@@ -208,26 +208,30 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Toutes les opérations CRUD passent les tests msw
 - [x] Couverture ≥ 90%
 
-### T-1.3 — Wizard d'installation du Custom Process 🔴
+### T-1.3 — Wizard d'installation du Custom Process [PIVOT 2026-05-15]
+
+> ARCHITECTURE PIVOT : Microsoft ne permet pas aux extensions ADO d'appeler Process API.
+> Scope vso.process_write n'existe pas. Install Custom WIT deleguee a argos-cli (D66-A).
+> Voir Sprint 2.6 pour argos-cli install command.
 
 📚 `spec.md` US-6.1, `plan.md` §3.1
 
-- [x] UI du wizard : étapes de détection permissions, choix process, preview, exécution, vérification
-- [x] Implémentation des appels API Process ADO pour créer/modifier le process
-- [x] Détection idempotente : un process avec schema TestVault existant n'est pas re-créé
-- [x] Gestion des erreurs (permissions insuffisantes, conflit de nom, etc.)
+- [ ] UI du wizard : auto-install depuis extension (DEFERRED to argos-cli Sprint 2.6)
+- [ ] Implementation appels API Process ADO (DEFERRED to argos-cli Sprint 2.6 -- impossible depuis extension)
+- [x] Detection idempotente : schema-reader via wit/workitemtypes API (Sprint 2.5e + 2.5f-fix)
 - [x] Wire dans App.tsx : InstallationGuard + GetStartedView + LimitedModeBanner (Sprint 2.5e)
-- [x] detection au boot via processInstallService.detectInstallState() (Sprint 2.5e)
+- [x] Detection au boot via detectInstalled() -- scope vso.work, fonctionne (Sprint 2.5f-fix)
 - [x] Banner Limited Mode si user skip install (Sprint 2.5e)
-- [x] Tests wiring (3 fichiers WIRING-2026-05-15-installation-guard/get-started-wizard/limited-mode-banner) (Sprint 2.5e)
+- [x] Tests wiring (3 fichiers WIRING-2026-05-15) (Sprint 2.5e + 2.5f-fix)
+- [x] GetStartedView 3 steps : Welcome / Detection / InstallGuide vers argos-cli (Sprint 2.5f-fix)
 - [ ] Tests E2E sur instance Cloud reelle (TECH-DEBT-019 -- jamais fait)
 
 **Done quand :**
 
-- [x] L'installation depuis zéro fonctionne sur Cloud
-- [x] La réinstallation détecte le schéma existant et propose la bonne action
-- [x] L'utilisateur sans droits voit un message clair sans tentative d'opération qui échouerait
-- [ ] E2E reel validé sur instance ADO test (TECH-DEBT-019)
+- [ ] L'installation depuis zero fonctionne via argos-cli (Sprint 2.6)
+- [x] La detection detecte le schema existant via wit/workitemtypes API
+- [x] L'utilisateur sans schema installe voit guide vers argos-cli
+- [ ] E2E reel valide sur instance ADO test (TECH-DEBT-019)
 
 ### T-1.4 — CRUD Test Case (UI + service) 🟡
 

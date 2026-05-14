@@ -5,7 +5,6 @@ import {
 	type IEvidenceUploadService,
 	type IExtensionDataClient,
 	type IPreconditionService,
-	type IProcessInstallService,
 	type ITestCaseService,
 	type ITestCaseVersionService,
 	type ITestExecutionService,
@@ -17,7 +16,6 @@ import {
 	createEnvironmentConfigService,
 	createEvidenceUploadService,
 	createPreconditionService,
-	createProcessInstallService,
 	createTestCaseService,
 	createTestCaseVersionService,
 	createTestExecutionService,
@@ -61,10 +59,32 @@ export interface Services {
 	connectivityService: IConnectivityService;
 	quotaSettingsService: IQuotaSettingsService;
 	flakinessReportService: IFlakinessReportService;
-	processInstallService: IProcessInstallService;
 	extensionDataClient: IExtensionDataClient;
+	detectInstalled: () => Promise<boolean>;
+	baseUrl: string;
 	project: string;
 	organization: string;
+}
+
+async function checkArgosInstalled(
+	orgUrl: string,
+	project: string,
+	accessTokenFactory: () => Promise<string>
+): Promise<boolean> {
+	const url = `${orgUrl}/${encodeURIComponent(project)}/_apis/wit/workitemtypes?api-version=7.1`;
+	try {
+		const res = await fetch(url, {
+			headers: {
+				Authorization: `Bearer ${await accessTokenFactory()}`,
+				Accept: "application/json",
+			},
+		});
+		if (!res.ok) return false;
+		const data = (await res.json()) as { value: Array<{ referenceName: string }> };
+		return data.value.some((t) => t.referenceName === "TestVault.TestCase");
+	} catch {
+		return false;
+	}
 }
 
 export function buildServices(ctx: AdoContext): Services {
@@ -81,11 +101,6 @@ export function buildServices(ctx: AdoContext): Services {
 	const llmProviderService = createLlmProviderService(aiStore);
 
 	const testExecutionService = createTestExecutionService(adoClient, ctx.project);
-
-	const processInstallService = createProcessInstallService({
-		orgUrl: ctx.baseUrl,
-		getAuthHeader: async () => `Bearer ${await ctx.accessTokenFactory()}`,
-	});
 
 	const webhookAdminServiceStub: IWebhookAdminService = {
 		listTokens: () => Promise.resolve([]),
@@ -130,8 +145,9 @@ export function buildServices(ctx: AdoContext): Services {
 		connectivityService: createBrowserConnectivityService(),
 		quotaSettingsService: quotaSettingsServiceStub,
 		flakinessReportService: flakinessReportServiceStub,
-		processInstallService,
 		extensionDataClient: dataClient,
+		detectInstalled: () => checkArgosInstalled(ctx.baseUrl, ctx.project, ctx.accessTokenFactory),
+		baseUrl: ctx.baseUrl,
 		project: ctx.project,
 		organization: ctx.organization,
 	};
