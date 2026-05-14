@@ -3,6 +3,7 @@
 	"id": "ArgosTesting",
 	"publisher": "AlexThibaud",
 	"version": "0.5.3",
+	"galleryFlags": ["Preview", "Private"],
 	"name": "ArgosTesting",
 	"description": "Industrial-grade test management for Azure DevOps — native Custom Work Items, AI-assisted, Cloud-only.",
 	"targets": [
