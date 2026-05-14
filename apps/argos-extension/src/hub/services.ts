@@ -3,7 +3,9 @@ import {
 	type IBugCreationService,
 	type IEnvironmentConfigService,
 	type IEvidenceUploadService,
+	type IExtensionDataClient,
 	type IPreconditionService,
+	type IProcessInstallService,
 	type ITestCaseService,
 	type ITestCaseVersionService,
 	type ITestExecutionService,
@@ -15,6 +17,7 @@ import {
 	createEnvironmentConfigService,
 	createEvidenceUploadService,
 	createPreconditionService,
+	createProcessInstallService,
 	createTestCaseService,
 	createTestCaseVersionService,
 	createTestExecutionService,
@@ -58,6 +61,8 @@ export interface Services {
 	connectivityService: IConnectivityService;
 	quotaSettingsService: IQuotaSettingsService;
 	flakinessReportService: IFlakinessReportService;
+	processInstallService: IProcessInstallService;
+	extensionDataClient: IExtensionDataClient;
 	project: string;
 	organization: string;
 }
@@ -76,6 +81,11 @@ export function buildServices(ctx: AdoContext): Services {
 	const llmProviderService = createLlmProviderService(aiStore);
 
 	const testExecutionService = createTestExecutionService(adoClient, ctx.project);
+
+	const processInstallService = createProcessInstallService({
+		orgUrl: ctx.baseUrl,
+		getAuthHeader: async () => `Bearer ${await ctx.accessTokenFactory()}`,
+	});
 
 	const webhookAdminServiceStub: IWebhookAdminService = {
 		listTokens: () => Promise.resolve([]),
@@ -120,6 +130,8 @@ export function buildServices(ctx: AdoContext): Services {
 		connectivityService: createBrowserConnectivityService(),
 		quotaSettingsService: quotaSettingsServiceStub,
 		flakinessReportService: flakinessReportServiceStub,
+		processInstallService,
+		extensionDataClient: dataClient,
 		project: ctx.project,
 		organization: ctx.organization,
 	};

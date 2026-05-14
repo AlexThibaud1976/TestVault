@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Sprint 2.5e 2026-05-15 -- First Run Wizard + Custom WIT Install (v0.5.4)
+
+**CRITICAL fix : bug VS402323 (WorkItemTypeNotFoundException) decouvert apres install 0.5.3 sur instance ADO.**
+
+Cause : SDK `process-install.ts` complet et teste, mais JAMAIS invoque depuis l'UI. Argos 0.5.3 ne pouvait rien sauvegarder.
+
+**Architecture new : InstallationGuard dans AppInner**
+
+- `vss-extension.json` : ajout scope `vso.process_write` (reauthorization requise upgrade 0.5.3 -> 0.5.4)
+- `services.ts` : `processInstallService` (createProcessInstallService SDK) + `extensionDataClient` exposes
+- `App.tsx` : `AppInner` exported, InstallationGuard logic integre
+  - Detection au boot via `processInstallService.detectInstallState()`
+  - Redirect vers `GetStartedView` si WIT absents (not-installed / partial)
+  - `LimitedModeBanner` + `fieldset disabled` si user skip
+  - Flag skip persiste via `extensionDataClient` (cle "argos:install:skipped")
+- `views/GetStartedView.tsx` NEW : wizard Welcome + Detection + Install (via InstallWizard)
+- `views/LimitedModeBanner.tsx` NEW : banner warning Fluent UI 2 avec bouton "Install now"
+- `installation-context.tsx` NEW : context React `canCreate: boolean`
+- Views (PlansView/CasesView/SetsView/PreconditionsView) : fieldset disabled wrappers
+
+**3 nouveaux tests wiring (10 assertions) :**
+
+- `WIRING-2026-05-15-installation-guard.test.tsx` (4 tests)
+- `WIRING-2026-05-15-get-started-wizard.test.tsx` (4 tests)
+- `WIRING-2026-05-15-limited-mode-banner.test.tsx` (2 tests)
+
+**T-1.3 partiellement re-checke :**
+
+- T-1.3 "Tests E2E sur instance Cloud" DECOCHE (jamais fait, audit Phase 0-7 avait marque faussement DONE)
+- T-1.3 wiring UI COCHE (fait ce sprint)
+- TECH-DEBT-019 reste critique (E2E reel ADO Cloud)
+
+**LECON : tests unitaires verts != produit fonctionnel.** SDK + unit tests passes ne suffisent pas. E2E reel indispensable.
+
+**Totaux apres Sprint 2.5e :** 359 tests / 54 fichiers de test / 20 packages. Preflight PASSED argos@0.5.4.
+
+---
+
 ### Sprint 2.5d 2026-05-15 -- Wiring Phase 5+6+7 (v0.5.3) -- DERNIER SPRINT WIRING
 
 **8 composants Phase 5+6+7 wires dans App.tsx :**

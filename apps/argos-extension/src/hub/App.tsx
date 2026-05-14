@@ -1,8 +1,9 @@
-import type { MatrixInput } from "@atconseil/argos-sdk";
+import type { MatrixInput, ProcessInstallState } from "@atconseil/argos-sdk";
 import type { TestVaultTestCase } from "@atconseil/argos-types";
 import {
 	Button,
 	FluentProvider,
+	Spinner,
 	Tab,
 	TabList,
 	Text,
@@ -32,7 +33,10 @@ import { TestPlanForm } from "./TestPlanForm.js";
 import { TestSetForm } from "./TestSetForm.js";
 import { WebhookAdmin } from "./WebhookAdmin.js";
 import { WorkItemLinkPanel } from "./WorkItemLinkPanel.js";
+import { InstallationContext, useInstallationContext } from "./installation-context.js";
 import { ServicesProvider, useServices } from "./services-context.js";
+import { GetStartedView } from "./views/GetStartedView.js";
+import { LimitedModeBanner } from "./views/LimitedModeBanner.js";
 
 type Section = "plans" | "cases" | "sets" | "preconditions" | "reports" | "settings";
 
@@ -104,6 +108,7 @@ function SnapshotTab() {
 
 export function PlansView() {
 	const { testPlanService, project } = useServices();
+	const { canCreate } = useInstallationContext();
 	const [tab, setTab] = useState<"details" | "run" | "snapshots">("details");
 	const [importOpen, setImportOpen] = useState(false);
 	return (
@@ -125,9 +130,11 @@ export function PlansView() {
 				<Tab value="run">Run</Tab>
 				<Tab value="snapshots">Snapshots</Tab>
 			</TabList>
-			{tab === "details" && <TestPlanForm service={testPlanService} project={project} />}
-			{tab === "run" && <RunTab />}
-			{tab === "snapshots" && <SnapshotTab />}
+			<fieldset disabled={!canCreate} style={{ border: "none", padding: 0, margin: 0 }}>
+				{tab === "details" && <TestPlanForm service={testPlanService} project={project} />}
+				{tab === "run" && <RunTab />}
+				{tab === "snapshots" && <SnapshotTab />}
+			</fieldset>
 			{importOpen && (
 				<div data-testid="import-wizard-dialog">
 					<ImportWizard onImport={() => setImportOpen(false)} />
@@ -141,6 +148,7 @@ type CasesTab = "details" | "executions" | "traceability" | "gherkin";
 
 export function CasesView() {
 	const { testCaseService, testExecutionService, workItemLinkService, project } = useServices();
+	const { canCreate } = useInstallationContext();
 	const [tab, setTab] = useState<CasesTab>("details");
 	const [aiOpen, setAiOpen] = useState(false);
 	const [aiCandidates] = useState<TcCandidate[]>([]);
@@ -163,16 +171,20 @@ export function CasesView() {
 				<Tab value="traceability">Traceability</Tab>
 				<Tab value="gherkin">Gherkin</Tab>
 			</TabList>
-			{tab === "details" && <TestCaseForm service={testCaseService} project={project} />}
-			{tab === "executions" && (
-				<ExecutionHistory
-					testCaseId={0}
-					executionService={testExecutionService}
-					availableEnvironments={[]}
-				/>
-			)}
-			{tab === "traceability" && <WorkItemLinkPanel testCaseId={0} service={workItemLinkService} />}
-			{tab === "gherkin" && <GherkinEditor value={gherkinValue} onChange={setGherkinValue} />}
+			<fieldset disabled={!canCreate} style={{ border: "none", padding: 0, margin: 0 }}>
+				{tab === "details" && <TestCaseForm service={testCaseService} project={project} />}
+				{tab === "executions" && (
+					<ExecutionHistory
+						testCaseId={0}
+						executionService={testExecutionService}
+						availableEnvironments={[]}
+					/>
+				)}
+				{tab === "traceability" && (
+					<WorkItemLinkPanel testCaseId={0} service={workItemLinkService} />
+				)}
+				{tab === "gherkin" && <GherkinEditor value={gherkinValue} onChange={setGherkinValue} />}
+			</fieldset>
 			{aiOpen && (
 				<div data-testid="ai-candidates-dialog">
 					<AiCandidatesModal
@@ -189,24 +201,30 @@ export function CasesView() {
 
 export function SetsView() {
 	const { testSetService, project } = useServices();
+	const { canCreate } = useInstallationContext();
 	return (
 		<div data-testid="view-sets">
 			<Text as="h2" size={500} weight="semibold" block style={{ marginBottom: "12px" }}>
 				Test Sets
 			</Text>
-			<TestSetForm service={testSetService} project={project} />
+			<fieldset disabled={!canCreate} style={{ border: "none", padding: 0, margin: 0 }}>
+				<TestSetForm service={testSetService} project={project} />
+			</fieldset>
 		</div>
 	);
 }
 
 export function PreconditionsView() {
 	const { preconditionService, project } = useServices();
+	const { canCreate } = useInstallationContext();
 	return (
 		<div data-testid="view-preconditions">
 			<Text as="h2" size={500} weight="semibold" block style={{ marginBottom: "12px" }}>
 				Preconditions
 			</Text>
-			<PreconditionForm service={preconditionService} project={project} />
+			<fieldset disabled={!canCreate} style={{ border: "none", padding: 0, margin: 0 }}>
+				<PreconditionForm service={preconditionService} project={project} />
+			</fieldset>
 		</div>
 	);
 }
@@ -276,14 +294,61 @@ function HubContent({ section }: { section: Section }) {
 	}
 }
 
-function AppInner({ section }: { section: Section }) {
-	const { connectivityService } = useServices();
+export function AppInner({ section }: { section: Section }) {
+	const { processInstallService, connectivityService, extensionDataClient } = useServices();
+	const [installState, setInstallState] = useState<ProcessInstallState | null>(null);
+	const [userSkipped, setUserSkipped] = useState(false);
+
+	useEffect(() => {
+		extensionDataClient
+			.getValue<boolean>("argos:install:skipped")
+			.then((val) => {
+				if (val) setUserSkipped(true);
+			})
+			.catch(() => {});
+		processInstallService
+			.detectInstallState()
+			.then(setInstallState)
+			.catch((err: unknown) => console.error("Install detection failed", err));
+	}, [processInstallService, extensionDataClient]);
+
+	if (installState === null) {
+		return (
+			<div style={{ padding: 32, textAlign: "center" }}>
+				<Spinner label="Detecting Argos installation..." />
+			</div>
+		);
+	}
+
+	const needsInstall = installState.status === "not-installed" || installState.status === "partial";
+
+	function handleSkip() {
+		setUserSkipped(true);
+		extensionDataClient.setValue("argos:install:skipped", true).catch(() => {});
+	}
+
+	if (needsInstall && !userSkipped) {
+		return (
+			<GetStartedView
+				initialState={installState}
+				service={processInstallService}
+				onComplete={() => processInstallService.detectInstallState().then(setInstallState)}
+				onSkip={handleSkip}
+			/>
+		);
+	}
+
 	return (
 		<>
 			<OfflineBanner connectivity={connectivityService} />
-			<div style={{ padding: "24px", fontFamily: "Segoe UI, sans-serif" }}>
-				<HubContent section={section} />
-			</div>
+			{needsInstall && userSkipped && (
+				<LimitedModeBanner onInstallNow={() => setUserSkipped(false)} />
+			)}
+			<InstallationContext.Provider value={{ canCreate: !needsInstall }}>
+				<div style={{ padding: "24px", fontFamily: "Segoe UI, sans-serif" }}>
+					<HubContent section={section} />
+				</div>
+			</InstallationContext.Provider>
 		</>
 	);
 }

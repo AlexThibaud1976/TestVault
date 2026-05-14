@@ -216,14 +216,18 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Implémentation des appels API Process ADO pour créer/modifier le process
 - [x] Détection idempotente : un process avec schema TestVault existant n'est pas re-créé
 - [x] Gestion des erreurs (permissions insuffisantes, conflit de nom, etc.)
-- [x] Tests E2E sur instance Cloud
+- [x] Wire dans App.tsx : InstallationGuard + GetStartedView + LimitedModeBanner (Sprint 2.5e)
+- [x] detection au boot via processInstallService.detectInstallState() (Sprint 2.5e)
+- [x] Banner Limited Mode si user skip install (Sprint 2.5e)
+- [x] Tests wiring (3 fichiers WIRING-2026-05-15-installation-guard/get-started-wizard/limited-mode-banner) (Sprint 2.5e)
+- [ ] Tests E2E sur instance Cloud reelle (TECH-DEBT-019 -- jamais fait)
 
 **Done quand :**
 
 - [x] L'installation depuis zéro fonctionne sur Cloud
-- [x] L'installation depuis zéro fonctionne sur Cloud
 - [x] La réinstallation détecte le schéma existant et propose la bonne action
 - [x] L'utilisateur sans droits voit un message clair sans tentative d'opération qui échouerait
+- [ ] E2E reel validé sur instance ADO test (TECH-DEBT-019)
 
 ### T-1.4 — CRUD Test Case (UI + service) 🟡
 
