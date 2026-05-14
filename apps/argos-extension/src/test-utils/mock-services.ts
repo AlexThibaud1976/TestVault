@@ -2,7 +2,9 @@ import type {
 	IBugCreationService,
 	IEnvironmentConfigService,
 	IEvidenceUploadService,
+	IExtensionDataClient,
 	IPreconditionService,
+	IProcessInstallService,
 	ITestCaseService,
 	ITestCaseVersionService,
 	ITestExecutionService,
@@ -41,6 +43,8 @@ export function createMockServices(overrides?: Partial<Services>): Services {
 		connectivityService: createMockConnectivityService(),
 		quotaSettingsService: createMockQuotaSettingsService(),
 		flakinessReportService: createMockFlakinessReportService(),
+		processInstallService: createMockProcessInstallService(),
+		extensionDataClient: createMockExtensionDataClient(),
 		project: "MockProject",
 		organization: "MockOrg",
 		...overrides,
@@ -258,4 +262,31 @@ export function createMockFlakinessReportService(
 		markKnownFlaky: vi.fn().mockResolvedValue(undefined),
 		...overrides,
 	} as unknown as IFlakinessReportService;
+}
+
+export function createMockProcessInstallService(
+	overrides?: Partial<IProcessInstallService>
+): IProcessInstallService {
+	return {
+		detectInstallState: vi.fn().mockResolvedValue({
+			status: "installed",
+			processId: "mock-process-id",
+			processName: "Mock Process",
+			schemaVersion: "1.0.0",
+		}),
+		install: vi
+			.fn()
+			.mockResolvedValue({ processId: "mock-process-id", processName: "Mock Process" }),
+		...overrides,
+	} as unknown as IProcessInstallService;
+}
+
+export function createMockExtensionDataClient(
+	overrides?: Partial<IExtensionDataClient>
+): IExtensionDataClient {
+	return {
+		getValue: vi.fn().mockResolvedValue(undefined),
+		setValue: vi.fn().mockResolvedValue(undefined),
+		...overrides,
+	} as unknown as IExtensionDataClient;
 }
