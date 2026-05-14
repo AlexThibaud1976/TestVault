@@ -7,6 +7,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Sprint 2.6 2026-05-15 -- argos-cli install command + npm publish setup (v0.5.6)
+
+**Sprint MONOLITHIQUE : argos-cli install command + npm publish. TECH-DEBT-042 LIVRE.**
+
+#### Added
+
+- **NEW** `argos install` command in argos-cli (TECH-DEBT-042 LIVRE)
+  - Custom Process Inheritance creation via ADO Process API
+  - 3-state detection: not-installed / partial / installed (idempotent)
+  - Interactive prompts (PAT, processName, baseProcess) + flag-based mode
+  - Exit codes: 0=success, 1=missing args, 2=detection fail, 3=install fail
+  - Cohabitation with Microsoft Test Plans (Custom WIT prefix TestVault.*)
+  - `--org` alias for `--org-url` (coherence with wizard command display)
+
+- **NEW** npm publish setup for @atconseil/argos-cli (TECH-DEBT-043 LIVRE partial)
+  - Package metadata: description, keywords, repository, homepage, bugs, author
+  - tsup bundler: noExternal for workspace deps -> standalone bundle (13 MB unpacked)
+  - publishConfig: access=public, registry=npm
+  - .npmignore + files whitelist (dist + README + LICENSE only)
+  - README.md complete CLI usage doc
+  - LICENSE file in package
+
+- **NEW** `.github/workflows/publish-cli.yml`
+  - Trigger: push tag v*.*.* or workflow_dispatch
+  - Build + dry-run + publish via NPM_TOKEN secret
+  - npm provenance via id-token: write
+  - Dry-run safety on workflow_dispatch
+
+#### Changed
+
+- packages/argos-cli/src/cli.ts: ajout sub-command `install`
+- packages/argos-cli/package.json: metadata complete pour npm public + tsup build script
+- Specs/tasks.md: T-1.3 TECH-DEBT-042/043 marques livres
+
+#### Tests
+
+- 6 tests unitaires install-command (mock SDK service + process.exit)
+- 3 tests CFG regression (presence fichiers + import cli.ts)
+- Total: 57 -> 60 regression tests
+
+#### TECH-DEBT
+
+- TECH-DEBT-042 LIVRE: argos-cli install command (Sprint 2.6)
+- TECH-DEBT-043 LIVRE partial: npm publish setup (publish reel via tag v0.5.6 apres merge)
+- TECH-DEBT-044 NEW: Workspace deps publish strategy long terme (tsup bundle interim)
+- TECH-DEBT-019 (E2E reel) reste critique
+
+#### Architecture notes
+
+- argos-cli est l'installer officiel des Custom WIT (D66-A confirmed)
+- Extension Argos -> detection seulement (constitution section 12)
+- tsup createRequire banner: fix CJS/ESM interop pour exceljs dans bundle ESM
+
+#### Lessons learned
+
+- Workspace deps (pnpm workspace:*) ne peuvent pas etre publiees sur npm sans bundler
+- tsup avec noExternal est la solution pragmatique pour CLI standalone
+- exceljs (CJS) dans bundle ESM -> createRequire banner obligatoire
+- npm provenance + id-token: write: security best practice 2026
+- Premier publish scoped package: --access public obligatoire
+
+---
+
 ### Sprint 2.5f-fix 2026-05-15 -- Manifest revert + Wizard pivot architectural (v0.5.5)
 
 **CRITIQUE : argos@0.5.4 publish Marketplace ECHEC. Retrait scope invalide + pivot architectural.**

@@ -1,0 +1,63 @@
+name: Publish CLI -- npm
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry-run only (no actual publish)"
+        type: boolean
+        default: true
+
+jobs:
+  publish-cli:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: "https://registry.npmjs.org/"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build argos-cli
+        run: pnpm --filter @atconseil/argos-cli build
+
+      - name: Verify bundle has no workspace deps
+        run: |
+          cd packages/argos-cli/dist
+          if grep -r "@atconseil/" *.js 2>/dev/null; then
+            echo "ERROR: workspace deps found in bundle. Check tsup.config.ts noExternal."
+            exit 1
+          fi
+          echo "Bundle clean -- no workspace deps."
+
+      - name: npm publish dry-run
+        run: |
+          cd packages/argos-cli
+          npm publish --dry-run --access public
+
+      - name: npm publish (real)
+        if: github.event_name == 'push' || github.event.inputs.dry_run == 'false'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          cd packages/argos-cli
+          npm publish --access public --provenance

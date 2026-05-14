@@ -5,6 +5,7 @@ import {
 	createTestPlanService,
 } from "@atconseil/argos-sdk";
 import { Command } from "commander";
+import { runInstallCommand } from "./install/install-command.js";
 import { processUploadResults } from "./upload-results.js";
 
 function getRequired(name: string, flagVal: string | undefined, envVar: string): string {
@@ -212,6 +213,23 @@ plan
 			console.log(`Exported to ${outPath}`);
 		}
 	);
+
+// ─── install ──────────────────────────────────────────────────────────────────
+
+program
+	.command("install")
+	.description("Install Argos Custom WIT into Azure DevOps process (Custom Process Inheritance)")
+	.option("--org-url <url>", "ADO organisation URL (e.g. https://dev.azure.com/acme)")
+	.option("--org <url>", "Alias for --org-url")
+	.option("--project <name>", "ADO project name")
+	.option("--pat <token>", "ADO Personal Access Token with 'Process (Read & manage)' scope")
+	.option("--base-process <type>", "Base process to inherit from (Agile|Scrum|CMMI)", "Agile")
+	.option("--process-name <name>", "Custom process name to create", "Argos Inherited")
+	.option("--no-prompt", "Non-interactive mode (require all options as flags or env vars)")
+	.option("--skip-confirm", "Skip confirmation prompt")
+	.action(async (opts) => {
+		await runInstallCommand(opts);
+	});
 
 program.parseAsync(process.argv).catch((err: unknown) => {
 	console.error(err instanceof Error ? err.message : String(err));
