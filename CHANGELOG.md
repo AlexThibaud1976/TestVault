@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Sprint 2.7 2026-05-15 -- HOTFIX WIT displayName ADO charset compliance (v0.5.9)
+
+**HOTFIX : VS402800 ADO charset violation. E2E BCEE-QA/DEMO echec. TECH-DEBT-046 LIVRE.**
+
+#### Fixed
+
+- **CRITIQUE** : 7 WIT displayName contenaient des parentheses -- ADO API VS402800 blacklist
+  - Pattern `"X (Argos)"` -> `"TestVault X"` (coherent avec referenceName prefix)
+  - Affecte : TestCase, TestPlan, TestSet, Precondition, TestExecution, TestCaseVersion, AuditLog
+- **CRITIQUE** : 2 champs dans TestExecution/TestCase avaient des parentheses
+  - `"Duration (seconds)"` -> `"Duration Seconds"` (TestVault.DurationSeconds)
+  - `"Estimated Duration (min)"` -> `"Estimated Duration Min"` (TestVault.EstimatedDuration)
+- **CRITIQUE** : 3 champs dans AuditLog avaient des parentheses (corrige Sprint 2.7 Lot B)
+  - `"Timestamp (UTC)"` -> `"Timestamp UTC"` (TestVault.TimestampUtc)
+  - `"Old Value (anonymized)"` -> `"Old Value anonymized"` (TestVault.OldValueAnonymized)
+  - `"New Value (anonymized)"` -> `"New Value anonymized"` (TestVault.NewValueAnonymized)
+
+#### Tests
+
+- Suite ADO charset compliance ajoutee dans `packages/argos-wit-schema/src/index.test.ts`
+  - ADO_FORBIDDEN_CHARS: `/[.,;~:/\\*|?"&%$!+=()\[\]{}<>-]/`
+  - Couvre : WIT displayName (7), Field displayName (N), State name (N) -- tous WIT
+  - getValidationError: empty, longueur > 128, pure number, char interdit
+- NEW `tools/regression/CFG-2026-05-15-wit-ado-charset.test.ts` (2 tests)
+  - index.test.ts contient "ADO charset compliance" + "ADO_FORBIDDEN_CHARS"
+  - Aucun WIT file ne contient pattern `(Argos)` en displayName
+- Total regression tests : 60 -> 62
+
+#### TECH-DEBT
+
+- TECH-DEBT-046 LIVRE : WIT displayName ADO charset compliance (Sprint 2.7 HOTFIX)
+- TECH-DEBT-019 (E2E reel) reste critique -- re-executer apres merge v0.5.9
+
+#### Root cause
+
+ADO API blacklist: `.,;~:/\*|?"&%$!+=()[]{}<>-`
+Premier E2E reel sur BCEE-QA/DEMO (process nettoye manuellement apres) a echoue
+avec VS402800 car tous les WIT avaient le suffix `(Argos)` en displayName.
+Les tests mock ne validaient pas le charset -- cette suite empeche toute regression.
+
+---
+
 ### Sprint 2.6 2026-05-15 -- argos-cli install command + npm publish setup (v0.5.6)
 
 **Sprint MONOLITHIQUE : argos-cli install command + npm publish. TECH-DEBT-042 LIVRE.**
