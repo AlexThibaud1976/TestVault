@@ -167,7 +167,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 ça avant de poursuivre les développements neufs de Phase 1.
 
 - [x] T-0.5.1 — Inventaire des composants riches non-wirés (DONE TECH-DEBT-015A)
-- [ ] T-0.5.2 — (App.tsx) : remplacer les stubs par les composants riches existants (Plans, Cases, Sets, Preconditions, Reports, AI-Config, Audit log, Settings) -- PARTIAL : Phase 2 composants wires Sprint 2.5b (RunInterface, EvidencePanel, EnvironmentSettings, CreateBugForm, ExecutionHistory). Reports/AuditLog/autres Sprint 2.5c+
+- [x] T-0.5.2 — (App.tsx) : remplacer les stubs par les composants riches existants (Plans, Cases, Sets, Preconditions, Reports, AI-Config, Audit log, Settings) -- DONE Sprint 2.5d : 24 composants riches integres (Phase 2-7 wiring complet)
 - [x] T-0.5.3 — Tests de wiring (composant rendu réellement vs stub) (DONE Sprint 2.5a : 5 tests WIRING-2026-05-10 + Sprint 2.5b : 3 tests WIRING-2026-05-15, 5 nouvelles assertions)
 - [ ] T-0.5.4 — Vérifier accessibility (aria-* sur la sidebar, focus management)
 - [ ] T-0.5.5 — Mettre à jour (README.md) avec screenshots du hub réel
@@ -645,6 +645,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Champ `TestVault.Gherkin` ajouté au schéma
 - [x] Custom Control pour édition Gherkin avec coloration syntaxique (Monaco editor)
 - [x] Validation syntaxe Gherkin
+- [x] GherkinEditor wire dans CasesView (Sprint 2.5d)
 
 **Done quand :**
 - [x] Édition Gherkin avec coloration et validation
@@ -669,6 +670,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] UI Admin : ajout d'un mapping `repoUrl + branch + pathGlob → areaPath`
 - [x] Stockage dans ExtensionDataService scope projet
 - [x] Validation : repo accessible via OAuth scope `vso.code`
+- [x] RepoMappingSettings wire dans SettingsView (Sprint 2.5d)
 
 **Done quand :**
 - [x] Les mappings sont configurables et persistés
@@ -756,6 +758,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Configuration de la rétention (paramétrable, plancher 90 jours, défaut 24 mois)
 - [x] Job timer-trigger `audit-retention` qui purge selon la rétention
 - [x] Tests : aucune valeur sensible (clé API en clair) ne doit jamais être loggée
+- [x] AuditLogSettings wire dans SettingsView (Sprint 2.5d)
 
 **Done quand :**
 - [ ] Toutes les opérations Admin laissent une trace
@@ -787,6 +790,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Modal de preview avec 3-7 candidats éditables
 - [x] Acceptation individuelle ou en bloc
 - [x] Décrément du quota visible
+- [x] AiCandidatesModal + bouton "AI Suggest" wires dans CasesView (Sprint 2.5d)
 
 **Done quand :**
 - [ ] Génération + acceptation crée des TC liés à la User Story
@@ -800,6 +804,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Modes hard/soft, alerte 80%
 - [x] UI Admin : Settings > AI > Quotas
 - [x] Reset mensuel via timer trigger
+- [x] QuotaSettings wire dans SettingsView (Sprint 2.5d)
 
 **Done quand :**
 - [ ] Quotas appliqués correctement, mode hard bloque, mode soft warne
@@ -826,6 +831,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Calcul du score sur les N dernières exécutions par TC
 - [x] Recommandation AI via LLM BYOK
 - [x] UI : rapport "Flakiness" avec mark "Known Flaky"
+- [x] FlakinessReport wire dans ReportsView (Sprint 2.5d)
 
 **Done quand :**
 - [ ] Le rapport est généré et exploitable
@@ -871,6 +877,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Détection perte connectivité ADO
 - [x] Bascule en lecture seule avec banner UI
 - [x] Queue des modifications + retry au retour de connectivité
+- [x] OfflineBanner wire dans AppInner via connectivityService (Sprint 2.5d)
 
 **Done quand :**
 - [x] Coupure réseau simulée → bascule + queue → reprise
@@ -944,6 +951,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [ ] Collecte feedback, correctifs
 - [ ] Beta publique : opt-in via flag d'organisation
 - [ ] Métriques de conversion suivies
+- [x] BetaOptIn UI wire dans SettingsView (Sprint 2.5d)
 
 **Done quand :**
 - [ ] 10+ orgs en beta avec feedback positif

@@ -11,8 +11,14 @@ import type {
 	IWorkItemLinkService,
 } from "@atconseil/argos-sdk";
 import { vi } from "vitest";
+import type { IFlakinessReportService } from "../hub/FlakinessReport.js";
+import type { IQuotaSettingsService } from "../hub/QuotaSettings.js";
 import type { IWebhookAdminService } from "../hub/WebhookAdmin.js";
+import type { IAuditLogService } from "../hub/audit-log-service.js";
+import type { IBetaFlagService } from "../hub/beta-flag-service.js";
 import type { ILlmProviderService } from "../hub/llm-provider-service.js";
+import type { IConnectivityService } from "../hub/offline-service.js";
+import type { IRepoMappingService } from "../hub/repo-mapping-service.js";
 import type { Services } from "../hub/services.js";
 
 export function createMockServices(overrides?: Partial<Services>): Services {
@@ -29,6 +35,12 @@ export function createMockServices(overrides?: Partial<Services>): Services {
 		testCaseVersionService: createMockTestCaseVersionService(),
 		workItemLinkService: createMockWorkItemLinkService(),
 		webhookAdminService: createMockWebhookAdminService(),
+		auditLogService: createMockAuditLogService(),
+		repoMappingService: createMockRepoMappingService(),
+		betaFlagService: createMockBetaFlagService(),
+		connectivityService: createMockConnectivityService(),
+		quotaSettingsService: createMockQuotaSettingsService(),
+		flakinessReportService: createMockFlakinessReportService(),
 		project: "MockProject",
 		organization: "MockOrg",
 		...overrides,
@@ -181,4 +193,69 @@ export function createMockWebhookAdminService(
 		revokeToken: vi.fn().mockResolvedValue(undefined),
 		...overrides,
 	} as unknown as IWebhookAdminService;
+}
+
+export function createMockAuditLogService(overrides?: Partial<IAuditLogService>): IAuditLogService {
+	return {
+		list: vi.fn().mockResolvedValue([]),
+		getRetentionDays: vi.fn().mockResolvedValue(730),
+		setRetentionDays: vi.fn().mockResolvedValue(undefined),
+		exportCsv: vi.fn().mockResolvedValue("id,operation,actor,timestamp,oldValue,newValue"),
+		...overrides,
+	} as unknown as IAuditLogService;
+}
+
+export function createMockRepoMappingService(
+	overrides?: Partial<IRepoMappingService>
+): IRepoMappingService {
+	return {
+		list: vi.fn().mockResolvedValue([]),
+		add: vi
+			.fn()
+			.mockResolvedValue({ id: "mock-id", repoUrl: "", branch: "", pathGlob: "", areaPath: "" }),
+		remove: vi.fn().mockResolvedValue(undefined),
+		sync: vi.fn().mockResolvedValue({ created: 0, updated: 0, deprecated: 0 }),
+		...overrides,
+	} as unknown as IRepoMappingService;
+}
+
+export function createMockBetaFlagService(overrides?: Partial<IBetaFlagService>): IBetaFlagService {
+	return {
+		isEnrolled: vi.fn().mockResolvedValue(false),
+		enroll: vi.fn().mockResolvedValue(undefined),
+		unenroll: vi.fn().mockResolvedValue(undefined),
+		...overrides,
+	} as unknown as IBetaFlagService;
+}
+
+export function createMockConnectivityService(online = true): IConnectivityService {
+	return {
+		isOnline: vi.fn().mockReturnValue(online),
+		subscribe: vi.fn().mockReturnValue(() => undefined),
+	} as unknown as IConnectivityService;
+}
+
+export function createMockQuotaSettingsService(
+	overrides?: Partial<IQuotaSettingsService>
+): IQuotaSettingsService {
+	return {
+		getConfig: vi.fn().mockResolvedValue({
+			limitPerUser: 100,
+			mode: "soft",
+			feature: "ai",
+			resetDay: 1,
+		}),
+		setConfig: vi.fn().mockResolvedValue(undefined),
+		...overrides,
+	} as unknown as IQuotaSettingsService;
+}
+
+export function createMockFlakinessReportService(
+	overrides?: Partial<IFlakinessReportService>
+): IFlakinessReportService {
+	return {
+		getReport: vi.fn().mockResolvedValue([]),
+		markKnownFlaky: vi.fn().mockResolvedValue(undefined),
+		...overrides,
+	} as unknown as IFlakinessReportService;
 }

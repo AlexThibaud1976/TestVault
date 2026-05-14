@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Sprint 2.5d 2026-05-15 -- Wiring Phase 5+6+7 (v0.5.3) -- DERNIER SPRINT WIRING
+
+**8 composants Phase 5+6+7 wires dans App.tsx :**
+
+- `GherkinEditor` : nouvel onglet "Gherkin" dans `CasesView` (T-5.1)
+- `RepoMappingSettings` : nouvelle section dans `SettingsView` (T-5.3)
+- `AiCandidatesModal` : bouton "AI Suggest" dans `CasesView` ouvre un dialog `ai-candidates-dialog` (T-6.6)
+- `AuditLogSettings` : nouvelle section dans `SettingsView` (T-6.4)
+- `QuotaSettings` : nouvelle section dans `SettingsView` (stub TECH-DEBT-017 pending Azure Functions deploy) (T-6.7)
+- `FlakinessReport` : onglet "Flakiness" dans `ReportsView` (stub TECH-DEBT-017 pending Azure Functions deploy) (T-6.9)
+- `OfflineBanner` : banner dans `AppInner` via `connectivityService` (T-7.3)
+- `BetaOptIn` : nouvelle section dans `SettingsView` (T-7.9)
+
+**Services Phase 5+6+7 ajoutes dans `services.ts` / `mock-services.ts` :**
+
+- `auditLogService`, `repoMappingService`, `betaFlagService`, `connectivityService`, `quotaSettingsService`, `flakinessReportService`
+
+**4 nouveaux fichiers de tests wiring (10 nouvelles assertions) :**
+
+- `WIRING-2026-05-15-cases-gherkin-ai.test.tsx` (4 tests)
+- `WIRING-2026-05-15-settings-audit-repo-beta-quota.test.tsx` (4 tests)
+- `WIRING-2026-05-15-reports-flakiness.test.tsx` (2 tests)
+- `WIRING-2026-05-15-app-offline.test.tsx` (2 tests)
+
+**`Specs/COMMERCIAL.md` NEW (TECH-DEBT-018) :**
+
+- Brouillon pricing strategy Option C (hybrid flat + per active user)
+- Architecture backend billing, portail ATConseil, roadmap 9 sub-sprints
+- Dependances : TECH-DEBT-017/019/035
+
+**Milestone : wiring complet -- 24 composants riches integres dans App.tsx**
+
+- Phases 2-7 wiring fait en 3 sprints (2.5b/c/d)
+- Prochaines etapes : deploy Azure Functions (TECH-DEBT-017), Marketplace publish (TECH-DEBT-035), E2E reel (TECH-DEBT-019), Beta privee
+
+**Lesson learned (quotaSettingsStub) :** `QuotaSettings.useEffect` appelle `service.getConfig().then()` sans `.catch()`. Le stub doit RESOUDRE (pas rejeter) pour eviter les unhandled promise rejections dans les tests App.
+
+**Totaux apres Sprint 2.5d :** 349 tests / 51 fichiers de test / 20 packages. Preflight PASSED argos@0.5.3.
+
+---
+
 ### Sprint 2.5c 2026-05-15 -- Wiring Phase 3+4 (v0.5.2)
 
 **6 composants Phase 3+4 wires dans App.tsx :**
