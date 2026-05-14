@@ -1,4 +1,4 @@
-import type { MatrixInput, ProcessInstallState } from "@atconseil/argos-sdk";
+import type { MatrixInput } from "@atconseil/argos-sdk";
 import type { TestVaultTestCase } from "@atconseil/argos-types";
 import {
 	Button,
@@ -295,8 +295,9 @@ function HubContent({ section }: { section: Section }) {
 }
 
 export function AppInner({ section }: { section: Section }) {
-	const { processInstallService, connectivityService, extensionDataClient } = useServices();
-	const [installState, setInstallState] = useState<ProcessInstallState | null>(null);
+	const { connectivityService, extensionDataClient, detectInstalled, baseUrl, project } =
+		useServices();
+	const [isInstalled, setIsInstalled] = useState<boolean | null>(null);
 	const [userSkipped, setUserSkipped] = useState(false);
 
 	useEffect(() => {
@@ -306,13 +307,15 @@ export function AppInner({ section }: { section: Section }) {
 				if (val) setUserSkipped(true);
 			})
 			.catch(() => {});
-		processInstallService
-			.detectInstallState()
-			.then(setInstallState)
-			.catch((err: unknown) => console.error("Install detection failed", err));
-	}, [processInstallService, extensionDataClient]);
+		detectInstalled()
+			.then(setIsInstalled)
+			.catch((err: unknown) => {
+				console.error("Install detection failed", err);
+				setIsInstalled(false);
+			});
+	}, [detectInstalled, extensionDataClient]);
 
-	if (installState === null) {
+	if (isInstalled === null) {
 		return (
 			<div style={{ padding: 32, textAlign: "center" }}>
 				<Spinner label="Detecting Argos installation..." />
@@ -320,19 +323,23 @@ export function AppInner({ section }: { section: Section }) {
 		);
 	}
 
-	const needsInstall = installState.status === "not-installed" || installState.status === "partial";
-
 	function handleSkip() {
 		setUserSkipped(true);
 		extensionDataClient.setValue("argos:install:skipped", true).catch(() => {});
 	}
 
-	if (needsInstall && !userSkipped) {
+	async function handleRefreshDetection() {
+		const installed = await detectInstalled();
+		setIsInstalled(installed);
+	}
+
+	if (!isInstalled && !userSkipped) {
 		return (
 			<GetStartedView
-				initialState={installState}
-				service={processInstallService}
-				onComplete={() => processInstallService.detectInstallState().then(setInstallState)}
+				isInstalled={isInstalled}
+				orgUrl={baseUrl}
+				projectName={project}
+				onRefreshDetection={handleRefreshDetection}
 				onSkip={handleSkip}
 			/>
 		);
@@ -341,10 +348,10 @@ export function AppInner({ section }: { section: Section }) {
 	return (
 		<>
 			<OfflineBanner connectivity={connectivityService} />
-			{needsInstall && userSkipped && (
+			{!isInstalled && userSkipped && (
 				<LimitedModeBanner onInstallNow={() => setUserSkipped(false)} />
 			)}
-			<InstallationContext.Provider value={{ canCreate: !needsInstall }}>
+			<InstallationContext.Provider value={{ canCreate: isInstalled }}>
 				<div style={{ padding: "24px", fontFamily: "Segoe UI, sans-serif" }}>
 					<HubContent section={section} />
 				</div>

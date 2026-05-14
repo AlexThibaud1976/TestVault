@@ -531,8 +531,26 @@ L'extension Argos 0.5.4 active enfin le wizard d'installation des Custom WIT.
 Avant 0.5.4 : SDK process-install.ts present mais jamais invoque -> bug VS402323.
 Depuis 0.5.4 : detection au boot + wizard automatique si WIT absents.
 
-Upgrade 0.5.3 -> 0.5.4 :
-- ADO demande reauthorization (nouveau scope vso.process_write)
-- Au premier lancement post-upgrade, wizard "Get Started" s'affiche si Custom WIT absents
+NOTE : argos@0.5.4 publish Marketplace a ECHOUE (scope vso.process_write invalide).
+Voir Sprint 2.5f-fix ci-dessous.
+
+## Pivot architectural Process API (Sprint 2.5f-fix, 2026-05-15)
+
+> Decouverte : Process API non accessible aux extensions ADO.
+> Scope `vso.process_write` n'existe pas dans la liste officielle Microsoft.
+> Solution : argos-cli devient installer officiel (D66-A).
+> Extension fait detection + guide.
+
+argos@0.5.4 (Marketplace publish FAILED) remplace par argos@0.5.5.
+
+Upgrade 0.5.3 -> 0.5.5 (saute 0.5.4 non publiable) :
+
+- ADO ne demande PAS reauthorization (scope vso.process_write retire)
+- Au premier lancement, wizard "Get Started" s'affiche si Custom WIT absents
+- Detection via wit/workitemtypes API (scope vso.work -- deja accorde)
+- Wizard guide vers `npx @atconseil/argos-cli install` ou portal admin
 - User peut Skip mais reste en "Limited Mode" (Create/Save disabled)
 - Flag skip persiste via extensionDataClient (cle "argos:install:skipped")
+
+TECH-DEBT-041 NEW : Architecture Process API documentation (livre dans constitution.md)
+TECH-DEBT-042 NEW : argos-cli installer command (Sprint 2.6)

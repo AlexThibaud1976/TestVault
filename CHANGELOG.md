@@ -7,6 +7,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Sprint 2.5f-fix 2026-05-15 -- Manifest revert + Wizard pivot architectural (v0.5.5)
+
+**CRITIQUE : argos@0.5.4 publish Marketplace ECHEC. Retrait scope invalide + pivot architectural.**
+
+#### Fixed
+
+- **CRITIQUE** : retire scope `vso.process_write` du manifest (cause echec Marketplace 0.5.4)
+  - Erreur Marketplace : "Scope is not valid. Cannot mix uri based and modern scopes: 'vso.process_write'"
+  - Verification docs officielles Microsoft : aucun scope `vso.process_*` n'existe
+  - Process API necessite OAuth user-context complet (admin avec PAT) -- pas accessible aux extensions sandbox
+
+#### Changed
+
+- **GetStartedView** : adapte pour mode "Detection + Install Guide"
+  - Steps : Welcome / Detection / InstallGuide (3 steps au lieu de 2)
+  - Detection : utilise `detectInstalled()` via wit/workitemtypes API (scope vso.work, fonctionne)
+  - InstallGuide : affiche commande `npx @atconseil/argos-cli install` + option manuel portal
+  - Plus de "auto-install depuis extension" (impossible par design Microsoft)
+- **App.tsx InstallationGuard** : utilise `detectInstalled()` boolean au lieu de processInstallService
+- **services.ts** : retire `processInstallService` (non utilisable depuis extension)
+  - Ajoute `detectInstalled: () => Promise<boolean>` (via wit/workitemtypes API)
+  - Ajoute `baseUrl: string` (pour CLI command display dans wizard)
+- **SDK process-install.ts** : preserve pour utilisation future par argos-cli (Sprint 2.6)
+
+#### TECH-DEBT noted
+
+- **TECH-DEBT-041 NEW** : Architecture Process API documentation
+  - Extensions ADO ne peuvent pas appeler Process API
+  - Documente dans constitution.md section "Architecture extension vs Process API"
+- **TECH-DEBT-019** (E2E reel) reste critique
+- **TECH-DEBT-042 NEW** : argos-cli installer command (Sprint 2.6)
+
+#### Architecture pivot 2026-05-15
+
+```text
+Sprint 2.5e (avant -- IMPOSSIBLE par design Microsoft) :
+  Extension UI -> processInstallService -> Process API (REJECTED)
+
+Sprint 2.5f-fix (apres) :
+  Extension UI -> detectInstalled() (wit/workitemtypes, scope vso.work, OK)
+  Install Custom WIT -> argos-cli (Sprint 2.6) ou portal admin manuel
+```
+
+#### Lessons learned
+
+- `vso.process_write` suppose valide sans verification docs officielles -- LECON : verifier scopes AVANT de coder
+- Sprint 2.5e (~2h30) sur architecture impossible par design Microsoft
+- Tests unitaires + builds verts != Marketplace valide != produit fonctionnel
+
+#### Decisions actees 2026-05-15
+
+- D66-A : argos-cli devient installer officiel Custom WIT
+- D67-A : Bump 0.5.4 -> 0.5.5 propre
+- D68-C : Garder Sprint 2.5e merge + fix immediat + planning Sprint 2.6
+
+---
+
 ### Sprint 2.5e 2026-05-15 -- First Run Wizard + Custom WIT Install (v0.5.4)
 
 **CRITICAL fix : bug VS402323 (WorkItemTypeNotFoundException) decouvert apres install 0.5.3 sur instance ADO.**

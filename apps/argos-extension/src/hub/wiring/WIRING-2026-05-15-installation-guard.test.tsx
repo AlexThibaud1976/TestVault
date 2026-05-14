@@ -3,14 +3,11 @@ import { FluentProvider, webLightTheme } from "@fluentui/react-components";
  * Smoke test WIRING-2026-05-15-installation-guard
  * Verifies that AppInner routes to GetStartedView when WIT not installed,
  * renders hub normally when installed, and shows LimitedModeBanner on skip.
- * Sprint 2.5e: First Run Wizard wiring.
+ * Sprint 2.5f-fix: pivot to schema-reader detection (detectInstalled).
  */
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
-import {
-	createMockProcessInstallService,
-	createMockServices,
-} from "../../test-utils/mock-services.js";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { createMockServices } from "../../test-utils/mock-services.js";
 import { AppInner } from "../App.js";
 import { ServicesContext } from "../services-context.js";
 
@@ -29,51 +26,38 @@ function renderAppInner(overrides?: Parameters<typeof createMockServices>[0]) {
 }
 
 describe("WIRING-2026-05-15-installation-guard", () => {
-	it("shows GetStartedView when status=not-installed", async () => {
+	it("shows GetStartedView when detectInstalled returns false", async () => {
 		renderAppInner({
-			processInstallService: createMockProcessInstallService({
-				detectInstallState: async () => ({ status: "not-installed" }),
-			}),
+			detectInstalled: vi.fn().mockResolvedValue(false),
 		});
 		await waitFor(() => expect(screen.getByTestId("get-started-view")).toBeDefined());
 	});
 
-	it("shows GetStartedView when status=partial", async () => {
+	it("renders hub normally when detectInstalled returns true", async () => {
 		renderAppInner({
-			processInstallService: createMockProcessInstallService({
-				detectInstallState: async () => ({
-					status: "partial",
-					processId: "p1",
-					processName: "Custom",
-					missingWitRefs: ["TestVault.TestExecution"],
-				}),
-			}),
-		});
-		await waitFor(() => expect(screen.getByTestId("get-started-view")).toBeDefined());
-	});
-
-	it("renders hub normally when status=installed", async () => {
-		renderAppInner({
-			processInstallService: createMockProcessInstallService({
-				detectInstallState: async () => ({
-					status: "installed",
-					processId: "p1",
-					processName: "Custom",
-					schemaVersion: "1.0.0",
-				}),
-			}),
+			detectInstalled: vi.fn().mockResolvedValue(true),
 		});
 		await waitFor(() => expect(screen.queryByTestId("get-started-view")).toBeNull());
 	});
 
-	it("shows LimitedModeBanner after user skips", async () => {
+	it("shows LimitedModeBanner after user skips installation", async () => {
 		renderAppInner({
-			processInstallService: createMockProcessInstallService({
-				detectInstallState: async () => ({ status: "not-installed" }),
-			}),
+			detectInstalled: vi.fn().mockResolvedValue(false),
 		});
 		await waitFor(() => screen.getByTestId("get-started-view"));
 		fireEvent.click(screen.getByRole("button", { name: /skip for now/i }));
 		await waitFor(() => expect(screen.getByTestId("limited-mode-banner")).toBeDefined());
+	});
+
+	it("shows hub with LimitedModeBanner (canCreate=false) when skipped and not installed", async () => {
+		renderAppInner({
+			detectInstalled: vi.fn().mockResolvedValue(false),
+		});
+		await waitFor(() => screen.getByTestId("get-started-view"));
+		fireEvent.click(screen.getByRole("button", { name: /skip for now/i }));
+		await waitFor(() => {
+			expect(screen.getByTestId("limited-mode-banner")).toBeDefined();
+			expect(screen.queryByTestId("get-started-view")).toBeNull();
+		});
 	});
 });

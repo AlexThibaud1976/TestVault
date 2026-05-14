@@ -2,7 +2,7 @@
 	"manifestVersion": 1,
 	"id": "ArgosTesting",
 	"publisher": "AlexThibaud",
-	"version": "0.5.4",
+	"version": "0.5.5",
 	"name": "ArgosTesting",
 	"description": "Industrial-grade test management for Azure DevOps — native Custom Work Items, AI-assisted, Cloud-only.",
 	"targets": [
@@ -19,8 +19,7 @@
 		"vso.profile",
 		"vso.code",
 		"vso.extension.data_write",
-		"vso.identity",
-		"vso.process_write"
+		"vso.identity"
 	],
 	"contributions": [
 		{

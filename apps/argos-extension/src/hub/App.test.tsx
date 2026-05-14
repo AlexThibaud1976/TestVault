@@ -3,7 +3,10 @@ import * as SDK from "azure-devops-extension-sdk";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App.js";
 
-afterEach(cleanup);
+afterEach(() => {
+	cleanup();
+	vi.unstubAllGlobals();
+});
 
 const mockProjectService = {
 	getProject: vi.fn().mockResolvedValue({ name: "MockProject" }),
@@ -17,22 +20,6 @@ const mockExtensionDataManager = {
 const mockExtensionDataService = {
 	getExtensionDataManager: vi.fn().mockResolvedValue(mockExtensionDataManager),
 };
-
-vi.mock("@atconseil/argos-sdk", async (importOriginal) => {
-	const mod = await importOriginal<typeof import("@atconseil/argos-sdk")>();
-	return {
-		...mod,
-		createProcessInstallService: vi.fn(() => ({
-			detectInstallState: vi.fn().mockResolvedValue({
-				status: "installed",
-				processId: "mock-process",
-				processName: "Mock Process",
-				schemaVersion: "1.0.0",
-			}),
-			install: vi.fn().mockResolvedValue({ processId: "mock", processName: "Mock" }),
-		})),
-	};
-});
 
 vi.mock("azure-devops-extension-sdk", () => ({
 	init: vi.fn(() => Promise.resolve()),
@@ -61,6 +48,13 @@ vi.mock("azure-devops-extension-api", () => ({
 describe("App contribution-id routing", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockResolvedValue({
+				ok: true,
+				json: async () => ({ value: [{ referenceName: "TestVault.TestCase" }] }),
+			})
+		);
 		vi.mocked(SDK.init).mockResolvedValue(undefined);
 		vi.mocked(SDK.ready).mockResolvedValue(undefined);
 		vi.mocked(SDK.getHost).mockReturnValue({ name: "MockOrg" } as ReturnType<typeof SDK.getHost>);
