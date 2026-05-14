@@ -36,8 +36,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build argos-cli
-        run: pnpm --filter @atconseil/argos-cli build
+      - name: Build argos-cli with dependencies
+        run: pnpm turbo build --filter=@atconseil/argos-cli
 
       - name: Verify bundle has no workspace deps
         run: |
