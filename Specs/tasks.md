@@ -212,12 +212,12 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 > ARCHITECTURE PIVOT : Microsoft ne permet pas aux extensions ADO d'appeler Process API.
 > Scope vso.process_write n'existe pas. Install Custom WIT deleguee a argos-cli (D66-A).
-> Voir Sprint 2.6 pour argos-cli install command.
+> Sprint 2.6 (2026-05-15) : argos-cli install command LIVRE.
 
 📚 `spec.md` US-6.1, `plan.md` §3.1
 
-- [ ] UI du wizard : auto-install depuis extension (DEFERRED to argos-cli Sprint 2.6)
-- [ ] Implementation appels API Process ADO (DEFERRED to argos-cli Sprint 2.6 -- impossible depuis extension)
+- [x] UI du wizard : auto-install depuis extension -- DONE via argos-cli (Sprint 2.6)
+- [x] Implementation appels API Process ADO -- DONE via argos-cli (Sprint 2.6)
 - [x] Detection idempotente : schema-reader via wit/workitemtypes API (Sprint 2.5e + 2.5f-fix)
 - [x] Wire dans App.tsx : InstallationGuard + GetStartedView + LimitedModeBanner (Sprint 2.5e)
 - [x] Detection au boot via detectInstalled() -- scope vso.work, fonctionne (Sprint 2.5f-fix)
@@ -228,10 +228,17 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 **Done quand :**
 
-- [ ] L'installation depuis zero fonctionne via argos-cli (Sprint 2.6)
+- [x] L'installation depuis zero fonctionne via argos-cli (Sprint 2.6)
 - [x] La detection detecte le schema existant via wit/workitemtypes API
 - [x] L'utilisateur sans schema installe voit guide vers argos-cli
 - [ ] E2E reel valide sur instance ADO test (TECH-DEBT-019)
+
+**TECH-DEBT (Sprint 2.6) :**
+
+- [x] TECH-DEBT-042 LIVRE : argos-cli install command (Sprint 2.6)
+- [x] TECH-DEBT-043 LIVRE partial : npm publish setup (publish reel via tag v0.5.6 apres merge)
+- [ ] TECH-DEBT-044 NEW : Strategy publish workspace deps internes long terme (tsup bundle interim)
+- [ ] TECH-DEBT-019 : E2E reel sur instance ADO Cloud (reste critique)
 
 ### T-1.4 — CRUD Test Case (UI + service) 🟡
 
