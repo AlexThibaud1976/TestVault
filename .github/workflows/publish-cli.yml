@@ -16,15 +16,15 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
+      id-token: write  # required for npm provenance
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup pnpm
+        # Version is read from packageManager field in package.json (single source of truth)
         uses: pnpm/action-setup@v4
-        
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -36,27 +36,147 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build argos-cli with dependencies
+      - name: Build argos-cli with workspace dependencies
+        # turbo handles workspace dep graph: builds argos-sdk, argos-types, etc. before argos-cli
+        # tsup with noExternal then bundles them inline into argos-cli/dist/
         run: pnpm turbo build --filter=@atconseil/argos-cli
 
-      - name: Verify bundle has no workspace deps
+      - name: Verify bundle has no workspace imports
+        # After tsup with noExternal, dist/*.js should contain ZERO @atconseil/ imports
+        # If any are found, the bundle is broken (workspace deps not actually inlined)
         run: |
           cd packages/argos-cli/dist
           if grep -r "@atconseil/" *.js 2>/dev/null; then
-            echo "ERROR: workspace deps found in bundle. Check tsup.config.ts noExternal."
+            echo "ERROR: workspace deps found in bundle JS files."
+            echo "Check tsup.config.ts noExternal list."
             exit 1
           fi
-          echo "Bundle clean -- no workspace deps."
+          echo "OK Bundle JS files clean -- no @atconseil/ imports."
+
+      - name: Strip workspace deps from package.json
+        # tsup bundles workspace deps inline in dist/ but package.json still lists
+        # them with "workspace:*" protocol. npm install rejects "workspace:*" with
+        # EUNSUPPORTEDPROTOCOL. Strip them before publish since they are inlined.
+        run: |
+          cd packages/argos-cli
+          node -e "
+          const fs = require('fs');
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+
+          const WORKSPACE_DEPS = [
+            '@atconseil/argos-sdk',
+            '@atconseil/argos-types',
+            '@atconseil/argos-wit-schema',
+            '@atconseil/argos-importers',
+            '@atconseil/argos-exporters',
+            '@atconseil/argos-gherkin',
+            '@atconseil/argos-detection-api',
+          ];
+
+          let stripped = 0;
+          if (pkg.dependencies) {
+            for (const dep of WORKSPACE_DEPS) {
+              if (pkg.dependencies[dep]) {
+                console.log('Stripping workspace dep: ' + dep + ' (was: ' + pkg.dependencies[dep] + ')');
+                delete pkg.dependencies[dep];
+                stripped++;
+              }
+            }
+          }
+
+          // Also strip from devDependencies just in case
+          if (pkg.devDependencies) {
+            for (const dep of WORKSPACE_DEPS) {
+              if (pkg.devDependencies[dep]) {
+                console.log('Stripping workspace devDep: ' + dep);
+                delete pkg.devDependencies[dep];
+                stripped++;
+              }
+            }
+          }
+
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, '\t') + '\n', 'utf8');
+          console.log('');
+          console.log('Stripped ' + stripped + ' workspace deps from package.json');
+          console.log('Final runtime dependencies:');
+          console.log(JSON.stringify(pkg.dependencies || {}, null, 2));
+          "
+
+      - name: Verify package.json has no workspace protocol
+        # Final safety check: no "workspace:" string should remain in package.json
+        run: |
+          cd packages/argos-cli
+          if grep -q '"workspace:' package.json; then
+            echo "ERROR: workspace: protocol still present in package.json"
+            echo "--- package.json contents ---"
+            cat package.json
+            exit 1
+          fi
+          echo "OK package.json clean -- no workspace: protocol."
+
+      - name: Show final package.json
+        run: |
+          cd packages/argos-cli
+          echo "--- Final package.json (post-strip) ---"
+          cat package.json
+          echo "---"
 
       - name: npm publish dry-run
+        # Always run dry-run first to catch issues before real publish
         run: |
           cd packages/argos-cli
           npm publish --dry-run --access public
 
       - name: npm publish (real)
+        # Only run on tag push or explicit workflow_dispatch with dry_run=false
         if: github.event_name == 'push' || github.event.inputs.dry_run == 'false'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           cd packages/argos-cli
           npm publish --access public --provenance
+
+      - name: Smoke test -- install from npm registry
+        # Critical check: after publish, install the package from registry and run it.
+        # This catches issues that pnpm pack and dry-run miss (e.g. workspace deps).
+        # Only runs on real publish (not dry-run) and waits ~30s for npm CDN propagation.
+        if: github.event_name == 'push' || github.event.inputs.dry_run == 'false'
+        run: |
+          # Extract version from package.json
+          cd packages/argos-cli
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Smoke testing @atconseil/argos-cli@$VERSION"
+
+          # Wait for npm CDN propagation
+          echo "Waiting 30s for npm CDN propagation..."
+          sleep 30
+
+          # Install in a clean temp directory
+          cd /tmp
+          mkdir -p argos-smoke-test
+          cd argos-smoke-test
+          npm init -y > /dev/null
+          echo "Installing @atconseil/argos-cli@$VERSION from npm registry..."
+          npm install "@atconseil/argos-cli@$VERSION"
+
+          # Run --help to verify CLI works
+          echo "Running argos install --help..."
+          npx argos install --help
+
+          echo ""
+          echo "OK Smoke test passed -- package installs and runs from npm."
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### Publish CLI Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cd packages/argos-cli
+          VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "unknown")
+          echo "- Package: @atconseil/argos-cli" >> $GITHUB_STEP_SUMMARY
+          echo "- Version: $VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "- Trigger: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "- Tag: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "- npm: https://www.npmjs.com/package/@atconseil/argos-cli/v/$VERSION" >> $GITHUB_STEP_SUMMARY
