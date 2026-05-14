@@ -2,6 +2,31 @@
 	"name": "@atconseil/argos-cli",
 	"version": "0.5.5",
 	"private": false,
+	"description": "Argos CLI for Azure DevOps -- install Custom Process Inheritance, upload test results, sync BDD/Gherkin",
+	"keywords": [
+		"azure-devops",
+		"ado",
+		"test-management",
+		"testing",
+		"qa",
+		"cli",
+		"argos",
+		"custom-work-item-types",
+		"process-customization",
+		"bdd",
+		"gherkin"
+	],
+	"homepage": "https://github.com/AlexThibaud1976/TestVault/tree/main/packages/argos-cli#readme",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/AlexThibaud1976/TestVault.git",
+		"directory": "packages/argos-cli"
+	},
+	"bugs": {
+		"url": "https://github.com/AlexThibaud1976/TestVault/issues"
+	},
+	"author": "Alexandre Thibaud (https://atconseil.info)",
+	"license": "Apache-2.0",
 	"type": "module",
 	"main": "./dist/index.js",
 	"exports": {
@@ -10,13 +35,21 @@
 	"bin": {
 		"argos": "./dist/cli.js"
 	},
-	"license": "Apache-2.0",
-	"files": ["dist"],
+	"files": ["dist", "README.md", "LICENSE"],
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"engines": {
+		"node": ">=20"
+	},
 	"scripts": {
-		"build": "tsc --project tsconfig.json",
+		"build": "tsup",
+		"build:tsc": "tsc --project tsconfig.json",
 		"typecheck": "tsc --project tsconfig.json --noEmit",
 		"test": "vitest run --passWithNoTests",
-		"lint": "biome check src/"
+		"lint": "biome check src/",
+		"prepublishOnly": "pnpm build"
 	},
 	"dependencies": {
 		"@atconseil/argos-exporters": "workspace:*",
@@ -27,6 +60,7 @@
 		"commander": "^13.0.0"
 	},
 	"devDependencies": {
+		"tsup": "^8.5.1",
 		"typescript": "^6.0.3",
 		"vitest": "^3.1.0"
 	}
