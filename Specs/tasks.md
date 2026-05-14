@@ -324,83 +324,83 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 📚 `spec.md` US-2.1, `plan.md` §3.5
 
-- [ ] Méthodes : `startRun`, `saveStepResult`, `attachEvidence`, `finalizeRun`, `linkBug`
-- [ ] Garantie d'immutabilité après save final (refus de tout PATCH ultérieur)
-- [ ] Calcul automatique du `globalStatus` depuis les `stepResults`
-- [ ] Tests unitaires + intégration
+- [x] Méthodes : `startRun`, `saveStepResult`, `attachEvidence`, `finalizeRun`, `linkBug`
+- [x] Garantie d'immutabilité après save final (refus de tout PATCH ultérieur)
+- [x] Calcul automatique du `globalStatus` depuis les `stepResults`
+- [x] Tests unitaires + intégration
 
 **Done quand :**
-- [ ] Une `TestExecution` save passe l'API ADO, est lue immutable
-- [ ] Une tentative de modification post-save renvoie 403 documentée
-- [ ] Couverture ≥ 90%
+- [x] Une `TestExecution` save passe l'API ADO, est lue immutable
+- [x] Une tentative de modification post-save renvoie 403 documentée
+- [x] Couverture ≥ 90%
 
 ### T-2.2 — UI d'exécution (run interface) 🔴
 
 📚 `spec.md` US-2.1, §7.3
 
-- [ ] Implémentation du wireframe §7.3 : panneau Precondition, liste des Steps, panneau Evidence
-- [ ] Sélecteur d'Environment obligatoire en début de run
-- [ ] Validation : commentaire obligatoire si Step en Fail
-- [ ] Calcul global status en temps réel
-- [ ] Bouton "Save Run" (final) + "Cancel"
+- [x] Implémentation du wireframe §7.3 : panneau Precondition, liste des Steps, panneau Evidence
+- [x] Sélecteur d'Environment obligatoire en début de run
+- [x] Validation : commentaire obligatoire si Step en Fail
+- [x] Calcul global status en temps réel
+- [x] Bouton "Save Run" (final) + "Cancel"
 
 **Done quand :**
 - [ ] L'utilisateur peut exécuter un TC complet de bout en bout
-- [ ] Le statut global est calculé correctement
-- [ ] Tests E2E couvrant les 3 issues : full Pass, partial Fail, Blocked
+- [x] Le statut global est calculé correctement
+- [x] Tests E2E couvrant les 3 issues : full Pass, partial Fail, Blocked
 
 ### T-2.3 — Upload d'evidence (multi-formats) 🟡
 
 📚 `spec.md` US-2.2
 
-- [ ] Service d'upload utilisant l'API Attachments ADO native
-- [ ] Validation des types (PNG, JPG, GIF, PDF, TXT, LOG, MP4, WEBM) et des limites (10/25/5/100 MB)
-- [ ] UI drag & drop + bouton fichier
-- [ ] Preview pour images, lecteur intégré vidéos, lien pour autres
-- [ ] Lien evidence ↔ step ou execution global
+- [x] Service d'upload utilisant l'API Attachments ADO native
+- [x] Validation des types (PNG, JPG, GIF, PDF, TXT, LOG, MP4, WEBM) et des limites (10/25/5/100 MB)
+- [x] UI drag & drop + bouton fichier
+- [x] Preview pour images, lecteur intégré vidéos, lien pour autres
+- [x] Lien evidence ↔ step ou execution global
 
 **Done quand :**
-- [ ] Upload des 4 formats principaux fonctionne
-- [ ] Les limites de taille sont appliquées avec messages clairs
-- [ ] L'evidence est visible en lecture après save
+- [x] Upload des 4 formats principaux fonctionne
+- [x] Les limites de taille sont appliquées avec messages clairs
+- [x] L'evidence est visible en lecture après save
 
 ### T-2.4 — Configuration des Environments par projet 🟡
 
 📚 `spec.md` US-2.3
 
-- [ ] UI Settings > Environments (Admin only) avec CRUD de la liste
-- [ ] Stockage dans ExtensionDataService scope projet
-- [ ] Validation côté run : environment doit appartenir à la liste configurée
-- [ ] Tests
+- [x] UI Settings > Environments (Admin only) avec CRUD de la liste
+- [x] Stockage dans ExtensionDataService scope projet
+- [x] Validation côté run : environment doit appartenir à la liste configurée
+- [x] Tests
 
 **Done quand :**
-- [ ] Un Admin peut gérer la liste
-- [ ] Un User n'a pas accès à cette config
-- [ ] La liste est utilisée comme dropdown dans le run
+- [x] Un Admin peut gérer la liste
+- [x] Un User n'a pas accès à cette config
+- [x] La liste est utilisée comme dropdown dans le run
 
 ### T-2.5 — Création de Bug depuis Fail 🟢
 
 📚 `spec.md` US-2.1 (étape 11)
 
-- [ ] Bouton "Create Bug from Failure" sur l'écran de run avec status Fail
-- [ ] Pré-remplissage : Title, Description (avec lien vers run), Repro Steps (depuis steps Fail), Severity, Environment
-- [ ] Création via API ADO standard, lien `Found By` Test Execution → Bug
+- [x] Bouton "Create Bug from Failure" sur l'écran de run avec status Fail
+- [x] Pré-remplissage : Title, Description (avec lien vers run), Repro Steps (depuis steps Fail), Severity, Environment
+- [x] Création via API ADO standard, lien `Found By` Test Execution → Bug
 
 **Done quand :**
-- [ ] Un Bug est créé avec les bonnes infos pré-remplies
-- [ ] Le lien Test Execution ↔ Bug est visible dans les 2 sens
+- [x] Un Bug est créé avec les bonnes infos pré-remplies
+- [x] Le lien Test Execution ↔ Bug est visible dans les 2 sens
 
 ### T-2.6 — Vue historique des exécutions par TC 🟡
 
 📚 `spec.md` US-2.3
 
-- [ ] Sur la page d'un TC, onglet "Executions" avec liste paginée
-- [ ] Filtres : par environment, par statut, par période
-- [ ] Vue côte à côte des statuts par environment
+- [x] Sur la page d'un TC, onglet "Executions" avec liste paginée
+- [x] Filtres : par environment, par statut, par période
+- [x] Vue côte à côte des statuts par environment
 
 **Done quand :**
-- [ ] L'historique d'un TC avec >100 exécutions reste fluide
-- [ ] Filtres fonctionnent
+- [x] L'historique d'un TC avec >100 exécutions reste fluide
+- [x] Filtres fonctionnent
 
 ### T-2.7 — Tests E2E phase 2 🔴
 
@@ -422,85 +422,85 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 📚 `spec.md` US-3.1
 
-- [ ] Définition des link types custom : `TestVault.TestedBy`, `TestVault.Validates`, `TestVault.Covers`
-- [ ] UI sur le formulaire TC : ajout/suppression de liens
-- [ ] Widget "Test Coverage" sur le formulaire User Story / Bug / Requirement (cf. manifest contribution `argos-coverage-panel`)
-- [ ] Détection des liens orphelins (WI source supprimé)
+- [x] Définition des link types custom : `TestVault.TestedBy`, `TestVault.Validates`, `TestVault.Covers`
+- [x] UI sur le formulaire TC : ajout/suppression de liens
+- [x] Widget "Test Coverage" sur le formulaire User Story / Bug / Requirement (cf. manifest contribution `argos-coverage-panel`)
+- [x] Détection des liens orphelins (WI source supprimé)
 
 **Done quand :**
-- [ ] Un lien créé est visible dans les 2 sens
-- [ ] Le widget coverage panel s'affiche sur User Story et liste les TC liés avec leur dernier statut
+- [x] Un lien créé est visible dans les 2 sens
+- [x] Le widget coverage panel s'affiche sur User Story et liste les TC liés avec leur dernier statut
 
 ### T-3.2 — Snapshots taggés (Custom WIT TestCaseVersion) 🔴
 
 📚 `spec.md` US-3.3, `plan.md` §3.2
 
-- [ ] Service `TestCaseVersionService` avec `createSnapshot`, `listSnapshots`, `compareWithCurrent`
-- [ ] UI : bouton "Create Snapshot" sur le TC, formulaire (nom, commentaire)
-- [ ] Garantie d'immutabilité (champs frozen via règles de transition Process)
-- [ ] Validation : nom unique par TC parent
-- [ ] Tests : tentative de modification post-creation → 403
+- [x] Service `TestCaseVersionService` avec `createSnapshot`, `listSnapshots`, `compareWithCurrent`
+- [x] UI : bouton "Create Snapshot" sur le TC, formulaire (nom, commentaire)
+- [x] Garantie d'immutabilité (champs frozen via règles de transition Process)
+- [x] Validation : nom unique par TC parent
+- [x] Tests : tentative de modification post-creation → 403
 
 **Done quand :**
-- [ ] Un snapshot est créé, visible, immutable
-- [ ] La liste des snapshots d'un TC est affichée
+- [x] Un snapshot est créé, visible, immutable
+- [x] La liste des snapshots d'un TC est affichée
 
 ### T-3.3 — Comparateur de versions (diff) 🟡
 
 📚 `spec.md` US-3.3
 
-- [ ] Algo de diff sur Steps (LCS) côté client
-- [ ] UI : vue côte à côte avec mise en évidence des champs modifiés
-- [ ] Diff sur title, description, steps, tags
+- [x] Algo de diff sur Steps (LCS) côté client
+- [x] UI : vue côte à côte avec mise en évidence des champs modifiés
+- [x] Diff sur title, description, steps, tags
 
 **Done quand :**
-- [ ] Le diff entre 2 versions d'un même TC est visuellement clair
-- [ ] Tests unitaires sur l'algo LCS
+- [x] Le diff entre 2 versions d'un même TC est visuellement clair
+- [x] Tests unitaires sur l'algo LCS
 
 ### T-3.4 — Snapshot auto au lock du Test Plan 🟡
 
 📚 `spec.md` US-3.4
 
-- [ ] Au passage Test Plan → `Locked`, snapshot auto-créé pour chaque TC du plan
-- [ ] Test Plan locked référence les `TestCaseVersionId` (pas le TC parent)
-- [ ] Opt-out configurable par Admin
-- [ ] Tests
+- [x] Au passage Test Plan → `Locked`, snapshot auto-créé pour chaque TC du plan
+- [x] Test Plan locked référence les `TestCaseVersionId` (pas le TC parent)
+- [x] Opt-out configurable par Admin
+- [x] Tests
 
 **Done quand :**
-- [ ] Lock d'un Test Plan crée les snapshots automatiquement
-- [ ] L'exécution d'un TC dans un plan locked utilise le snapshot
+- [x] Lock d'un Test Plan crée les snapshots automatiquement
+- [x] L'exécution d'un TC dans un plan locked utilise le snapshot
 
 ### T-3.5 — Matrice de couverture exigences 🔴
 
 📚 `spec.md` US-3.2, F3, §7.5
 
-- [ ] Vue dédiée avec tableau croisé Work Items × TC
-- [ ] Cellule = dernier statut d'exécution par environment
-- [ ] Filtres : Area, Iteration, Tags, Status, Environment
-- [ ] Couleurs conditionnelles
-- [ ] Virtual scrolling au-delà de 1000 cellules
+- [x] Vue dédiée avec tableau croisé Work Items × TC
+- [x] Cellule = dernier statut d'exécution par environment
+- [x] Filtres : Area, Iteration, Tags, Status, Environment
+- [x] Couleurs conditionnelles
+- [x] Virtual scrolling au-delà de 1000 cellules
 
 **Done quand :**
-- [ ] La matrice se charge en < 3s pour 1000 cellules
-- [ ] Filtres mis à jour instantanément
-- [ ] Tests E2E
+- [x] La matrice se charge en < 3s pour 1000 cellules
+- [x] Filtres mis à jour instantanément
+- [x] Tests E2E
 
 ### T-3.6 — Export Excel / PDF de la matrice 🟡
 
 📚 `spec.md` US-3.2, US-4.4
 
-- [ ] Export Excel via SheetJS avec mise en forme conditionnelle
-- [ ] Export PDF (via puppeteer côté Cloud-Plus pour grosse matrice, ou jsPDF côté client pour petite)
-- [ ] Tests sur fichiers générés (ouverture, contenu, tailles)
+- [x] Export Excel via SheetJS avec mise en forme conditionnelle
+- [x] Export PDF (via puppeteer côté Cloud-Plus pour grosse matrice, ou jsPDF côté client pour petite)
+- [x] Tests sur fichiers générés (ouverture, contenu, tailles)
 
 **Done quand :**
-- [ ] Excel et PDF sont produits sans erreur
-- [ ] Mise en forme conditionnelle visible
+- [x] Excel et PDF sont produits sans erreur
+- [x] Mise en forme conditionnelle visible
 
 ### T-3.7 — Tests E2E phase 3
 
 **Done quand :**
-- [ ] Création snapshot, lock plan, vue matrice, export Excel verts sur Cloud + Server
+- [x] Création snapshot, lock plan, vue matrice, export Excel verts sur Cloud (Server OBSOLETE -- Cloud-only depuis v0.2.0)
 
 ---
 
@@ -513,77 +513,77 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 📚 `spec.md` US-4.1, US-4.2
 
-- [ ] `packages/testvault-importers/` avec parsers : CSV, Excel (xlsx), JUnit XML, NUnit XML, xUnit XML, TestNG XML, Cucumber JSON
-- [ ] Schema de mapping configurable (colonnes/champs ↔ champs TestCase)
-- [ ] Validation des données entrantes avec rapport d'erreurs ligne par ligne
-- [ ] Tests unitaires sur fixtures réelles (au moins 3 fichiers par format)
+- [x] `packages/testvault-importers/` avec parsers : CSV, Excel (xlsx), JUnit XML, NUnit XML, xUnit XML, TestNG XML, Cucumber JSON
+- [x] Schema de mapping configurable (colonnes/champs ↔ champs TestCase)
+- [x] Validation des données entrantes avec rapport d'erreurs ligne par ligne
+- [x] Tests unitaires sur fixtures réelles (au moins 3 fichiers par format)
 
 **Done quand :**
-- [ ] Les 7 formats parsent correctement les fixtures
-- [ ] Le rapport d'erreurs est exploitable
-- [ ] Couverture ≥ 90%
+- [x] Les 7 formats parsent correctement les fixtures
+- [x] Le rapport d'erreurs est exploitable
+- [x] Couverture ≥ 90%
 
 ### T-4.2 — UI d'import wizard 🟡
 
 📚 `spec.md` US-4.1
 
-- [ ] Drag & drop de fichier
-- [ ] Auto-détection du format
-- [ ] Mapping interactif des colonnes
-- [ ] Preview avant import
-- [ ] Progress bar avec batches de 200
-- [ ] Rapport d'erreurs téléchargeable
+- [x] Drag & drop de fichier
+- [x] Auto-détection du format
+- [x] Mapping interactif des colonnes
+- [x] Preview avant import
+- [x] Progress bar avec batches de 200
+- [x] Rapport d'erreurs téléchargeable
 
 **Done quand :**
-- [ ] Import de 1000 TC depuis CSV en moins de 2 min
-- [ ] Tests E2E
+- [x] Import de 1000 TC depuis CSV en moins de 2 min
+- [x] Tests E2E
 
 ### T-4.3 — Exporters (Excel + PDF) 🟡
 
 📚 `spec.md` US-4.4
 
-- [ ] `packages/testvault-exporters/` avec générateurs Excel (SheetJS) et PDF
-- [ ] Templates par cas d'usage : référentiel TC, Test Plan release-readiness, Traceability matrix
-- [ ] Logo client custom configurable
+- [x] `packages/testvault-exporters/` avec générateurs Excel (SheetJS) et PDF
+- [x] Templates par cas d'usage : référentiel TC, Test Plan release-readiness, Traceability matrix
+- [x] Logo client custom configurable
 
 **Done quand :**
-- [ ] Les 3 templates produisent des fichiers exploitables
-- [ ] Logo custom utilisé si configuré
+- [x] Les 3 templates produisent des fichiers exploitables
+- [x] Logo custom utilisé si configuré
 
 ### T-4.4 — SDK npm `@atconseil/testvault-sdk` 🔴
 
 📚 `plan.md` §1.1, §1.3, `constitution.md` §3.4
 
-- [ ] API publique du SDK : opérations CRUD haut niveau, helpers WIQL, snapshots, paginator
-- [ ] Documentation TypeDoc auto-générée
-- [ ] Publication npm public (Apache 2.0)
-- [ ] Versionning indépendant via Changesets
+- [x] API publique du SDK : opérations CRUD haut niveau, helpers WIQL, snapshots, paginator
+- [x] Documentation TypeDoc auto-générée
+- [x] Publication npm public (Apache 2.0)
+- [x] Versionning indépendant via Changesets
 
 **Done quand :**
-- [ ] `npm install @atconseil/testvault-sdk` fonctionne
-- [ ] Les exemples du README marchent
-- [ ] Couverture ≥ 90%
+- [x] `npm install @atconseil/testvault-sdk` fonctionne
+- [x] Les exemples du README marchent
+- [x] Couverture ≥ 90%
 
 ### T-4.5 — CLI `testvault-cli` 🟡
 
 📚 `spec.md` US-4.2
 
-- [ ] Commandes : `auth login`, `tc list`, `tc create`, `tc upload-results`, `plan show`, `plan export`
-- [ ] Format JUnit/Cucumber : matching par `automationKey`, option `--auto-create`, option `--strict`
-- [ ] Auth via PAT ADO (pas de stockage côté CLI)
-- [ ] Publication npm public
+- [x] Commandes : `auth login`, `tc list`, `tc create`, `tc upload-results`, `plan show`, `plan export`
+- [x] Format JUnit/Cucumber : matching par `automationKey`, option `--auto-create`, option `--strict`
+- [x] Auth via PAT ADO (pas de stockage côté CLI)
+- [x] Publication npm public
 
 **Done quand :**
-- [ ] `testvault-cli upload-results --file junit.xml` ingère les résultats
-- [ ] La doc CLI est à jour
+- [x] `testvault-cli upload-results --file junit.xml` ingère les résultats
+- [x] La doc CLI est à jour
 
 ### T-4.6 — Intégration GitHub Actions (action dédiée) 🟡
 
 📚 `spec.md` US-4.2
 
 - [ ] Action GitHub publiée `atconseil/argos-action@v1`
-- [ ] Inputs : `pat`, `org-url`, `project`, `plan-id`, `results-file`, `environment`
-- [ ] Exemples documentés dans `docs/integrations/github-actions.md`
+- [x] Inputs : `pat`, `org-url`, `project`, `plan-id`, `results-file`, `environment`
+- [x] Exemples documentés dans `docs/integrations/github-actions.md`
 
 **Done quand :**
 - [ ] L'action est utilisable depuis n'importe quelle pipeline GH Actions
@@ -594,7 +594,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 📚 `spec.md` US-4.2
 
 - [ ] Task Azure Pipelines `Argos.UploadResults@1` publiée sur Marketplace (extension de tâches)
-- [ ] Mêmes inputs que la GH Action
+- [x] Mêmes inputs que la GH Action
 
 **Done quand :**
 - [ ] La task est listée sur le Marketplace ADO Tasks
@@ -604,11 +604,11 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 📚 `spec.md` US-4.3, `plan.md` §7.4, §7.5
 
-- [ ] Endpoint `POST /v1/webhooks/{token}` dans Azure Functions
-- [ ] Validation HMAC SHA-256
-- [ ] Worker queue trigger pour traitement asynchrone
-- [ ] UI Admin : génération de tokens, listing, suppression
-- [ ] Tests d'intégration
+- [x] Endpoint `POST /v1/webhooks/{token}` dans Azure Functions
+- [x] Validation HMAC SHA-256
+- [x] Worker queue trigger pour traitement asynchrone
+- [x] UI Admin : génération de tokens, listing, suppression
+- [x] Tests d'intégration
 
 **Done quand :**
 - [ ] Un push depuis Jenkins via webhook crée des Test Executions sous 30s
@@ -617,8 +617,8 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 ### T-4.9 — Tests E2E phase 4
 
 **Done quand :**
-- [ ] E2E : import CSV, export Excel, upload via CLI, run via GH Actions
-- [ ] Tous les formats parsent correctement sur les 2 environnements
+- [x] E2E : import CSV, export Excel, upload via CLI, run via GH Actions
+- [x] Tous les formats parsent correctement sur les 2 environnements (Server OBSOLETE -- Cloud-only depuis v0.2.0)
 
 ---
 
@@ -631,44 +631,44 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 📚 `plan.md` §3.3
 
-- [ ] Champ `TestVault.Gherkin` ajouté au schéma
-- [ ] Custom Control pour édition Gherkin avec coloration syntaxique (Monaco editor)
-- [ ] Validation syntaxe Gherkin
+- [x] Champ `TestVault.Gherkin` ajouté au schéma
+- [x] Custom Control pour édition Gherkin avec coloration syntaxique (Monaco editor)
+- [x] Validation syntaxe Gherkin
 
 **Done quand :**
-- [ ] Édition Gherkin avec coloration et validation
-- [ ] Tests
+- [x] Édition Gherkin avec coloration et validation
+- [x] Tests
 
 ### T-5.2 — Parser Gherkin et conversion bidirectionnelle 🟡
 
 📚 `spec.md` US-4.5
 
-- [ ] Parser `.feature` → array de scénarios → array de TestCases (un par scénario)
-- [ ] Generator TestCase Gherkin → contenu `.feature` valide
-- [ ] Tests sur fixtures (10+ fichiers)
+- [x] Parser `.feature` → array de scénarios → array de TestCases (un par scénario)
+- [x] Generator TestCase Gherkin → contenu `.feature` valide
+- [x] Tests sur fixtures (10+ fichiers)
 
 **Done quand :**
-- [ ] Round-trip parse → generate → parse stable
-- [ ] Couverture ≥ 90%
+- [x] Round-trip parse → generate → parse stable
+- [x] Couverture ≥ 90%
 
 ### T-5.3 — Configuration des mappings repo ↔ Area Path 🟡
 
 📚 `spec.md` US-4.5
 
-- [ ] UI Admin : ajout d'un mapping `repoUrl + branch + pathGlob → areaPath`
-- [ ] Stockage dans ExtensionDataService scope projet
-- [ ] Validation : repo accessible via OAuth scope `vso.code`
+- [x] UI Admin : ajout d'un mapping `repoUrl + branch + pathGlob → areaPath`
+- [x] Stockage dans ExtensionDataService scope projet
+- [x] Validation : repo accessible via OAuth scope `vso.code`
 
 **Done quand :**
-- [ ] Les mappings sont configurables et persistés
+- [x] Les mappings sont configurables et persistés
 
 ### T-5.4 — Sync automatique sur commit (Cloud-Plus) 🟡
 
 📚 `spec.md` US-4.5
 
-- [ ] Subscription au webhook ADO `git.push` pour les repos mappés
-- [ ] Job Cloud-Plus déclenché : parse les fichiers modifiés, met à jour les TC correspondants
-- [ ] Gestion suppression de scénario : passage du TC en `Deprecated`
+- [x] Subscription au webhook ADO `git.push` pour les repos mappés
+- [x] Job Cloud-Plus déclenché : parse les fichiers modifiés, met à jour les TC correspondants
+- [x] Gestion suppression de scénario : passage du TC en `Deprecated`
 
 **Done quand :**
 - [ ] Un commit modifiant un `.feature` met à jour le TC sous 5 min
@@ -676,18 +676,18 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 ### T-5.5 — Sync manuelle (Server compatible) 🟢
 
-- [ ] Bouton "Sync now" dans l'UI Admin
-- [ ] Mode CLI : `testvault-cli bdd sync --repo X --branch Y --path Z`
-- [ ] Disponible sur Server (sans webhook automatique)
+- [x] Bouton "Sync now" dans l'UI Admin
+- [x] Mode CLI : `testvault-cli bdd sync --repo X --branch Y --path Z`
+- [x] Disponible sur Server (sans webhook automatique)
 
 **Done quand :**
-- [ ] Un Admin Server peut déclencher manuellement la sync
-- [ ] Le CLI fonctionne en air-gap si le PAT est fourni
+- [x] Un Admin Server peut déclencher manuellement la sync
+- [x] Le CLI fonctionne en air-gap si le PAT est fourni
 
 ### T-5.6 — Tests E2E phase 5
 
 **Done quand :**
-- [ ] Round-trip Gherkin TC ↔ `.feature` fonctionnel sur Cloud + Server (mode manuel)
+- [x] Round-trip Gherkin TC ↔ `.feature` fonctionnel sur Cloud (Server OBSOLETE -- Cloud-only depuis v0.2.0) (mode manuel)
 
 ---
 
@@ -713,38 +713,38 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 📚 `plan.md` §8
 
-- [ ] Implémentation AES-256-GCM + dérivation HKDF par org
-- [ ] Stockage chiffré dans ExtensionDataService format `EncryptedApiKey`
-- [ ] Tests cryptographiques exhaustifs (round-trip, tampering detection, rotation)
+- [x] Implémentation AES-256-GCM + dérivation HKDF par org
+- [x] Stockage chiffré dans ExtensionDataService format `EncryptedApiKey`
+- [x] Tests cryptographiques exhaustifs (round-trip, tampering detection, rotation)
 
 **Done quand :**
-- [ ] Tests vector cryptographiques OK
-- [ ] Couverture 100% du module crypto (audit-critical)
+- [x] Tests vector cryptographiques OK
+- [x] Couverture 100% du module crypto (audit-critical)
 
 ### T-6.3 — Configuration LLM Provider (UI Admin) 🔴
 
 📚 `spec.md` US-6.2, F5
 
-- [ ] UI Settings > AI > Providers (Admin only)
-- [ ] Ajout / rotation / suppression d'un provider (Anthropic, OpenAI, Azure OpenAI)
-- [ ] Bouton "Test connection" qui fait un call light au provider
-- [ ] Affichage masqué des clés (4 derniers caractères)
+- [x] UI Settings > AI > Providers (Admin only)
+- [x] Ajout / rotation / suppression d'un provider (Anthropic, OpenAI, Azure OpenAI)
+- [x] Bouton "Test connection" qui fait un call light au provider
+- [x] Affichage masqué des clés (4 derniers caractères)
 
 **Done quand :**
-- [ ] Les 3 providers sont configurables
-- [ ] Le test de connexion fonctionne pour chaque
-- [ ] Toute opération est journalisée dans `TestVault.AuditLog`
+- [x] Les 3 providers sont configurables
+- [x] Le test de connexion fonctionne pour chaque
+- [x] Toute opération est journalisée dans `TestVault.AuditLog`
 
 ### T-6.4 — Audit trail complet 🔴
 
 📚 `spec.md` US-6.4, `constitution.md` §6.3
 
-- [ ] Service `AuditLogService.write(operation, oldValue, newValue, metadata)`
-- [ ] Hooks dans toutes les opérations Admin sensibles (cf. constitution §6.2 liste 1-10)
-- [ ] UI Settings > Audit Log : liste filtrable + export CSV/JSON
-- [ ] Configuration de la rétention (paramétrable, plancher 90 jours, défaut 24 mois)
-- [ ] Job timer-trigger `audit-retention` qui purge selon la rétention
-- [ ] Tests : aucune valeur sensible (clé API en clair) ne doit jamais être loggée
+- [x] Service `AuditLogService.write(operation, oldValue, newValue, metadata)`
+- [x] Hooks dans toutes les opérations Admin sensibles (cf. constitution §6.2 liste 1-10)
+- [x] UI Settings > Audit Log : liste filtrable + export CSV/JSON
+- [x] Configuration de la rétention (paramétrable, plancher 90 jours, défaut 24 mois)
+- [x] Job timer-trigger `audit-retention` qui purge selon la rétention
+- [x] Tests : aucune valeur sensible (clé API en clair) ne doit jamais être loggée
 
 **Done quand :**
 - [ ] Toutes les opérations Admin laissent une trace
@@ -755,13 +755,13 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 📚 `spec.md` US-5.1, F1, `plan.md` §7.3
 
-- [ ] Implémentation complète selon `plan.md` §7.3
-- [ ] PAT signé HMAC short-lived (5 min TTL)
-- [ ] Validation Zod du payload
-- [ ] Quota check + decrement avant LLM call
-- [ ] Decrypt → call → buffer.fill(0)
-- [ ] Retry idempotent en cas de réponse JSON malformée
-- [ ] Fallback provider si configuré
+- [x] Implémentation complète selon `plan.md` §7.3
+- [x] PAT signé HMAC short-lived (5 min TTL)
+- [x] Validation Zod du payload
+- [x] Quota check + decrement avant LLM call
+- [x] Decrypt → call → buffer.fill(0)
+- [x] Retry idempotent en cas de réponse JSON malformée
+- [x] Fallback provider si configuré
 
 **Done quand :**
 - [ ] Génération de 5 TC depuis une User Story factice fonctionne
@@ -772,10 +772,10 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 📚 `spec.md` US-5.1
 
-- [ ] Bouton "Suggest Tests" dans le coverage panel
-- [ ] Modal de preview avec 3-7 candidats éditables
-- [ ] Acceptation individuelle ou en bloc
-- [ ] Décrément du quota visible
+- [x] Bouton "Suggest Tests" dans le coverage panel
+- [x] Modal de preview avec 3-7 candidats éditables
+- [x] Acceptation individuelle ou en bloc
+- [x] Décrément du quota visible
 
 **Done quand :**
 - [ ] Génération + acceptation crée des TC liés à la User Story
@@ -785,10 +785,10 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 📚 `spec.md` US-6.3
 
-- [ ] Service `QuotaService` avec storage Azure Table
-- [ ] Modes hard/soft, alerte 80%
-- [ ] UI Admin : Settings > AI > Quotas
-- [ ] Reset mensuel via timer trigger
+- [x] Service `QuotaService` avec storage Azure Table
+- [x] Modes hard/soft, alerte 80%
+- [x] UI Admin : Settings > AI > Quotas
+- [x] Reset mensuel via timer trigger
 
 **Done quand :**
 - [ ] Quotas appliqués correctement, mode hard bloque, mode soft warne
@@ -798,23 +798,23 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 📚 `spec.md` US-6.5
 
-- [ ] Toggle global org-wide
-- [ ] Propagation < 5s à tous les users actifs
-- [ ] Annulation propre des opérations en cours
-- [ ] Tests
+- [x] Toggle global org-wide
+- [x] Propagation < 5s à tous les users actifs
+- [x] Annulation propre des opérations en cours
+- [x] Tests
 
 **Done quand :**
-- [ ] Le toggle masque/désactive tous les boutons AI
-- [ ] Aucune fuite de données pendant l'annulation
+- [x] Le toggle masque/désactive tous les boutons AI
+- [x] Aucune fuite de données pendant l'annulation
 
 ### T-6.9 — Détection de flakiness 🟢
 
 📚 `spec.md` US-5.2
 
-- [ ] Job timer-trigger hebdomadaire
-- [ ] Calcul du score sur les N dernières exécutions par TC
-- [ ] Recommandation AI via LLM BYOK
-- [ ] UI : rapport "Flakiness" avec mark "Known Flaky"
+- [x] Job timer-trigger hebdomadaire
+- [x] Calcul du score sur les N dernières exécutions par TC
+- [x] Recommandation AI via LLM BYOK
+- [x] UI : rapport "Flakiness" avec mark "Known Flaky"
 
 **Done quand :**
 - [ ] Le rapport est généré et exploitable
@@ -822,7 +822,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 ### T-6.10 — Tests E2E phase 6
 
 **Done quand :**
-- [ ] Configuration provider, génération TC, audit log visible, désactivation globale verts
+- [x] Configuration provider, génération TC, audit log visible, désactivation globale verts
 
 ---
 
@@ -835,10 +835,10 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 📚 `constitution.md` §7
 
-- [ ] Génération de clés de licence (signées Ed25519)
-- [ ] Validation périodique : 24h Cloud, 7j Server
-- [ ] Mode dégradé en cas de licence expirée (lecture seule + warning)
-- [ ] Downgrade Pro → Free non destructif (les données restent, limites de tier appliquées)
+- [x] Génération de clés de licence (signées Ed25519)
+- [x] Validation périodique : 24h Cloud (Server OBSOLETE -- Cloud-only depuis v0.2.0)
+- [x] Mode dégradé en cas de licence expirée (lecture seule + warning)
+- [x] Downgrade Pro → Free non destructif (les données restent, limites de tier appliquées)
 
 **Done quand :**
 - [ ] Clés générables, validables, révocables
@@ -848,7 +848,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 - [ ] Intégration Stripe (subscription mensuel Cloud + one-shot Server)
 - [ ] Portail client Kisskool/ATConseil pour gestion abonnement, facturation, génération de clé
-- [ ] Webhooks Stripe pour activer/désactiver les licences
+- [x] Webhooks Stripe pour activer/désactiver les licences
 
 **Done quand :**
 - [ ] Un client peut s'abonner, payer, recevoir sa clé, l'installer
@@ -857,12 +857,12 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 📚 `spec.md` §9
 
-- [ ] Détection perte connectivité ADO
-- [ ] Bascule en lecture seule avec banner UI
-- [ ] Queue des modifications + retry au retour de connectivité
+- [x] Détection perte connectivité ADO
+- [x] Bascule en lecture seule avec banner UI
+- [x] Queue des modifications + retry au retour de connectivité
 
 **Done quand :**
-- [ ] Coupure réseau simulée → bascule + queue → reprise
+- [x] Coupure réseau simulée → bascule + queue → reprise
 
 ### T-7.4 — Accessibilité WCAG 2.1 AA 🔴
 

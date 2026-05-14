@@ -496,3 +496,14 @@ Decision a prendre lors du Sprint 8 en fonction de la maturite percue de l'API i
 > Phase 1 : 100% DONE (etait 0/59 cochee -- massif desalignement corrige). `Specs/audit-resync-2026-05-14.md` cree.
 > Corrections encoding U+FFFD dans T-0.8 (6 lignes) + refs cassees Phase 0.5 (App.tsx, README.md).
 > Phases 2-7 reportees a un sprint dedie futur. 3 TECH-DEBT identifies : 030 (scan U+FFFD), 031 (T-1.9 Server obsolete), 032 (refs cassees).
+
+> **Audit Phase 2-7 livre 2026-05-15** (TECH-DEBT-026 follow-up) : audit exhaustif Phases 2-7 confirme que tout le code produit est DONE.
+> - Phase 2 : 7/7 sections code DONE, wiring 0/5 (Sprint 2.5b)
+> - Phase 3 : 7/7 sections code DONE, wiring 0/5 (Sprint 2.5c)
+> - Phase 4 : 9/9 sections code DONE, 0/2 wiring + argos-action/azure-task non-publies
+> - Phase 5 : 6/6 sections code DONE, wiring 0/2 + sync webhook depend deploy
+> - Phase 6 : 10/10 sections code DONE backend + UI, deploy Azure pendant
+> - Phase 7 : 3/10 sections code partiel (license + stripe + offline), ops pendantes
+> - Specs/audit-resync-2026-05-15.md cree
+> - 4 nouveaux TECH-DEBT identifies : 033, 034 (functions deploy), 035 (Marketplace publish), 036 (ops Phase 7)
+> - Sprint 2.5b/c/d valides : wiring 24 composants en 3 sous-sprints (~3h15)
