@@ -1,6 +1,10 @@
 import type {
+	IBugCreationService,
+	IEnvironmentConfigService,
+	IEvidenceUploadService,
 	IPreconditionService,
 	ITestCaseService,
+	ITestExecutionService,
 	ITestPlanService,
 	ITestSetService,
 } from "@atconseil/argos-sdk";
@@ -15,6 +19,10 @@ export function createMockServices(overrides?: Partial<Services>): Services {
 		testSetService: createMockTestSetService(),
 		preconditionService: createMockPreconditionService(),
 		llmProviderService: createMockLlmProviderService(),
+		testExecutionService: createMockTestExecutionService(),
+		evidenceUploadService: createMockEvidenceUploadService(),
+		environmentConfigService: createMockEnvironmentConfigService(),
+		bugCreationService: createMockBugCreationService(),
 		project: "MockProject",
 		organization: "MockOrg",
 		...overrides,
@@ -86,4 +94,46 @@ export function createMockLlmProviderService(
 		testConnection: vi.fn().mockResolvedValue({ success: true, message: "OK" }),
 		...overrides,
 	} as unknown as ILlmProviderService;
+}
+
+export function createMockTestExecutionService(
+	overrides?: Partial<ITestExecutionService>
+): ITestExecutionService {
+	return {
+		startRun: vi.fn().mockResolvedValue({ id: 1, stepResults: [], evidence: [], bugLinks: [] }),
+		saveStepResult: vi.fn().mockResolvedValue({}),
+		attachEvidence: vi.fn().mockResolvedValue({}),
+		finalizeRun: vi.fn().mockResolvedValue({}),
+		linkBug: vi.fn().mockResolvedValue({}),
+		listExecutions: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 }),
+		...overrides,
+	} as unknown as ITestExecutionService;
+}
+
+export function createMockEvidenceUploadService(
+	overrides?: Partial<IEvidenceUploadService>
+): IEvidenceUploadService {
+	return {
+		upload: vi.fn().mockResolvedValue({ attachmentId: "mock-id", filename: "mock.png", url: "" }),
+		...overrides,
+	} as unknown as IEvidenceUploadService;
+}
+
+export function createMockEnvironmentConfigService(
+	overrides?: Partial<IEnvironmentConfigService>
+): IEnvironmentConfigService {
+	return {
+		getEnvironments: vi.fn().mockResolvedValue([]),
+		saveEnvironments: vi.fn().mockResolvedValue(undefined),
+		...overrides,
+	} as unknown as IEnvironmentConfigService;
+}
+
+export function createMockBugCreationService(
+	overrides?: Partial<IBugCreationService>
+): IBugCreationService {
+	return {
+		createBug: vi.fn().mockResolvedValue({ id: 999, url: "https://mock/bugs/999" }),
+		...overrides,
+	} as unknown as IBugCreationService;
 }

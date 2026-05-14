@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Sprint 2.5b 2026-05-15 -- Wiring Phase 2 (v0.5.1)
+
+**5 composants Phase 2 wires dans App.tsx :**
+
+- `RunInterface` : nouvel onglet "Run" dans `PlansView` (TabList Fluent UI 2). `EvidencePanel` et `CreateBugForm` integres via `RunInterface`.
+- `ExecutionHistory` : nouvel onglet "Executions" dans `CasesView`.
+- `EnvironmentSettings` : nouvelle section dans `SettingsView` (Admin).
+
+**Services Phase 2 ajoutes dans `services.ts` / `mock-services.ts` :**
+
+- `testExecutionService`, `evidenceUploadService`, `environmentConfigService`, `bugCreationService`
+
+**3 nouveaux fichiers de tests wiring (5 nouvelles assertions) :**
+
+- `WIRING-2026-05-15-plans-run.test.tsx` (2 tests)
+- `WIRING-2026-05-15-cases-executions.test.tsx` (2 tests)
+- `WIRING-2026-05-15-settings-environments.test.tsx` (1 test)
+
+**Totaux apres Sprint 2.5b :** 330 tests / 44 fichiers de test / 20 packages. Preflight PASSED argos@0.5.1.
+
+---
+
 ### Documentation 2026-05-15 -- Audit resync exhaustif Phases 2-7 (TECH-DEBT-026 follow-up)
 
 No version bump -- documentation only.
@@ -166,6 +188,18 @@ No version bump -- dev/CI dependencies only, no runtime product changes.
 ### TECH-DEBT-029 NEW
 
 - `docs-site#build` task has `outputs` config in `turbo.json` but no actual build outputs. Warning during turbo build : `WARNING  no output files found for task docs-site#build`. Either fix `outputs` array or remove `docs-site#build` from turbo.json if it's intentionally a no-op.
+
+---
+
+## [0.5.1] - 2026-05-15
+
+### Added (Sprint 2.5b - feat/sprint-2-5b-phase2-wiring)
+
+- `RunInterface` wired in `PlansView` (tab "Run") with `EvidencePanel` + `CreateBugForm` integrated
+- `ExecutionHistory` wired in `CasesView` (tab "Executions")
+- `EnvironmentSettings` wired in `SettingsView` (section Admin)
+- 4 Phase 2 services added to `Services` interface: `testExecutionService`, `evidenceUploadService`, `environmentConfigService`, `bugCreationService`
+- 3 wiring tests: `WIRING-2026-05-15-plans-run`, `WIRING-2026-05-15-cases-executions`, `WIRING-2026-05-15-settings-environments`
 
 ---
 
