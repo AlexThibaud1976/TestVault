@@ -1,8 +1,12 @@
-import { FluentProvider, Text, webLightTheme } from "@fluentui/react-components";
+import type { TestVaultTestCase } from "@atconseil/argos-types";
+import { FluentProvider, Tab, TabList, Text, webLightTheme } from "@fluentui/react-components";
 import * as SDK from "azure-devops-extension-sdk";
 import { useEffect, useState } from "react";
+import { EnvironmentSettings } from "./EnvironmentSettings.js";
+import { ExecutionHistory } from "./ExecutionHistory.js";
 import { LlmProviderSettings } from "./LlmProviderSettings.js";
 import { PreconditionForm } from "./PreconditionForm.js";
+import { RunInterface } from "./RunInterface.js";
 import { TestCaseForm } from "./TestCaseForm.js";
 import { TestPlanForm } from "./TestPlanForm.js";
 import { TestSetForm } from "./TestSetForm.js";
@@ -27,26 +31,84 @@ function resolveSection(contributionId: string | undefined): Section {
 	return CONTRIBUTION_ID_TO_SECTION[contributionId] ?? DEFAULT_SECTION;
 }
 
+const PLACEHOLDER_TEST_CASE: TestVaultTestCase = {
+	id: 0,
+	title: "",
+	description: "",
+	state: "Design",
+	areaPath: "",
+	iterationPath: "",
+	tags: [],
+	steps: [],
+	priority: 2,
+	automationStatus: "Manual",
+	preconditionLinks: [],
+	createdBy: "",
+	createdAt: new Date(0).toISOString(),
+	modifiedBy: "",
+	modifiedAt: new Date(0).toISOString(),
+};
+
+function RunTab() {
+	const { testExecutionService, evidenceUploadService, bugCreationService } = useServices();
+	return (
+		<RunInterface
+			testCase={PLACEHOLDER_TEST_CASE}
+			testPlanId={0}
+			availableEnvironments={[]}
+			executionService={testExecutionService}
+			uploadService={evidenceUploadService}
+			bugService={bugCreationService}
+		/>
+	);
+}
+
 export function PlansView() {
 	const { testPlanService, project } = useServices();
+	const [tab, setTab] = useState<"details" | "run">("details");
 	return (
 		<div data-testid="view-plans">
 			<Text as="h2" size={500} weight="semibold" block style={{ marginBottom: "12px" }}>
 				Test Plans
 			</Text>
-			<TestPlanForm service={testPlanService} project={project} />
+			<TabList
+				selectedValue={tab}
+				onTabSelect={(_, d) => setTab(d.value as "details" | "run")}
+				style={{ marginBottom: "16px" }}
+			>
+				<Tab value="details">Plan Details</Tab>
+				<Tab value="run">Run</Tab>
+			</TabList>
+			{tab === "details" && <TestPlanForm service={testPlanService} project={project} />}
+			{tab === "run" && <RunTab />}
 		</div>
 	);
 }
 
 export function CasesView() {
-	const { testCaseService, project } = useServices();
+	const { testCaseService, testExecutionService, project } = useServices();
+	const [tab, setTab] = useState<"details" | "executions">("details");
 	return (
 		<div data-testid="view-cases">
 			<Text as="h2" size={500} weight="semibold" block style={{ marginBottom: "12px" }}>
 				Test Cases
 			</Text>
-			<TestCaseForm service={testCaseService} project={project} />
+			<TabList
+				selectedValue={tab}
+				onTabSelect={(_, d) => setTab(d.value as "details" | "executions")}
+				style={{ marginBottom: "16px" }}
+			>
+				<Tab value="details">Case Details</Tab>
+				<Tab value="executions">Executions</Tab>
+			</TabList>
+			{tab === "details" && <TestCaseForm service={testCaseService} project={project} />}
+			{tab === "executions" && (
+				<ExecutionHistory
+					testCaseId={0}
+					executionService={testExecutionService}
+					availableEnvironments={[]}
+				/>
+			)}
 		</div>
 	);
 }
@@ -92,19 +154,14 @@ export function ReportsView() {
 }
 
 export function SettingsView() {
-	const { llmProviderService } = useServices();
+	const { llmProviderService, environmentConfigService } = useServices();
 	return (
 		<div data-testid="view-settings">
 			<Text as="h2" size={500} weight="semibold" block style={{ marginBottom: "12px" }}>
 				Settings
 			</Text>
 			<LlmProviderSettings service={llmProviderService} isAdmin={true} />
-			<div style={{ marginTop: 24, padding: 12, background: "#f5f5f5", borderRadius: 4 }}>
-				<Text size={200} style={{ color: "#666" }}>
-					Audit Log, Repo Mapping, Quotas, Webhooks, and Beta opt-in are tracked as backlog item
-					Sprint 2.5b.
-				</Text>
-			</div>
+			<EnvironmentSettings service={environmentConfigService} isAdmin={true} />
 		</div>
 	);
 }

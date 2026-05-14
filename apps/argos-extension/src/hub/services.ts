@@ -1,12 +1,20 @@
 import {
 	type IAdoClient,
+	type IBugCreationService,
+	type IEnvironmentConfigService,
+	type IEvidenceUploadService,
 	type IPreconditionService,
 	type ITestCaseService,
+	type ITestExecutionService,
 	type ITestPlanService,
 	type ITestSetService,
 	createAdoClient,
+	createBugCreationService,
+	createEnvironmentConfigService,
+	createEvidenceUploadService,
 	createPreconditionService,
 	createTestCaseService,
+	createTestExecutionService,
 	createTestPlanService,
 	createTestSetService,
 } from "@atconseil/argos-sdk";
@@ -22,6 +30,10 @@ export interface Services {
 	testSetService: ITestSetService;
 	preconditionService: IPreconditionService;
 	llmProviderService: ILlmProviderService;
+	testExecutionService: ITestExecutionService;
+	evidenceUploadService: IEvidenceUploadService;
+	environmentConfigService: IEnvironmentConfigService;
+	bugCreationService: IBugCreationService;
 	project: string;
 	organization: string;
 }
@@ -39,12 +51,18 @@ export function buildServices(ctx: AdoContext): Services {
 	const aiStore = createAiSettingsStore(dataClient);
 	const llmProviderService = createLlmProviderService(aiStore);
 
+	const testExecutionService = createTestExecutionService(adoClient, ctx.project);
+
 	return {
 		testPlanService: createTestPlanService(adoClient, ctx.project),
 		testCaseService: createTestCaseService(adoClient, ctx.project),
 		testSetService: createTestSetService(adoClient, ctx.project),
 		preconditionService: createPreconditionService(adoClient, ctx.project),
 		llmProviderService,
+		testExecutionService,
+		evidenceUploadService: createEvidenceUploadService(adoClient, testExecutionService),
+		environmentConfigService: createEnvironmentConfigService(dataClient),
+		bugCreationService: createBugCreationService(adoClient, testExecutionService),
 		project: ctx.project,
 		organization: ctx.organization,
 	};

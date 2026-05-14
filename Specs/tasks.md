@@ -167,8 +167,8 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 ça avant de poursuivre les développements neufs de Phase 1.
 
 - [x] T-0.5.1 — Inventaire des composants riches non-wirés (DONE TECH-DEBT-015A)
-- [ ] T-0.5.2 — (App.tsx) : remplacer les stubs par les composants riches existants (Plans, Cases, Sets, Preconditions, Reports, AI-Config, Audit log, Settings) -- PARTIAL : 5/8 sections wirees Sprint 2.5a
-- [x] T-0.5.3 — Tests de wiring (composant rendu réellement vs stub) (DONE Sprint 2.5a : 5 tests WIRING-2026-05-10)
+- [ ] T-0.5.2 — (App.tsx) : remplacer les stubs par les composants riches existants (Plans, Cases, Sets, Preconditions, Reports, AI-Config, Audit log, Settings) -- PARTIAL : Phase 2 composants wires Sprint 2.5b (RunInterface, EvidencePanel, EnvironmentSettings, CreateBugForm, ExecutionHistory). Reports/AuditLog/autres Sprint 2.5c+
+- [x] T-0.5.3 — Tests de wiring (composant rendu réellement vs stub) (DONE Sprint 2.5a : 5 tests WIRING-2026-05-10 + Sprint 2.5b : 3 tests WIRING-2026-05-15, 5 nouvelles assertions)
 - [ ] T-0.5.4 — Vérifier accessibility (aria-* sur la sidebar, focus management)
 - [ ] T-0.5.5 — Mettre à jour (README.md) avec screenshots du hub réel
 
@@ -343,6 +343,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Validation : commentaire obligatoire si Step en Fail
 - [x] Calcul global status en temps réel
 - [x] Bouton "Save Run" (final) + "Cancel"
+- [x] Wired in App.tsx (PlansView tab "Run") — Sprint 2.5b
 
 **Done quand :**
 - [ ] L'utilisateur peut exécuter un TC complet de bout en bout
@@ -358,6 +359,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] UI drag & drop + bouton fichier
 - [x] Preview pour images, lecteur intégré vidéos, lien pour autres
 - [x] Lien evidence ↔ step ou execution global
+- [x] Wired in App.tsx (integrate dans RunInterface) — Sprint 2.5b
 
 **Done quand :**
 - [x] Upload des 4 formats principaux fonctionne
@@ -372,6 +374,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Stockage dans ExtensionDataService scope projet
 - [x] Validation côté run : environment doit appartenir à la liste configurée
 - [x] Tests
+- [x] Wired in App.tsx (SettingsView section) — Sprint 2.5b
 
 **Done quand :**
 - [x] Un Admin peut gérer la liste
@@ -385,6 +388,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Bouton "Create Bug from Failure" sur l'écran de run avec status Fail
 - [x] Pré-remplissage : Title, Description (avec lien vers run), Repro Steps (depuis steps Fail), Severity, Environment
 - [x] Création via API ADO standard, lien `Found By` Test Execution → Bug
+- [x] Wired in App.tsx (integrate dans RunInterface via Dialog) — Sprint 2.5b
 
 **Done quand :**
 - [x] Un Bug est créé avec les bonnes infos pré-remplies
@@ -397,6 +401,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Sur la page d'un TC, onglet "Executions" avec liste paginée
 - [x] Filtres : par environment, par statut, par période
 - [x] Vue côte à côte des statuts par environment
+- [x] Wired in App.tsx (CasesView tab "Executions") — Sprint 2.5b
 
 **Done quand :**
 - [x] L'historique d'un TC avec >100 exécutions reste fluide
