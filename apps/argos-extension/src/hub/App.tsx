@@ -1,15 +1,28 @@
+import type { MatrixInput } from "@atconseil/argos-sdk";
 import type { TestVaultTestCase } from "@atconseil/argos-types";
-import { FluentProvider, Tab, TabList, Text, webLightTheme } from "@fluentui/react-components";
+import {
+	Button,
+	FluentProvider,
+	Tab,
+	TabList,
+	Text,
+	webLightTheme,
+} from "@fluentui/react-components";
 import * as SDK from "azure-devops-extension-sdk";
 import { useEffect, useState } from "react";
+import { CoverageMatrix } from "./CoverageMatrix.js";
 import { EnvironmentSettings } from "./EnvironmentSettings.js";
 import { ExecutionHistory } from "./ExecutionHistory.js";
+import { ImportWizard } from "./ImportWizard.js";
 import { LlmProviderSettings } from "./LlmProviderSettings.js";
 import { PreconditionForm } from "./PreconditionForm.js";
 import { RunInterface } from "./RunInterface.js";
+import { SnapshotPanel } from "./SnapshotPanel.js";
 import { TestCaseForm } from "./TestCaseForm.js";
 import { TestPlanForm } from "./TestPlanForm.js";
 import { TestSetForm } from "./TestSetForm.js";
+import { WebhookAdmin } from "./WebhookAdmin.js";
+import { WorkItemLinkPanel } from "./WorkItemLinkPanel.js";
 import { ServicesProvider, useServices } from "./services-context.js";
 
 type Section = "plans" | "cases" | "sets" | "preconditions" | "reports" | "settings";
@@ -30,6 +43,13 @@ function resolveSection(contributionId: string | undefined): Section {
 	if (!contributionId) return DEFAULT_SECTION;
 	return CONTRIBUTION_ID_TO_SECTION[contributionId] ?? DEFAULT_SECTION;
 }
+
+const PLACEHOLDER_MATRIX_INPUT: MatrixInput = {
+	workItems: [],
+	testCases: [],
+	links: [],
+	executions: [],
+};
 
 const PLACEHOLDER_TEST_CASE: TestVaultTestCase = {
 	id: 0,
@@ -63,31 +83,54 @@ function RunTab() {
 	);
 }
 
+function SnapshotTab() {
+	const { testCaseVersionService } = useServices();
+	return (
+		<div>
+			<SnapshotPanel testCase={PLACEHOLDER_TEST_CASE} service={testCaseVersionService} />
+			<div data-testid="snapshot-diff-panel" />
+		</div>
+	);
+}
+
 export function PlansView() {
 	const { testPlanService, project } = useServices();
-	const [tab, setTab] = useState<"details" | "run">("details");
+	const [tab, setTab] = useState<"details" | "run" | "snapshots">("details");
+	const [importOpen, setImportOpen] = useState(false);
 	return (
 		<div data-testid="view-plans">
-			<Text as="h2" size={500} weight="semibold" block style={{ marginBottom: "12px" }}>
-				Test Plans
-			</Text>
+			<div style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
+				<Text as="h2" size={500} weight="semibold" block style={{ flex: 1, marginBottom: 0 }}>
+					Test Plans
+				</Text>
+				<Button appearance="primary" onClick={() => setImportOpen(true)}>
+					Import
+				</Button>
+			</div>
 			<TabList
 				selectedValue={tab}
-				onTabSelect={(_, d) => setTab(d.value as "details" | "run")}
+				onTabSelect={(_, d) => setTab(d.value as "details" | "run" | "snapshots")}
 				style={{ marginBottom: "16px" }}
 			>
 				<Tab value="details">Plan Details</Tab>
 				<Tab value="run">Run</Tab>
+				<Tab value="snapshots">Snapshots</Tab>
 			</TabList>
 			{tab === "details" && <TestPlanForm service={testPlanService} project={project} />}
 			{tab === "run" && <RunTab />}
+			{tab === "snapshots" && <SnapshotTab />}
+			{importOpen && (
+				<div data-testid="import-wizard-dialog">
+					<ImportWizard onImport={() => setImportOpen(false)} />
+				</div>
+			)}
 		</div>
 	);
 }
 
 export function CasesView() {
-	const { testCaseService, testExecutionService, project } = useServices();
-	const [tab, setTab] = useState<"details" | "executions">("details");
+	const { testCaseService, testExecutionService, workItemLinkService, project } = useServices();
+	const [tab, setTab] = useState<"details" | "executions" | "traceability">("details");
 	return (
 		<div data-testid="view-cases">
 			<Text as="h2" size={500} weight="semibold" block style={{ marginBottom: "12px" }}>
@@ -95,11 +138,12 @@ export function CasesView() {
 			</Text>
 			<TabList
 				selectedValue={tab}
-				onTabSelect={(_, d) => setTab(d.value as "details" | "executions")}
+				onTabSelect={(_, d) => setTab(d.value as "details" | "executions" | "traceability")}
 				style={{ marginBottom: "16px" }}
 			>
 				<Tab value="details">Case Details</Tab>
 				<Tab value="executions">Executions</Tab>
+				<Tab value="traceability">Traceability</Tab>
 			</TabList>
 			{tab === "details" && <TestCaseForm service={testCaseService} project={project} />}
 			{tab === "executions" && (
@@ -109,6 +153,7 @@ export function CasesView() {
 					availableEnvironments={[]}
 				/>
 			)}
+			{tab === "traceability" && <WorkItemLinkPanel testCaseId={0} service={workItemLinkService} />}
 		</div>
 	);
 }
@@ -138,23 +183,32 @@ export function PreconditionsView() {
 }
 
 export function ReportsView() {
+	const [tab, setTab] = useState<"coverage" | "flakiness">("coverage");
 	return (
-		<div data-testid="view-reports" style={{ padding: 16 }}>
+		<div data-testid="view-reports">
 			<Text as="h2" size={500} weight="semibold" block style={{ marginBottom: "12px" }}>
 				Reports
 			</Text>
-			<Text style={{ color: "#666" }} block>
-				Flakiness reports require a backend service not yet implemented.
-			</Text>
-			<Text style={{ color: "#666", fontSize: "12px" }} block>
-				Tracked as backlog item WIRING-CLOUD-PLUS (FlakinessReportService implementation).
-			</Text>
+			<TabList
+				selectedValue={tab}
+				onTabSelect={(_, d) => setTab(d.value as "coverage" | "flakiness")}
+				style={{ marginBottom: "16px" }}
+			>
+				<Tab value="coverage">Coverage</Tab>
+				<Tab value="flakiness">Flakiness</Tab>
+			</TabList>
+			{tab === "coverage" && <CoverageMatrix input={PLACEHOLDER_MATRIX_INPUT} />}
+			{tab === "flakiness" && (
+				<Text style={{ color: "#666" }} block>
+					Flakiness reports require a backend service not yet implemented (WIRING-CLOUD-PLUS).
+				</Text>
+			)}
 		</div>
 	);
 }
 
 export function SettingsView() {
-	const { llmProviderService, environmentConfigService } = useServices();
+	const { llmProviderService, environmentConfigService, webhookAdminService } = useServices();
 	return (
 		<div data-testid="view-settings">
 			<Text as="h2" size={500} weight="semibold" block style={{ marginBottom: "12px" }}>
@@ -162,6 +216,7 @@ export function SettingsView() {
 			</Text>
 			<LlmProviderSettings service={llmProviderService} isAdmin={true} />
 			<EnvironmentSettings service={environmentConfigService} isAdmin={true} />
+			<WebhookAdmin service={webhookAdminService} />
 		</div>
 	);
 }

@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Sprint 2.5c 2026-05-15 -- Wiring Phase 3+4 (v0.5.2)
+
+**6 composants Phase 3+4 wires dans App.tsx :**
+
+- `WorkItemLinkPanel` : nouvel onglet "Traceability" dans `CasesView` (T-3.1)
+- `SnapshotPanel` : nouvel onglet "Snapshots" dans `PlansView` + conteneur `snapshot-diff-panel` toujours present (T-3.2, T-3.3)
+- `CoverageMatrix` : `ReportsView` remplace le placeholder par un TabList "Coverage" / "Flakiness" (T-3.5)
+- `ImportWizard` : bouton "Import" dans `PlansView` ouvre un dialog `import-wizard-dialog` (T-4.2)
+- `WebhookAdmin` : nouvelle section dans `SettingsView` (stub TECH-DEBT-017 pending Azure Functions deploy) (T-4.8)
+
+**Services Phase 3+4 ajoutes dans `services.ts` / `mock-services.ts` :**
+
+- `testCaseVersionService`, `workItemLinkService`, `webhookAdminService`
+
+**3 nouveaux fichiers de tests wiring (7 nouvelles assertions) :**
+
+- `WIRING-2026-05-15-cases-traceability.test.tsx` (2 tests)
+- `WIRING-2026-05-15-reports-and-settings.test.tsx` (2 tests)
+- `WIRING-2026-05-15-plans-snapshots-import.test.tsx` (3 tests)
+
+**Script `tools/release/bump-fixed-version.cjs` cree (TECH-DEBT-037 resolu) :**
+
+- Bumpait 12 packages -- desormais corriges avec docs-site + e2e (14 total)
+- Protege contre les drifts de version type Sprint 2.5b CI fail
+
+**TECH-DEBT-038 cree :** CoveragePanel widget (apps/argos-extension/src/widgets) non-fonctionnel -- a investiguer separement.
+
+**Totaux apres Sprint 2.5c :** 337 tests / 47 fichiers de test / 20 packages. Preflight PASSED argos@0.5.2.
+
+---
+
 ### Sprint 2.5b 2026-05-15 -- Wiring Phase 2 (v0.5.1)
 
 **5 composants Phase 2 wires dans App.tsx :**

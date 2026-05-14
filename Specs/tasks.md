@@ -431,6 +431,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] UI sur le formulaire TC : ajout/suppression de liens
 - [x] Widget "Test Coverage" sur le formulaire User Story / Bug / Requirement (cf. manifest contribution `argos-coverage-panel`)
 - [x] Détection des liens orphelins (WI source supprimé)
+- [x] Wired in App.tsx: CasesView "Traceability" tab → WorkItemLinkPanel (Sprint 2.5c)
 
 **Done quand :**
 - [x] Un lien créé est visible dans les 2 sens
@@ -445,6 +446,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Garantie d'immutabilité (champs frozen via règles de transition Process)
 - [x] Validation : nom unique par TC parent
 - [x] Tests : tentative de modification post-creation → 403
+- [x] Wired in App.tsx: PlansView "Snapshots" tab → SnapshotPanel (Sprint 2.5c)
 
 **Done quand :**
 - [x] Un snapshot est créé, visible, immutable
@@ -457,6 +459,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Algo de diff sur Steps (LCS) côté client
 - [x] UI : vue côte à côte avec mise en évidence des champs modifiés
 - [x] Diff sur title, description, steps, tags
+- [x] Wired in App.tsx: PlansView "Snapshots" tab → snapshot-diff-panel container always present; SnapshotDiffPanel shown when 2 snapshots selected (Sprint 2.5c)
 
 **Done quand :**
 - [x] Le diff entre 2 versions d'un même TC est visuellement clair
@@ -484,6 +487,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Filtres : Area, Iteration, Tags, Status, Environment
 - [x] Couleurs conditionnelles
 - [x] Virtual scrolling au-delà de 1000 cellules
+- [x] Wired in App.tsx: ReportsView "Coverage" tab → CoverageMatrix (Sprint 2.5c)
 
 **Done quand :**
 - [x] La matrice se charge en < 3s pour 1000 cellules
@@ -538,6 +542,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Preview avant import
 - [x] Progress bar avec batches de 200
 - [x] Rapport d'erreurs téléchargeable
+- [x] Wired in App.tsx: PlansView "Import" button → ImportWizard dialog (Sprint 2.5c)
 
 **Done quand :**
 - [x] Import de 1000 TC depuis CSV en moins de 2 min
@@ -614,6 +619,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Worker queue trigger pour traitement asynchrone
 - [x] UI Admin : génération de tokens, listing, suppression
 - [x] Tests d'intégration
+- [x] Wired in App.tsx: SettingsView → WebhookAdmin (stub, TECH-DEBT-017 pending Azure Functions deploy) (Sprint 2.5c)
 
 **Done quand :**
 - [ ] Un push depuis Jenkins via webhook crée des Test Executions sous 30s
