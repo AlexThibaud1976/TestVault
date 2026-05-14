@@ -28,9 +28,12 @@ const mockCreateService = createProcessInstallService as unknown as ReturnType<t
 describe("install-command", () => {
 	let detectInstallState: ReturnType<typeof vi.fn>;
 	let install: ReturnType<typeof vi.fn>;
-	let exitSpy: ReturnType<typeof vi.spyOn>;
-	let logSpy: ReturnType<typeof vi.spyOn>;
-	let _errorSpy: ReturnType<typeof vi.spyOn>;
+	// biome-ignore lint/suspicious/noExplicitAny: vitest spy types vary per target
+	let exitSpy: any;
+	// biome-ignore lint/suspicious/noExplicitAny: vitest spy types vary per target
+	let logSpy: any;
+	// biome-ignore lint/suspicious/noExplicitAny: vitest spy types vary per target
+	let _errorSpy: any;
 
 	beforeEach(() => {
 		detectInstallState = vi.fn();
