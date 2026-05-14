@@ -2,7 +2,7 @@ import type { WitDefinition } from "../model.js";
 
 export const TEST_CASE_WIT: WitDefinition = {
 	referenceName: "TestVault.TestCase",
-	displayName: "Test Case (Argos)",
+	displayName: "TestVault Test Case",
 	description: "Reusable test case with structured steps, priority, and automation status.",
 	icon: "icon-test-case",
 	color: "#00b4ef",
@@ -73,7 +73,7 @@ export const TEST_CASE_WIT: WitDefinition = {
 		},
 		{
 			referenceName: "TestVault.EstimatedDuration",
-			displayName: "Estimated Duration (min)",
+			displayName: "Estimated Duration Min",
 			type: "integer",
 			required: false,
 		},

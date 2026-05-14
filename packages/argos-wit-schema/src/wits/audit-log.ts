@@ -2,7 +2,7 @@ import type { WitDefinition } from "../model.js";
 
 export const AUDIT_LOG_WIT: WitDefinition = {
 	referenceName: "TestVault.AuditLog",
-	displayName: "Audit Log (Argos)",
+	displayName: "TestVault Audit Log",
 	description: "Immutable audit trail entry for Admin-sensitive operations. Never deleted.",
 	icon: "icon-shield",
 	color: "#da0a00",
@@ -28,7 +28,7 @@ export const AUDIT_LOG_WIT: WitDefinition = {
 		},
 		{
 			referenceName: "TestVault.TimestampUtc",
-			displayName: "Timestamp (UTC)",
+			displayName: "Timestamp UTC",
 			type: "dateTime",
 			required: true,
 		},
@@ -63,14 +63,14 @@ export const AUDIT_LOG_WIT: WitDefinition = {
 		},
 		{
 			referenceName: "TestVault.OldValueAnonymized",
-			displayName: "Old Value (anonymized)",
+			displayName: "Old Value anonymized",
 			type: "string",
 			required: false,
 			description: "Last 4 chars of the previous sensitive value only",
 		},
 		{
 			referenceName: "TestVault.NewValueAnonymized",
-			displayName: "New Value (anonymized)",
+			displayName: "New Value anonymized",
 			type: "string",
 			required: false,
 			description: "Last 4 chars of the new sensitive value only",

@@ -263,3 +263,56 @@ describe("TESTVAULT_SCHEMA", () => {
 		expect(new Date(TESTVAULT_SCHEMA.generatedAt).toISOString()).toBe(TESTVAULT_SCHEMA.generatedAt);
 	});
 });
+
+// ADO charset compliance (VS402800 prevention)
+// ADO error: "Names cannot contain the following characters: '.,;~:/\*|?"&%$!+=()[]{}<>-'"
+
+describe("ADO charset compliance (VS402800 prevention)", () => {
+	const ADO_FORBIDDEN_CHARS = /[.,;~:/\\*|?"&%$!+=()\[\]{}<>-]/;
+	const ADO_MAX_NAME_LENGTH = 128;
+
+	function getValidationError(name: string): string | null {
+		if (!name) return "empty name";
+		if (name.length > ADO_MAX_NAME_LENGTH) {
+			return `length ${name.length} > ${ADO_MAX_NAME_LENGTH}`;
+		}
+		if (/^\d+$/.test(name)) return "pure number not allowed";
+		const match = name.match(ADO_FORBIDDEN_CHARS);
+		if (match) return `contains forbidden char "${match[0]}"`;
+		return null;
+	}
+
+	describe("WIT displayName", () => {
+		for (const wit of ALL_WITS) {
+			it(`"${wit.displayName}" is ADO-valid (${wit.referenceName})`, () => {
+				const error = getValidationError(wit.displayName);
+				expect(error, `WIT ${wit.referenceName}: ${error}`).toBeNull();
+			});
+		}
+	});
+
+	describe("Field displayName", () => {
+		for (const wit of ALL_WITS) {
+			for (const field of wit.fields) {
+				it(`"${field.displayName}" in ${wit.referenceName} is ADO-valid`, () => {
+					const error = getValidationError(field.displayName);
+					expect(
+						error,
+						`Field ${field.referenceName} in ${wit.referenceName}: ${error}`
+					).toBeNull();
+				});
+			}
+		}
+	});
+
+	describe("State name", () => {
+		for (const wit of ALL_WITS) {
+			for (const state of wit.states) {
+				it(`"${state.name}" in ${wit.referenceName} is ADO-valid`, () => {
+					const error = getValidationError(state.name);
+					expect(error, `State ${state.name} in ${wit.referenceName}: ${error}`).toBeNull();
+				});
+			}
+		}
+	});
+});

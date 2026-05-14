@@ -2,7 +2,7 @@ import type { WitDefinition } from "../model.js";
 
 export const PRECONDITION_WIT: WitDefinition = {
 	referenceName: "TestVault.Precondition",
-	displayName: "Precondition (Argos)",
+	displayName: "TestVault Precondition",
 	description: "Prerequisite state or action required before executing linked Test Cases.",
 	icon: "icon-settings",
 	color: "#e60017",

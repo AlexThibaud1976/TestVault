@@ -240,6 +240,14 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [ ] TECH-DEBT-044 NEW : Strategy publish workspace deps internes long terme (tsup bundle interim)
 - [ ] TECH-DEBT-019 : E2E reel sur instance ADO Cloud (reste critique)
 
+**TECH-DEBT (Sprint 2.7 HOTFIX) :**
+
+- [x] TECH-DEBT-046 LIVRE : WIT displayName ADO charset compliance -- VS402800 hotfix
+  - 7 WIT + 5 champs renommes (parentheses -> espaces)
+  - Suite de tests ADO_FORBIDDEN_CHARS ajoutee dans argos-wit-schema index.test.ts
+  - CFG regression test CFG-2026-05-15-wit-ado-charset.test.ts
+  - Re-executer E2E BCEE-QA/DEMO apres merge v0.5.9 (TECH-DEBT-019)
+
 ### T-1.4 — CRUD Test Case (UI + service) 🟡
 
 📚 `spec.md` US-1.1, `plan.md` §3.3
