@@ -7,6 +7,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation 2026-05-15 -- Audit resync exhaustif Phases 2-7 (TECH-DEBT-026 follow-up)
+
+No version bump -- documentation only.
+
+**New file** : `Specs/audit-resync-2026-05-15.md` -- audit detaille Phase 2-7 avec tableaux Markdown par phase, critere code DONE seulement (D6-C : wiring/deploy/publish laisses uncheck).
+
+**Major findings** :
+
+- **Argos est essentiellement un produit FINI en code** :
+  - Phase 2 : 7/7 sections code DONE (test-execution-service, evidence-upload, environment-config, bug-creation, ExecutionHistory + RunInterface + EvidencePanel + EnvironmentSettings + CreateBugForm)
+  - Phase 3 : 7/7 sections code DONE (snapshot-diff, coverage-matrix, work-item-link-service + 5 composants UI)
+  - Phase 4 : 9/9 sections code DONE (7 importers, 3 exporters, CLI, argos-action, azure-pipelines-task)
+  - Phase 5 : 6/6 sections code DONE (argos-gherkin generator/parser/validator + GherkinEditor + RepoMappingSettings)
+  - Phase 6 : 10/10 sections code DONE (argos-functions complet 8 modules + 5 composants UI hub)
+  - Phase 7 : 3/10 sections code partiel (license-engine + stripe-webhook + OfflineBanner)
+
+- **Le bloqueur est uniquement le wiring + deploy** :
+  - 24 composants UI riches non wirees dans App.tsx
+  - apps/argos-functions non-deployee sur Azure
+  - argos-action + azure-pipelines-task non-publies Marketplace
+  - Phase 7 ops (accessibility audit, docs finales, audit securite externe, beta) pendantes
+
+**Changes to `Specs/tasks.md`** :
+
+- Phase 2 : ~36/44 sous-taches cochees (laisse uncheck wiring + E2E)
+- Phase 3 : ~33/38 sous-taches cochees (E2E spec confirmee mais a executer)
+- Phase 4 : ~42/51 sous-taches cochees (laisse uncheck publish Marketplace + webhook deploy)
+- Phase 5 : ~21/25 sous-taches cochees (laisse uncheck sync auto webhook deploy)
+- Phase 6 : ~45/61 sous-taches cochees (laisse uncheck Azure deploy + endpoints actifs)
+- Phase 7 : ~10/54 sous-taches cochees (3 sections code partiel, le reste ops Phase 7)
+
+**Changes to `Specs/MIGRATION-PLAN.md`** : note audit Phase 2-7 livre.
+
+**TECH-DEBT noted** :
+
+- TECH-DEBT-033 NEW : `tasks.md` massif desalignement Phases 2-7 (cause : sprints intensifs sans reflex de cocher)
+- TECH-DEBT-034 NEW (confirme TECH-DEBT-015C) : apps/argos-functions COMPLET mais NON DEPLOYEE sur Azure
+- TECH-DEBT-035 NEW : argos-action + azure-pipelines-task CODES mais NON PUBLIES Marketplace
+- TECH-DEBT-036 NEW : Phase 7 ops non commencees (WCAG, mobile, docs, audit securite, beta, GA)
+
+### Sanity validation 2026-05-15
+
+- Tests regression : 57/57 passing
+- Tests argos-sdk : 261/261 passing
+- Tests argos-functions : 103/103 passing
+- Turbo test global : 325 tests / 41 test files / 20 packages successful
+- Mojibake : 0 file
+- Preflight : PASSED (argos@0.5.0)
+
+### Implications Sprint 2.5b/c/d valides
+
+- Sprint 2.5b (~60 min) : wirer 5 composants Phase 2 (RunInterface, EvidencePanel, EnvironmentSettings, CreateBugForm, ExecutionHistory)
+- Sprint 2.5c (~60 min) : wirer 7 composants Phase 3+4 (SnapshotPanel, SnapshotDiffPanel, WorkItemLinkPanel, CoverageMatrix, CoveragePanel, ImportWizard, WebhookAdmin)
+- Sprint 2.5d (~75 min) : wirer 8 composants Phase 5+6+7 (GherkinEditor, RepoMappingSettings, AiCandidatesModal, AuditLogSettings, BetaOptIn, QuotaSettings, FlakinessReport placeholder, OfflineBanner wrapper)
+
+Total : 20 composants wirees, +20 tests regression, ~3h15 cumule.
+
+### Lessons learned (audit 2026-05-15)
+
+- **Audit factuel + sanity test = methode robuste** : avant de cocher tasks.md, on a confirme 325 tests passing globalement. Aucun risque de cocher du faux DONE.
+- **Le code peut etre "fini" sans etre "livre"** : Argos a tout le code, mais aucun utilisateur peut l'utiliser tant que wiring + deploy + publish ne sont pas faits.
+- **Decoupage Sprint 2.5b/c/d** : plutot que un megasprint 2.5b de 3h, 3 sous-sprints de 60-75 min permettent de garder un rythme soutenable et de commiter regulierement.
+- **OBSOLETE Server confirme** : aucune mention "Server" dans Phase 4-6 ne doit etre cochee (Cloud-only depuis v0.2.0).
+
+---
+
 ### Documentation 2026-05-14 -- TECH-DEBT-026 audit resync tasks.md Phase 0/0.5/1
 
 No version bump -- documentation only.
