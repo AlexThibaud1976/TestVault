@@ -10,12 +10,21 @@ import {
 } from "@fluentui/react-components";
 import * as SDK from "azure-devops-extension-sdk";
 import { useEffect, useState } from "react";
+import { AiCandidatesModal } from "./AiCandidatesModal.js";
+import type { TcCandidate } from "./AiCandidatesModal.js";
+import { AuditLogSettings } from "./AuditLogSettings.js";
+import { BetaOptIn } from "./BetaOptIn.js";
 import { CoverageMatrix } from "./CoverageMatrix.js";
 import { EnvironmentSettings } from "./EnvironmentSettings.js";
 import { ExecutionHistory } from "./ExecutionHistory.js";
+import { FlakinessReport } from "./FlakinessReport.js";
+import { GherkinEditor } from "./GherkinEditor.js";
 import { ImportWizard } from "./ImportWizard.js";
 import { LlmProviderSettings } from "./LlmProviderSettings.js";
+import { OfflineBanner } from "./OfflineBanner.js";
 import { PreconditionForm } from "./PreconditionForm.js";
+import { QuotaSettings } from "./QuotaSettings.js";
+import { RepoMappingSettings } from "./RepoMappingSettings.js";
 import { RunInterface } from "./RunInterface.js";
 import { SnapshotPanel } from "./SnapshotPanel.js";
 import { TestCaseForm } from "./TestCaseForm.js";
@@ -128,22 +137,31 @@ export function PlansView() {
 	);
 }
 
+type CasesTab = "details" | "executions" | "traceability" | "gherkin";
+
 export function CasesView() {
 	const { testCaseService, testExecutionService, workItemLinkService, project } = useServices();
-	const [tab, setTab] = useState<"details" | "executions" | "traceability">("details");
+	const [tab, setTab] = useState<CasesTab>("details");
+	const [aiOpen, setAiOpen] = useState(false);
+	const [aiCandidates] = useState<TcCandidate[]>([]);
+	const [gherkinValue, setGherkinValue] = useState(PLACEHOLDER_TEST_CASE.gherkin ?? "");
 	return (
 		<div data-testid="view-cases">
-			<Text as="h2" size={500} weight="semibold" block style={{ marginBottom: "12px" }}>
-				Test Cases
-			</Text>
+			<div style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
+				<Text as="h2" size={500} weight="semibold" block style={{ flex: 1, marginBottom: 0 }}>
+					Test Cases
+				</Text>
+				<Button onClick={() => setAiOpen(true)}>AI Suggest</Button>
+			</div>
 			<TabList
 				selectedValue={tab}
-				onTabSelect={(_, d) => setTab(d.value as "details" | "executions" | "traceability")}
+				onTabSelect={(_, d) => setTab(d.value as CasesTab)}
 				style={{ marginBottom: "16px" }}
 			>
 				<Tab value="details">Case Details</Tab>
 				<Tab value="executions">Executions</Tab>
 				<Tab value="traceability">Traceability</Tab>
+				<Tab value="gherkin">Gherkin</Tab>
 			</TabList>
 			{tab === "details" && <TestCaseForm service={testCaseService} project={project} />}
 			{tab === "executions" && (
@@ -154,6 +172,17 @@ export function CasesView() {
 				/>
 			)}
 			{tab === "traceability" && <WorkItemLinkPanel testCaseId={0} service={workItemLinkService} />}
+			{tab === "gherkin" && <GherkinEditor value={gherkinValue} onChange={setGherkinValue} />}
+			{aiOpen && (
+				<div data-testid="ai-candidates-dialog">
+					<AiCandidatesModal
+						candidates={aiCandidates}
+						quotaRemaining={100}
+						onAccept={() => setAiOpen(false)}
+						onCancel={() => setAiOpen(false)}
+					/>
+				</div>
+			)}
 		</div>
 	);
 }
@@ -183,6 +212,7 @@ export function PreconditionsView() {
 }
 
 export function ReportsView() {
+	const { flakinessReportService } = useServices();
 	const [tab, setTab] = useState<"coverage" | "flakiness">("coverage");
 	return (
 		<div data-testid="view-reports">
@@ -198,17 +228,21 @@ export function ReportsView() {
 				<Tab value="flakiness">Flakiness</Tab>
 			</TabList>
 			{tab === "coverage" && <CoverageMatrix input={PLACEHOLDER_MATRIX_INPUT} />}
-			{tab === "flakiness" && (
-				<Text style={{ color: "#666" }} block>
-					Flakiness reports require a backend service not yet implemented (WIRING-CLOUD-PLUS).
-				</Text>
-			)}
+			{tab === "flakiness" && <FlakinessReport service={flakinessReportService} />}
 		</div>
 	);
 }
 
 export function SettingsView() {
-	const { llmProviderService, environmentConfigService, webhookAdminService } = useServices();
+	const {
+		llmProviderService,
+		environmentConfigService,
+		webhookAdminService,
+		auditLogService,
+		repoMappingService,
+		betaFlagService,
+		quotaSettingsService,
+	} = useServices();
 	return (
 		<div data-testid="view-settings">
 			<Text as="h2" size={500} weight="semibold" block style={{ marginBottom: "12px" }}>
@@ -217,6 +251,10 @@ export function SettingsView() {
 			<LlmProviderSettings service={llmProviderService} isAdmin={true} />
 			<EnvironmentSettings service={environmentConfigService} isAdmin={true} />
 			<WebhookAdmin service={webhookAdminService} />
+			<AuditLogSettings service={auditLogService} isAdmin={true} />
+			<RepoMappingSettings service={repoMappingService} isAdmin={true} />
+			<QuotaSettings service={quotaSettingsService} isAdmin={true} />
+			<BetaOptIn service={betaFlagService} />
 		</div>
 	);
 }
@@ -236,6 +274,18 @@ function HubContent({ section }: { section: Section }) {
 		case "settings":
 			return <SettingsView />;
 	}
+}
+
+function AppInner({ section }: { section: Section }) {
+	const { connectivityService } = useServices();
+	return (
+		<>
+			<OfflineBanner connectivity={connectivityService} />
+			<div style={{ padding: "24px", fontFamily: "Segoe UI, sans-serif" }}>
+				<HubContent section={section} />
+			</div>
+		</>
+	);
 }
 
 export function App() {
@@ -262,9 +312,7 @@ export function App() {
 	return (
 		<FluentProvider theme={webLightTheme}>
 			<ServicesProvider>
-				<div style={{ padding: "24px", fontFamily: "Segoe UI, sans-serif" }}>
-					<HubContent section={section} />
-				</div>
+				<AppInner section={section} />
 			</ServicesProvider>
 		</FluentProvider>
 	);

@@ -507,3 +507,20 @@ Decision a prendre lors du Sprint 8 en fonction de la maturite percue de l'API i
 > - Specs/audit-resync-2026-05-15.md cree
 > - 4 nouveaux TECH-DEBT identifies : 033, 034 (functions deploy), 035 (Marketplace publish), 036 (ops Phase 7)
 > - Sprint 2.5b/c/d valides : wiring 24 composants en 3 sous-sprints (~3h15)
+
+> **Sprint 2.5d livre 2026-05-15** (DERNIER SPRINT WIRING) :
+> - Phase 5+6+7 wiring : 8 composants
+> - Version 0.5.2 -> 0.5.3 (via script bump-fixed-version.cjs)
+> - **Total wiring 2026-05-15** : 24 composants riches integres
+> - **Cloud-Plus stubs en place** : FlakinessReport + QuotaSettings + WebhookAdmin attendent TECH-DEBT-017
+>
+> **TECH-DEBT-018 NEW** : Commercial layer (Sprint 7.1-7.9, ~25-30h)
+> - `Specs/COMMERCIAL.md` brouillon cree
+> - Dependances : TECH-DEBT-017/019/035
+>
+> **Prochaines etapes apres Sprint 2.5d** :
+> 1. Audit Phase 2-6 E2E reel (TECH-DEBT-019 NEW)
+> 2. Deploy argos-functions Azure (TECH-DEBT-017)
+> 3. Marketplace publish (TECH-DEBT-035)
+> 4. Beta privee + Commercial layer Sprint 7.X
+> 5. GA v1.0.0
