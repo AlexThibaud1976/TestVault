@@ -4,11 +4,14 @@ import type {
 	IEvidenceUploadService,
 	IPreconditionService,
 	ITestCaseService,
+	ITestCaseVersionService,
 	ITestExecutionService,
 	ITestPlanService,
 	ITestSetService,
+	IWorkItemLinkService,
 } from "@atconseil/argos-sdk";
 import { vi } from "vitest";
+import type { IWebhookAdminService } from "../hub/WebhookAdmin.js";
 import type { ILlmProviderService } from "../hub/llm-provider-service.js";
 import type { Services } from "../hub/services.js";
 
@@ -23,6 +26,9 @@ export function createMockServices(overrides?: Partial<Services>): Services {
 		evidenceUploadService: createMockEvidenceUploadService(),
 		environmentConfigService: createMockEnvironmentConfigService(),
 		bugCreationService: createMockBugCreationService(),
+		testCaseVersionService: createMockTestCaseVersionService(),
+		workItemLinkService: createMockWorkItemLinkService(),
+		webhookAdminService: createMockWebhookAdminService(),
 		project: "MockProject",
 		organization: "MockOrg",
 		...overrides,
@@ -136,4 +142,43 @@ export function createMockBugCreationService(
 		createBug: vi.fn().mockResolvedValue({ id: 999, url: "https://mock/bugs/999" }),
 		...overrides,
 	} as unknown as IBugCreationService;
+}
+
+export function createMockTestCaseVersionService(
+	overrides?: Partial<ITestCaseVersionService>
+): ITestCaseVersionService {
+	return {
+		createSnapshot: vi.fn().mockResolvedValue({}),
+		listSnapshots: vi.fn().mockResolvedValue([]),
+		...overrides,
+	} as unknown as ITestCaseVersionService;
+}
+
+export function createMockWorkItemLinkService(
+	overrides?: Partial<IWorkItemLinkService>
+): IWorkItemLinkService {
+	return {
+		listLinks: vi.fn().mockResolvedValue([]),
+		addLink: vi.fn().mockResolvedValue({}),
+		removeLink: vi.fn().mockResolvedValue(undefined),
+		detectOrphanLinks: vi.fn().mockResolvedValue([]),
+		...overrides,
+	} as unknown as IWorkItemLinkService;
+}
+
+export function createMockWebhookAdminService(
+	overrides?: Partial<IWebhookAdminService>
+): IWebhookAdminService {
+	return {
+		listTokens: vi.fn().mockResolvedValue([]),
+		createToken: vi.fn().mockResolvedValue({
+			id: "mock-id",
+			label: "mock",
+			createdAt: "",
+			revoked: false,
+			secret: "mock-secret",
+		}),
+		revokeToken: vi.fn().mockResolvedValue(undefined),
+		...overrides,
+	} as unknown as IWebhookAdminService;
 }

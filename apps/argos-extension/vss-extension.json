@@ -2,12 +2,18 @@
 	"manifestVersion": 1,
 	"id": "ArgosTesting",
 	"publisher": "AlexThibaud",
-	"version": "0.5.1",
+	"version": "0.5.2",
 	"name": "ArgosTesting",
 	"description": "Industrial-grade test management for Azure DevOps — native Custom Work Items, AI-assisted, Cloud-only.",
-	"targets": [{ "id": "Microsoft.VisualStudio.Services.Cloud" }],
+	"targets": [
+		{
+			"id": "Microsoft.VisualStudio.Services.Cloud"
+		}
+	],
 	"categories": ["Azure Boards", "Azure Test Plans"],
-	"icons": { "default": "static/marketplace-icon.png" },
+	"icons": {
+		"default": "static/marketplace-icon.png"
+	},
 	"scopes": [
 		"vso.work_full",
 		"vso.profile",
@@ -112,8 +118,23 @@
 		}
 	],
 	"content": {
-		"details": { "path": "overview.md" },
-		"screenshots": [{ "path": "static/marketplace-banner.png" }]
+		"details": {
+			"path": "overview.md"
+		},
+		"screenshots": [
+			{
+				"path": "static/marketplace-banner.png"
+			}
+		]
 	},
-	"files": [{ "path": "dist", "addressable": true }, { "path": "static", "addressable": true }]
+	"files": [
+		{
+			"path": "dist",
+			"addressable": true
+		},
+		{
+			"path": "static",
+			"addressable": true
+		}
+	]
 }

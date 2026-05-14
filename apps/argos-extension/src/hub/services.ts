@@ -5,19 +5,24 @@ import {
 	type IEvidenceUploadService,
 	type IPreconditionService,
 	type ITestCaseService,
+	type ITestCaseVersionService,
 	type ITestExecutionService,
 	type ITestPlanService,
 	type ITestSetService,
+	type IWorkItemLinkService,
 	createAdoClient,
 	createBugCreationService,
 	createEnvironmentConfigService,
 	createEvidenceUploadService,
 	createPreconditionService,
 	createTestCaseService,
+	createTestCaseVersionService,
 	createTestExecutionService,
 	createTestPlanService,
 	createTestSetService,
+	createWorkItemLinkService,
 } from "@atconseil/argos-sdk";
+import type { IWebhookAdminService } from "./WebhookAdmin.js";
 import { createAiSettingsStore } from "./ai-settings-store-adapter.js";
 import { createExtensionDataClient } from "./extension-data-store.js";
 import { type ILlmProviderService, createLlmProviderService } from "./llm-provider-service.js";
@@ -34,6 +39,9 @@ export interface Services {
 	evidenceUploadService: IEvidenceUploadService;
 	environmentConfigService: IEnvironmentConfigService;
 	bugCreationService: IBugCreationService;
+	testCaseVersionService: ITestCaseVersionService;
+	workItemLinkService: IWorkItemLinkService;
+	webhookAdminService: IWebhookAdminService;
 	project: string;
 	organization: string;
 }
@@ -53,6 +61,12 @@ export function buildServices(ctx: AdoContext): Services {
 
 	const testExecutionService = createTestExecutionService(adoClient, ctx.project);
 
+	const webhookAdminServiceStub: IWebhookAdminService = {
+		listTokens: () => Promise.resolve([]),
+		createToken: () => Promise.reject(new Error("Azure Functions not deployed (TECH-DEBT-017)")),
+		revokeToken: () => Promise.reject(new Error("Azure Functions not deployed (TECH-DEBT-017)")),
+	};
+
 	return {
 		testPlanService: createTestPlanService(adoClient, ctx.project),
 		testCaseService: createTestCaseService(adoClient, ctx.project),
@@ -63,6 +77,9 @@ export function buildServices(ctx: AdoContext): Services {
 		evidenceUploadService: createEvidenceUploadService(adoClient, testExecutionService),
 		environmentConfigService: createEnvironmentConfigService(dataClient),
 		bugCreationService: createBugCreationService(adoClient, testExecutionService),
+		testCaseVersionService: createTestCaseVersionService(adoClient),
+		workItemLinkService: createWorkItemLinkService(adoClient),
+		webhookAdminService: webhookAdminServiceStub,
 		project: ctx.project,
 		organization: ctx.organization,
 	};
