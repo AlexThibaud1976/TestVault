@@ -124,10 +124,14 @@ describe("install", () => {
 			http.post(BASE, () =>
 				HttpResponse.json({ typeId: "new-proc-guid", name: "TestVault - Agile" }, { status: 201 })
 			),
+			// GET existing picklists (Step 2 init — empty on fresh install)
+			http.get(`${ORG_URL}/_apis/work/processes/lists`, () => HttpResponse.json({ value: [] })),
 			// Create picklists
 			http.post(`${ORG_URL}/_apis/work/processes/lists`, () =>
 				HttpResponse.json({ id: "pl-guid" }, { status: 201 })
 			),
+			// GET existing WITs in new process (Step 3 init — empty on fresh install)
+			http.get(`${BASE}/new-proc-guid/workItemTypes`, () => HttpResponse.json({ value: [] })),
 			// Create WITs
 			http.post(`${BASE}/new-proc-guid/workItemTypes`, () => {
 				witCount++;
@@ -203,9 +207,11 @@ describe("install", () => {
 					{ status: 201 }
 				);
 			}),
+			http.get(`${ORG_URL}/_apis/work/processes/lists`, () => HttpResponse.json({ value: [] })),
 			http.post(`${ORG_URL}/_apis/work/processes/lists`, () =>
 				HttpResponse.json({ id: "pl-guid" }, { status: 201 })
 			),
+			http.get(`${BASE}/new-proc-guid/workItemTypes`, () => HttpResponse.json({ value: [] })),
 			http.post(
 				new RegExp(`${BASE.replace(/\//g, "\\/")}\\/new-proc-guid\\/workItemTypes(.*)?`),
 				() => HttpResponse.json({ referenceName: "TestVault.TestCase" }, { status: 201 })
@@ -231,9 +237,11 @@ describe("install", () => {
 					{ status: 201 }
 				);
 			}),
+			http.get(`${ORG_URL}/_apis/work/processes/lists`, () => HttpResponse.json({ value: [] })),
 			http.post(`${ORG_URL}/_apis/work/processes/lists`, () =>
 				HttpResponse.json({ id: "pl-guid" }, { status: 201 })
 			),
+			http.get(`${BASE}/new-proc-guid/workItemTypes`, () => HttpResponse.json({ value: [] })),
 			http.post(
 				new RegExp(`${BASE.replace(/\//g, "\\/")}\\/new-proc-guid\\/workItemTypes(.*)?`),
 				() => HttpResponse.json({ referenceName: "TestVault.TestCase" }, { status: 201 })
@@ -248,5 +256,210 @@ describe("install", () => {
 		await makeService().install({ processName: "TestVault - Agile", baseProcess: "Agile" });
 		const desc = JSON.parse(cap.body.description as string) as { "testvault-schema": string };
 		expect(desc["testvault-schema"]).toMatch(/^\d+\.\d+\.\d+$/);
+	});
+});
+
+// ─── Sprint 2.8 idempotency ───────────────────────────────────────────────────
+
+describe("Sprint 2.8 idempotency", () => {
+	const PROC = "new-proc-guid";
+	const LISTS_URL = `${ORG_URL}/_apis/work/processes/lists`;
+	const fieldsRegex = new RegExp(
+		`${BASE.replace(/\//g, "\\/")}\\/${PROC}\\/workItemTypes\\/.+\\/fields`
+	);
+	const statesRegex = new RegExp(
+		`${BASE.replace(/\//g, "\\/")}\\/${PROC}\\/workItemTypes\\/.+\\/states`
+	);
+
+	describe("picklists", () => {
+		it("reuses existing picklist by name (no POST for matched name)", async () => {
+			let picklistPostCount = 0;
+			server.use(
+				http.post(BASE, () =>
+					HttpResponse.json({ typeId: PROC, name: "TestVault - Agile" }, { status: 201 })
+				),
+				http.get(LISTS_URL, () =>
+					HttpResponse.json({
+						value: [{ id: "list-existing-priority", name: "TestVault-Priority" }],
+					})
+				),
+				http.post(LISTS_URL, () => {
+					picklistPostCount++;
+					return HttpResponse.json({ id: `pl-${picklistPostCount}` }, { status: 201 });
+				}),
+				http.get(`${BASE}/${PROC}/workItemTypes`, () => HttpResponse.json({ value: [] })),
+				http.post(`${BASE}/${PROC}/workItemTypes`, () =>
+					HttpResponse.json({ referenceName: "TestVault.TestCase" }, { status: 201 })
+				),
+				http.post(fieldsRegex, () => HttpResponse.json({}, { status: 200 })),
+				http.post(statesRegex, () => HttpResponse.json({}, { status: 200 }))
+			);
+
+			const steps: string[] = [];
+			await makeService().install({
+				processName: "TestVault - Agile",
+				baseProcess: "Agile",
+				onProgress: (s) => steps.push(s.message),
+			});
+
+			expect(steps.some((m) => m.includes('Reusing existing picklist "TestVault-Priority"'))).toBe(
+				true
+			);
+			expect(steps.some((m) => m.includes('Creating picklist "TestVault-Priority"'))).toBe(false);
+		});
+
+		it("creates new picklist if name not in existing list", async () => {
+			let picklistPostCount = 0;
+			server.use(
+				http.post(BASE, () =>
+					HttpResponse.json({ typeId: PROC, name: "TestVault - Agile" }, { status: 201 })
+				),
+				http.get(LISTS_URL, () => HttpResponse.json({ value: [] })),
+				http.post(LISTS_URL, () => {
+					picklistPostCount++;
+					return HttpResponse.json({ id: `pl-${picklistPostCount}` }, { status: 201 });
+				}),
+				http.get(`${BASE}/${PROC}/workItemTypes`, () => HttpResponse.json({ value: [] })),
+				http.post(`${BASE}/${PROC}/workItemTypes`, () =>
+					HttpResponse.json({ referenceName: "TestVault.TestCase" }, { status: 201 })
+				),
+				http.post(fieldsRegex, () => HttpResponse.json({}, { status: 200 })),
+				http.post(statesRegex, () => HttpResponse.json({}, { status: 200 }))
+			);
+
+			const steps: string[] = [];
+			await makeService().install({
+				processName: "TestVault - Agile",
+				baseProcess: "Agile",
+				onProgress: (s) => steps.push(s.message),
+			});
+
+			expect(picklistPostCount).toBeGreaterThan(0);
+			expect(steps.some((m) => m.startsWith('Creating picklist "TestVault-'))).toBe(true);
+			expect(steps.some((m) => m.startsWith("Reusing"))).toBe(false);
+		});
+
+		it("mixes reuse and create in same install", async () => {
+			server.use(
+				http.post(BASE, () =>
+					HttpResponse.json({ typeId: PROC, name: "TestVault - Agile" }, { status: 201 })
+				),
+				http.get(LISTS_URL, () =>
+					HttpResponse.json({
+						value: [{ id: "list-existing-priority", name: "TestVault-Priority" }],
+					})
+				),
+				http.post(LISTS_URL, () => HttpResponse.json({ id: "pl-new" }, { status: 201 })),
+				http.get(`${BASE}/${PROC}/workItemTypes`, () => HttpResponse.json({ value: [] })),
+				http.post(`${BASE}/${PROC}/workItemTypes`, () =>
+					HttpResponse.json({ referenceName: "TestVault.TestCase" }, { status: 201 })
+				),
+				http.post(fieldsRegex, () => HttpResponse.json({}, { status: 200 })),
+				http.post(statesRegex, () => HttpResponse.json({}, { status: 200 }))
+			);
+
+			const steps: string[] = [];
+			await makeService().install({
+				processName: "TestVault - Agile",
+				baseProcess: "Agile",
+				onProgress: (s) => steps.push(s.message),
+			});
+
+			expect(steps.some((m) => m.includes("Reusing"))).toBe(true);
+			expect(steps.some((m) => m.startsWith('Creating picklist "'))).toBe(true);
+		});
+	});
+
+	describe("wits", () => {
+		it("skips WIT if referenceName already exists in process", async () => {
+			let witPostCount = 0;
+			server.use(
+				http.post(BASE, () =>
+					HttpResponse.json({ typeId: PROC, name: "TestVault - Agile" }, { status: 201 })
+				),
+				http.get(LISTS_URL, () => HttpResponse.json({ value: [] })),
+				http.post(LISTS_URL, () => HttpResponse.json({ id: "pl-guid" }, { status: 201 })),
+				http.get(`${BASE}/${PROC}/workItemTypes`, () =>
+					HttpResponse.json({ value: [{ referenceName: "TestVault.TestCase" }] })
+				),
+				http.post(`${BASE}/${PROC}/workItemTypes`, () => {
+					witPostCount++;
+					return HttpResponse.json({ referenceName: "TestVault.TestPlan" }, { status: 201 });
+				}),
+				http.post(fieldsRegex, () => HttpResponse.json({}, { status: 200 })),
+				http.post(statesRegex, () => HttpResponse.json({}, { status: 200 }))
+			);
+
+			const steps: string[] = [];
+			await makeService().install({
+				processName: "TestVault - Agile",
+				baseProcess: "Agile",
+				onProgress: (s) => steps.push(s.message),
+			});
+
+			// TestCase skipped -> only 6 WIT POSTs
+			expect(witPostCount).toBe(6);
+			expect(steps.some((m) => m.includes("Skipping") && m.includes("already exists"))).toBe(true);
+		});
+
+		it("creates all WITs if none exist in process", async () => {
+			let witPostCount = 0;
+			server.use(
+				http.post(BASE, () =>
+					HttpResponse.json({ typeId: PROC, name: "TestVault - Agile" }, { status: 201 })
+				),
+				http.get(LISTS_URL, () => HttpResponse.json({ value: [] })),
+				http.post(LISTS_URL, () => HttpResponse.json({ id: "pl-guid" }, { status: 201 })),
+				http.get(`${BASE}/${PROC}/workItemTypes`, () => HttpResponse.json({ value: [] })),
+				http.post(`${BASE}/${PROC}/workItemTypes`, () => {
+					witPostCount++;
+					return HttpResponse.json({ referenceName: "TestVault.TestCase" }, { status: 201 });
+				}),
+				http.post(fieldsRegex, () => HttpResponse.json({}, { status: 200 })),
+				http.post(statesRegex, () => HttpResponse.json({}, { status: 200 }))
+			);
+
+			await makeService().install({ processName: "TestVault - Agile", baseProcess: "Agile" });
+			expect(witPostCount).toBe(7);
+		});
+
+		it("mixes skip and create in same install", async () => {
+			let witPostCount = 0;
+			server.use(
+				http.post(BASE, () =>
+					HttpResponse.json({ typeId: PROC, name: "TestVault - Agile" }, { status: 201 })
+				),
+				http.get(LISTS_URL, () => HttpResponse.json({ value: [] })),
+				http.post(LISTS_URL, () => HttpResponse.json({ id: "pl-guid" }, { status: 201 })),
+				http.get(`${BASE}/${PROC}/workItemTypes`, () =>
+					HttpResponse.json({
+						value: [
+							{ referenceName: "TestVault.TestCase" },
+							{ referenceName: "TestVault.TestPlan" },
+							{ referenceName: "System.Epic" }, // non-TestVault, filtered out
+						],
+					})
+				),
+				http.post(`${BASE}/${PROC}/workItemTypes`, () => {
+					witPostCount++;
+					return HttpResponse.json({ referenceName: "TestVault.TestSet" }, { status: 201 });
+				}),
+				http.post(fieldsRegex, () => HttpResponse.json({}, { status: 200 })),
+				http.post(statesRegex, () => HttpResponse.json({}, { status: 200 }))
+			);
+
+			const steps: string[] = [];
+			await makeService().install({
+				processName: "TestVault - Agile",
+				baseProcess: "Agile",
+				onProgress: (s) => steps.push(s.message),
+			});
+
+			// 2 TestVault WITs skipped, 5 created; System.Epic filtered out
+			expect(witPostCount).toBe(5);
+			expect(
+				steps.filter((m) => m.includes("Skipping") && m.includes("already exists"))
+			).toHaveLength(2);
+		});
 	});
 });

@@ -247,6 +247,13 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
   - Suite de tests ADO_FORBIDDEN_CHARS ajoutee dans argos-wit-schema index.test.ts
   - CFG regression test CFG-2026-05-15-wit-ado-charset.test.ts
   - Re-executer E2E BCEE-QA/DEMO apres merge v0.5.9 (TECH-DEBT-019)
+- [x] TECH-DEBT-047 LIVRE : argos-cli install idempotency picklists + WIT (Sprint 2.8)
+  - Step 2: GET /lists avant creation, Map<name,id>, skip si existe
+  - Step 3: GET /workItemTypes avant creation, Set(refName), skip WIT entier si existe
+  - 7 tests unitaires idempotency + CFG-2026-05-18 regression test
+- [ ] TECH-DEBT-049 NEW : Schema sync fields if WIT exists (deferred from Sprint 2.8)
+  - D86-A: WIT entier skippe si existe (pas de sync champ par champ ce sprint)
+  - Prerequis: TECH-DEBT-047 livre
 
 ### T-1.4 — CRUD Test Case (UI + service) 🟡
 

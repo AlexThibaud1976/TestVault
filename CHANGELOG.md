@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.10] - 2026-05-18
+
+### Sprint 2.8 -- process-install.ts idempotency HOTFIX
+
+**Bug discovered at E2E real test 2026-05-15 (after Sprint 2.7 charset fix).**
+
+```text
+VS402848: The picklist name TestVault-Priority is already in use.
+WorkItemPickListItemNameAlreadyInUseException
+```
+
+Root cause: SDK `process-install.ts` created picklists and WITs without checking if they
+already existed. ADO returned 409 conflict on the first re-run.
+
+#### Fixed
+
+- **Step 2 (picklists)**: GET `/_apis/work/processes/lists` first, build `Map<name, id>`,
+  skip POST if name already exists, reuse existing id.
+  - Logs: "Reusing existing picklist..." / "Creating picklist..."
+- **Step 3 (WITs)**: GET `/workItemTypes` first, build `Set<referenceName>`, skip entire
+  WIT creation if referenceName already exists in process (D86-A: no field-level sync
+  this sprint, deferred to TECH-DEBT-049).
+  - Logs: "Skipping WIT (already exists)" / "Creating WIT..."
+
+#### Tests
+
+- 7 new unit tests for idempotency scenarios (picklists + WITs, reuse/create/mix)
+- `CFG-2026-05-18-process-install-idempotency.test.ts` regression test
+- All Sprint 2.7 charset tests remain green (schema immutable)
+
+#### Architecture preserved
+
+- Step 1 (create process) unchanged (GF19)
+- `TESTVAULT_SCHEMA` immutable (constitution section 12)
+- `detectInstallState` logic unchanged (D84-A)
+- Field-level idempotency intentionally NOT done (TECH-DEBT-049)
+- Cleanup mode intentionally NOT added (D85-C, defensive idempotency suffices)
+
+#### TECH-DEBT
+
+- TECH-DEBT-047 LIVRE: argos-cli install idempotency picklists + WIT
+- TECH-DEBT-049 NEW: schema sync fields if WIT exists (deferred)
+- TECH-DEBT-019 (E2E reel): retest after this sprint
+
 ### Sprint 2.7 2026-05-15 -- HOTFIX WIT displayName ADO charset compliance (v0.5.9)
 
 **HOTFIX : VS402800 ADO charset violation. E2E BCEE-QA/DEMO echec. TECH-DEBT-046 LIVRE.**
