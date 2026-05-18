@@ -7,6 +7,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.14] - 2026-05-18
+
+### Fixed
+
+#### Sprint 2.12 -- ADO field 2-step workflow (org-level create + WIT attach)
+
+CRITICAL fix discovered at E2E real test 2026-05-18 after Sprint 2.11 (Custom. prefix):
+
+```text
+TF51535: Cannot find field Custom.TestVaultPriority.
+WorkItemTrackingFieldDefinitionNotFoundException
+```
+
+Root cause: ADO inherited processes require a 2-step workflow for custom fields:
+
+1. **CREATE** field at organisation level: `POST /_apis/wit/fields`
+2. **ATTACH** field to WIT: `POST /processes/{p}/workItemTypes/{wit}/fields`
+
+Our code only performed step 2 (attach), which is an ATTACH-ONLY endpoint.
+ADO looked up the field at org level, found nothing, returned TF51535.
+
+#### Architecture
+
+New helpers in `packages/argos-sdk/src/process-install.ts`:
+
+- `orgFieldExists(adoFieldRefName)`: `GET /_apis/wit/fields/{refName}` — returns boolean
+- `createFieldAtOrg(schemaField, adoFieldRefName)`: `POST /_apis/wit/fields` — creates at org level
+- `ADO_FIELD_TYPE_REST` mapping: schema types → ADO REST types + `isPicklist` flag
+
+Modified Step 3 fields loop — 2-step workflow with idempotency:
+
+- **ETAPE A**: `orgFieldExists` check → if exists, emit "Reusing"; else `createFieldAtOrg`
+- **ETAPE B**: attach to WIT with minimal body (`referenceName + required + defaultValue + picklistId`)
+- 409 Conflict from org-create treated as success (idempotent against concurrent installs)
+
+#### Type mapping
+
+```text
+Schema type       ADO REST type    isPicklist
+--------------    -------------    ----------
+string            string           false
+integer           integer          false
+boolean           boolean          false
+dateTime          dateTime         false
+html              html             false
+identity          string           false
+picklistString    string           true
+picklistInteger   integer          true
+```
+
+#### Tests
+
+- 4 new unit tests: org-create + reuse + 409 handling + logging
+- `CFG-2026-05-18-field-2-step-workflow` regression test (4 assertions)
+- All Sprint 2.7-2.11 tests still green (294 total)
+
+#### TECH-DEBT
+
+- TECH-DEBT-053 LIVRE: field-level idempotency at org level
+- TECH-DEBT-054: extension argos-detection-api CRUD fields refName translation (next sprint)
+- TECH-DEBT-019 (E2E reel): retest after this sprint
+
+#### Lessons learned
+
+- ADO field creation is a 2-step process: org-create + WIT-attach
+- The attach endpoint is LOOKUP-ONLY despite accepting name/type in the body historically
+- Custom fields are organisation-level in ADO — shared across all processes in the org
+- 5 architecture-level bugs discovered via E2E real tests across Sprint 2.10-2.12
+
 ## [0.5.13] - 2026-05-18
 
 ### Fixed

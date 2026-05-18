@@ -11,19 +11,24 @@ export const SYSTEM_PROCESS_IDS = {
 
 export type BaseProcessType = keyof typeof SYSTEM_PROCESS_IDS;
 
-// ─── ADO Process API field type mapping ──────────────────────────────────────
+// ─── ADO REST API field type mapping (org-level create endpoint) ─────────────
+// Maps schema types to ADO REST /wit/fields body shape.
+// picklistString/picklistInteger must use base type + isPicklist:true.
 
-const ADO_FIELD_TYPE: Record<string, string> = {
-	string: "string",
-	integer: "integer",
-	longText: "plainText",
-	html: "html",
-	treePath: "treePath",
-	identity: "identity",
-	dateTime: "dateTime",
-	boolean: "boolean",
-	picklistString: "picklistString",
-	picklistInteger: "picklistInteger",
+const ADO_FIELD_TYPE_REST: Record<string, { type: string; isPicklist: boolean }> = {
+	string: { type: "string", isPicklist: false },
+	integer: { type: "integer", isPicklist: false },
+	double: { type: "double", isPicklist: false },
+	boolean: { type: "boolean", isPicklist: false },
+	dateTime: { type: "dateTime", isPicklist: false },
+	html: { type: "html", isPicklist: false },
+	plainText: { type: "plainText", isPicklist: false },
+	longText: { type: "plainText", isPicklist: false },
+	treePath: { type: "treePath", isPicklist: false },
+	identity: { type: "string", isPicklist: false },
+	picklistString: { type: "string", isPicklist: true },
+	picklistInteger: { type: "integer", isPicklist: true },
+	picklistDouble: { type: "double", isPicklist: true },
 };
 
 const SCHEMA_MARKER_PREFIX = '{"testvault-schema":"';
@@ -122,6 +127,51 @@ export function createProcessInstallService(
 	async function jsonOrThrow<T>(res: Response): Promise<T> {
 		await throwForStatus(res);
 		return res.json() as Promise<T>;
+	}
+
+	async function orgFieldExists(adoFieldRefName: string): Promise<boolean> {
+		const res = await doFetch(
+			`${orgUrl}/_apis/wit/fields/${encodeURIComponent(adoFieldRefName)}?api-version=${API_VERSION}`,
+			{ method: "GET" }
+		);
+		if (res.ok) return true;
+		if (res.status === 404) return false;
+		await throwForStatus(res);
+		return false;
+	}
+
+	async function createFieldAtOrg(
+		schemaField: (typeof TESTVAULT_SCHEMA.wits)[number]["fields"][number],
+		adoFieldRefName: string
+	): Promise<void> {
+		const fieldTypeInfo = ADO_FIELD_TYPE_REST[schemaField.type];
+		if (!fieldTypeInfo) {
+			throw new Error(
+				`Unknown schema field type "${schemaField.type}" for ${schemaField.referenceName}`
+			);
+		}
+
+		const body = {
+			name: schemaField.displayName,
+			referenceName: adoFieldRefName,
+			description: schemaField.description ?? "",
+			type: fieldTypeInfo.type,
+			usage: "workItem",
+			readOnly: false,
+			canSortBy: true,
+			isQueryable: true,
+			isPicklist: fieldTypeInfo.isPicklist,
+			isPicklistSuggested: false,
+		};
+
+		const res = await doFetch(`${orgUrl}/_apis/wit/fields?api-version=${API_VERSION}`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(body),
+		});
+
+		if (res.status === 409) return;
+		await throwForStatus(res);
 	}
 
 	return {
@@ -317,35 +367,53 @@ export function createProcessInstallService(
 					total: wits.length,
 				});
 
-				// Add custom fields — use ADO-generated refName in URL + Custom. prefix for field refName
+				// Add custom fields — 2-step: org-level create then WIT attach
 				for (const field of wit.fields.filter((f) => f.referenceName.startsWith("TestVault."))) {
 					const adoFieldRefName = schemaToAdoFieldRefName(field.referenceName);
 
-					const body: Record<string, unknown> = {
+					// ETAPE A : create field at organisation level (idempotent)
+					const exists = await orgFieldExists(adoFieldRefName);
+					if (exists) {
+						emit({
+							phase: "creating-wits",
+							message: `  Reusing existing org-level field ${adoFieldRefName}`,
+							current: i + 1,
+							total: wits.length,
+						});
+					} else {
+						emit({
+							phase: "creating-wits",
+							message: `  Creating org-level field ${adoFieldRefName}...`,
+							current: i + 1,
+							total: wits.length,
+						});
+						await createFieldAtOrg(field, adoFieldRefName);
+					}
+
+					// ETAPE B : attach field to WIT
+					const attachBody: Record<string, unknown> = {
 						referenceName: adoFieldRefName,
-						name: field.displayName,
-						type: ADO_FIELD_TYPE[field.type] ?? field.type,
 						required: field.required,
 					};
 					if (field.defaultValue !== undefined) {
-						body.defaultValue = String(field.defaultValue);
+						attachBody.defaultValue = String(field.defaultValue);
 					}
 					const plId = picklistIds.get(field.referenceName);
-					if (plId) body.picklistId = plId;
+					if (plId) attachBody.picklistId = plId;
 
 					const fieldRes = await doFetch(
 						`${base}/${processId}/workItemTypes/${encodeURIComponent(adoRefName)}/fields?api-version=${API_VERSION}`,
 						{
 							method: "POST",
 							headers: { "Content-Type": "application/json" },
-							body: JSON.stringify(body),
+							body: JSON.stringify(attachBody),
 						}
 					);
 					await throwForStatus(fieldRes);
 
 					emit({
 						phase: "creating-wits",
-						message: `  Added field "${field.displayName}" (${adoFieldRefName}) to ${wit.displayName}`,
+						message: `  Attached ${field.displayName} (${adoFieldRefName}) to ${wit.displayName}`,
 						current: i + 1,
 						total: wits.length,
 					});

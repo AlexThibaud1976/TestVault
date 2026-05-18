@@ -268,13 +268,16 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
   - wit-refname-matcher.ts : schemaToAdoFieldRefName + isArgosField + findSchemaFieldByAdoRefName (24 tests)
   - process-install.ts : Step 3 fields POST uses adoFieldRefName (Custom.TestVaultX)
   - CFG-2026-05-18-field-refname-translation.test.ts regression test
-- [ ] TECH-DEBT-053 NEW : field-level idempotency at org level (deferred Sprint 2.12)
-  - Prerequis : TECH-DEBT-052 livre
-  - GET /fields avant creation chaque field, skip si Custom.TestVaultX existe deja
-- [ ] TECH-DEBT-054 NEW : extension argos-detection-api fields refName translation CRUD (deferred Sprint 2.12)
-  - Apres Sprint 2.11, Create Test Case dans extension probablement echoue (bug 8)
-  - Translation schema -> ADO pour toutes les operations CRUD de l extension
-- [ ] TECH-DEBT-019 (E2E reel) : retest pending apres Sprint 2.11 v0.5.13
+- [x] TECH-DEBT-053 LIVRE : field-level idempotency at org level (Sprint 2.12 v0.5.14)
+  - orgFieldExists: GET /_apis/wit/fields/{refName} -> 200/404 existence check
+  - createFieldAtOrg: POST /_apis/wit/fields with full body (name, type, isPicklist, usage...)
+  - ADO_FIELD_TYPE_REST mapping + 409 conflict = idempotent success
+  - CFG-2026-05-18-field-2-step-workflow.test.ts regression test
+- [ ] TECH-DEBT-054 : extension argos-detection-api CRUD operations field refName translation
+  - Apres Sprint 2.12, install devrait reussir
+  - Probable bug 9 : Create Test Case dans extension utilise schema refName au lieu de ADO refName
+  - Sprint 2.13 apres E2E verification
+- [ ] TECH-DEBT-019 (E2E reel) : retest pending apres Sprint 2.12 v0.5.14
 
 ### T-1.4 — CRUD Test Case (UI + service) 🟡
 
