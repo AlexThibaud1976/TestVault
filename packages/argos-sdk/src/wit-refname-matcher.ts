@@ -90,3 +90,54 @@ export function findSchemaFieldByAdoRefName<T extends { referenceName: string }>
 ): T | undefined {
 	return schemaFields.find((f) => isArgosField(adoFieldRefName, f.referenceName));
 }
+
+// ─── Field display name translation (Sprint 2.13) ────────────────────────────
+//
+// ADO enforces unique field NAMES across the entire organization.
+// Microsoft VSTS fields already claim generic names like "Priority", "Severity", "Steps".
+//
+// Solution: prefix all schema display names with "TestVault " at runtime.
+// Schema stays immutable (constitution §12) — translation happens here.
+//
+// Examples:
+//   "Priority"          -> "TestVault Priority"
+//   "Severity"          -> "TestVault Severity"
+//   "TestVault Custom"  -> "TestVault Custom"  (idempotent)
+
+/**
+ * Translate a schema field display name to its ADO counterpart.
+ *
+ * Prefixes with "TestVault " to avoid collisions with Microsoft VSTS fields
+ * that claim generic names org-wide. Idempotent if already prefixed.
+ *
+ * Throws on empty or excessively long names (>100 chars before prefix).
+ */
+export function schemaToAdoFieldName(schemaDisplayName: string): string {
+	if (!schemaDisplayName || schemaDisplayName.trim().length === 0) {
+		throw new Error("Empty schema field display name");
+	}
+	if (schemaDisplayName.length > 100) {
+		throw new Error(`Schema field display name too long (>100 chars): "${schemaDisplayName}"`);
+	}
+	if (schemaDisplayName.startsWith("TestVault ")) {
+		return schemaDisplayName;
+	}
+	return `TestVault ${schemaDisplayName}`;
+}
+
+/**
+ * Validate that a display name satisfies ADO field naming restrictions.
+ *
+ * Returns null if valid, or an error message string if invalid.
+ * ADO limits: max 128 chars, no forbidden chars.
+ */
+export function validateAdoFieldName(adoName: string): string | null {
+	if (adoName.length > 128) {
+		return `Name "${adoName}" exceeds 128 character limit`;
+	}
+	const FORBIDDEN = /[.,;':~\\/*|?"&%$!+=()[\]{}<>]/;
+	if (FORBIDDEN.test(adoName)) {
+		return `Name "${adoName}" contains forbidden characters`;
+	}
+	return null;
+}

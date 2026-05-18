@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.15] - 2026-05-18
+
+### Fixed
+
+#### Sprint 2.13 -- Robust field creation: display name translation + pre-flight + smart idempotency
+
+CRITICAL fix discovered at E2E real test 2026-05-18 after Sprint 2.12 (2-step workflow):
+
+```text
+VS402803: Field name 'Priority' you specified is already in use, choose a different name.
+ProcessFieldAlreadyExistsInformedException
+```
+
+Root cause: ADO enforces unique field NAMES across the entire organization.
+`Microsoft.VSTS.Common.Priority` already uses the name "Priority" org-wide.
+Our schema used generic display names that collide with Microsoft VSTS fields.
+
+#### 7 anti-error mechanisms added
+
+1. **Display name translation** (`schemaToAdoFieldName`): "Priority" -> "TestVault Priority". Idempotent if already prefixed. Throws on empty or >100-char names.
+2. **Pre-flight validation** (`preflightOrgFields`): `GET /_apis/wit/fields` before any POST. Builds refName+name maps, classifies each field as create/reuse/conflict. Fail-fast on conflicts.
+3. **Smart 3-level idempotency**: refName (pre-flight), name (pre-flight), WIT attach (409 = success).
+4. **Type compatibility check**: reusing existing field verifies type matches schema. Microsoft says "Each field has ONE type within organization".
+5. **Robust error handling**: VS402803 (name conflict), VS402805 (refName not found), TF51535 (field not found), 409 race treated as success.
+6. **Structured logging**: [VALIDATE] / [CREATE] / [REUSE] / [ATTACH] / [ERROR] tags.
+7. **Name validation**: max 128 chars, forbidden chars: `. , ; ' : ~ \ / * | ? " & % $ ! + = ( ) [ ] { } < >`.
+
+#### Tests
+
+- 4+ unit tests `schemaToAdoFieldName` + `validateAdoFieldName`
+- 6+ integration tests pre-flight scenarios (reuse, name conflict, type mismatch, 409 idempotency)
+- `CFG-2026-05-18-field-robustness.test.ts` regression test (7 assertions)
+- All Sprint 2.7-2.12 tests still green (311 argos-sdk + 83 regression)
+
+#### Architecture preserved
+
+- `TESTVAULT_SCHEMA` immutable (constitution §12)
+- Sprint 2.7 charset compliance maintained
+- Sprint 2.8 picklist idempotency maintained
+- Sprint 2.9 ADO icon compliance maintained
+- Sprint 2.10 WIT refName resolution maintained
+- Sprint 2.11 Custom. prefix translation maintained
+- Sprint 2.12 field 2-step workflow maintained
+
+#### TECH-DEBT
+
+- TECH-DEBT-055 NEW LIVRE: robust field naming + pre-flight + smart idempotency
+- TECH-DEBT-054 RENUMBERED: extension CRUD operations refName translation (Sprint 2.14)
+- TECH-DEBT-019: E2E retest pending after Sprint 2.13
+
 ## [0.5.14] - 2026-05-18
 
 ### Fixed

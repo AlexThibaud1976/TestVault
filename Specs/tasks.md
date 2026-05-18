@@ -269,14 +269,23 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
   - process-install.ts : Step 3 fields POST uses adoFieldRefName (Custom.TestVaultX)
   - CFG-2026-05-18-field-refname-translation.test.ts regression test
 - [x] TECH-DEBT-053 LIVRE : field-level idempotency at org level (Sprint 2.12 v0.5.14)
-  - orgFieldExists: GET /_apis/wit/fields/{refName} -> 200/404 existence check
+  - orgFieldExists: GET /_apis/wit/fields/{refName} -> 200/404 existence check (replaced by preflight Sprint 2.13)
   - createFieldAtOrg: POST /_apis/wit/fields with full body (name, type, isPicklist, usage...)
   - ADO_FIELD_TYPE_REST mapping + 409 conflict = idempotent success
   - CFG-2026-05-18-field-2-step-workflow.test.ts regression test
-- [ ] TECH-DEBT-054 : extension argos-detection-api CRUD operations field refName translation
-  - Apres Sprint 2.12, install devrait reussir
-  - Probable bug 9 : Create Test Case dans extension utilise schema refName au lieu de ADO refName
-  - Sprint 2.13 apres E2E verification
+- [x] TECH-DEBT-055 LIVRE : robust field naming + pre-flight + smart idempotency (Sprint 2.13 v0.5.15)
+  - schemaToAdoFieldName: "Priority" -> "TestVault Priority" (unique org-level names)
+  - validateAdoFieldName: 128 char limit + forbidden chars check
+  - preflightOrgFields: GET all org fields, classify create/reuse/conflict before any POST
+  - getAllUniqueSchemaFields: deduplicates schema fields across WITs
+  - [CREATE]/[REUSE]/[ATTACH]/[VALIDATE] structured logging
+  - VS402803 explicit handling in createFieldAtOrg
+  - CFG-2026-05-18-field-robustness.test.ts regression test (7 assertions)
+- [ ] TECH-DEBT-054 (renumbered Sprint 2.14) : extension argos-detection-api CRUD operations field refName translation
+  - After Sprint 2.13, install chain should succeed end-to-end
+  - Probable bug 10: Create Test Case in extension uses schema refName instead of ADO refName
+  - schemaToAdoFieldName + isArgosField already available for Sprint 2.14
+- [ ] TECH-DEBT-019 : E2E real ADO instance, retest after Sprint 2.13
 - [ ] TECH-DEBT-019 (E2E reel) : retest pending apres Sprint 2.12 v0.5.14
 
 ### T-1.4 — CRUD Test Case (UI + service) 🟡

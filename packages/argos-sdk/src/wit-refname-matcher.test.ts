@@ -4,7 +4,9 @@ import {
 	findSchemaWitByAdoRefName,
 	isArgosField,
 	isArgosWit,
+	schemaToAdoFieldName,
 	schemaToAdoFieldRefName,
+	validateAdoFieldName,
 } from "./wit-refname-matcher.js";
 
 describe("isArgosWit", () => {
@@ -181,5 +183,67 @@ describe("findSchemaFieldByAdoRefName", () => {
 
 	it("returns undefined for empty array", () => {
 		expect(findSchemaFieldByAdoRefName("Custom.TestVaultPriority", [])).toBeUndefined();
+	});
+});
+
+// ─── Display name translation (Sprint 2.13) ───────────────────────────────────
+
+describe("schemaToAdoFieldName", () => {
+	it("prefixes simple names with 'TestVault '", () => {
+		expect(schemaToAdoFieldName("Priority")).toBe("TestVault Priority");
+		expect(schemaToAdoFieldName("Severity")).toBe("TestVault Severity");
+		expect(schemaToAdoFieldName("Steps")).toBe("TestVault Steps");
+		expect(schemaToAdoFieldName("GherkinFeature")).toBe("TestVault GherkinFeature");
+		expect(schemaToAdoFieldName("AutomationStatus")).toBe("TestVault AutomationStatus");
+	});
+
+	it("is idempotent on already-prefixed names", () => {
+		expect(schemaToAdoFieldName("TestVault Priority")).toBe("TestVault Priority");
+		expect(schemaToAdoFieldName("TestVault GherkinFeature")).toBe("TestVault GherkinFeature");
+	});
+
+	it("throws on empty name", () => {
+		expect(() => schemaToAdoFieldName("")).toThrow(/Empty schema field display name/);
+		expect(() => schemaToAdoFieldName("   ")).toThrow(/Empty schema field display name/);
+	});
+
+	it("throws on excessively long name (>100 chars)", () => {
+		const longName = "X".repeat(101);
+		expect(() => schemaToAdoFieldName(longName)).toThrow(/>100 chars/);
+	});
+});
+
+describe("validateAdoFieldName", () => {
+	it("returns null for valid names", () => {
+		expect(validateAdoFieldName("TestVault Priority")).toBeNull();
+		expect(validateAdoFieldName("Simple Name")).toBeNull();
+		expect(validateAdoFieldName("TestVault GherkinFeature")).toBeNull();
+		expect(validateAdoFieldName("A")).toBeNull();
+	});
+
+	it("returns error for names exceeding 128 chars", () => {
+		const longName = "X".repeat(129);
+		expect(validateAdoFieldName(longName)).toContain("128");
+	});
+
+	it("returns null for names exactly 128 chars", () => {
+		const maxName = "X".repeat(128);
+		expect(validateAdoFieldName(maxName)).toBeNull();
+	});
+
+	it("returns error for forbidden character '.'", () => {
+		expect(validateAdoFieldName("Test.Field")).toContain("forbidden");
+	});
+
+	it("returns error for forbidden character '/'", () => {
+		expect(validateAdoFieldName("Test/Field")).toContain("forbidden");
+	});
+
+	it("returns error for forbidden character '?'", () => {
+		expect(validateAdoFieldName("Test?Field")).toContain("forbidden");
+	});
+
+	it("returns error for forbidden character ','", () => {
+		expect(validateAdoFieldName("Test,Field")).toContain("forbidden");
 	});
 });

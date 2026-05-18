@@ -1,5 +1,10 @@
 import { TESTVAULT_SCHEMA } from "@atconseil/argos-wit-schema";
-import { isArgosWit, schemaToAdoFieldRefName } from "./wit-refname-matcher.js";
+import {
+	isArgosWit,
+	schemaToAdoFieldName,
+	schemaToAdoFieldRefName,
+	validateAdoFieldName,
+} from "./wit-refname-matcher.js";
 
 // ─── Known ADO system process GUIDs ──────────────────────────────────────────
 
@@ -95,6 +100,24 @@ export interface ProcessInstallServiceConfig {
 	timeoutMs?: number;
 }
 
+// ─── Pre-flight types (Sprint 2.13) ──────────────────────────────────────────
+
+export interface PreflightFieldAction {
+	schemaRef: string;
+	adoRef: string;
+	adoName: string;
+	action: "create" | "reuse" | "conflict";
+	conflictDetails?: { existingRefName: string; existingType: string };
+	typeCompatible?: boolean;
+}
+
+export interface PreflightReport {
+	canProceed: boolean;
+	actions: PreflightFieldAction[];
+	summary: { toCreate: number; toReuse: number; conflicts: number };
+	errors: string[];
+}
+
 // ─── Factory ──────────────────────────────────────────────────────────────────
 
 export function createProcessInstallService(
@@ -129,20 +152,10 @@ export function createProcessInstallService(
 		return res.json() as Promise<T>;
 	}
 
-	async function orgFieldExists(adoFieldRefName: string): Promise<boolean> {
-		const res = await doFetch(
-			`${orgUrl}/_apis/wit/fields/${encodeURIComponent(adoFieldRefName)}?api-version=${API_VERSION}`,
-			{ method: "GET" }
-		);
-		if (res.ok) return true;
-		if (res.status === 404) return false;
-		await throwForStatus(res);
-		return false;
-	}
-
 	async function createFieldAtOrg(
 		schemaField: (typeof TESTVAULT_SCHEMA.wits)[number]["fields"][number],
-		adoFieldRefName: string
+		adoFieldRefName: string,
+		adoFieldName: string
 	): Promise<void> {
 		const fieldTypeInfo = ADO_FIELD_TYPE_REST[schemaField.type];
 		if (!fieldTypeInfo) {
@@ -152,7 +165,7 @@ export function createProcessInstallService(
 		}
 
 		const body = {
-			name: schemaField.displayName,
+			name: adoFieldName,
 			referenceName: adoFieldRefName,
 			description: schemaField.description ?? "",
 			type: fieldTypeInfo.type,
@@ -171,7 +184,126 @@ export function createProcessInstallService(
 		});
 
 		if (res.status === 409) return;
-		await throwForStatus(res);
+
+		if (!res.ok) {
+			const errBody = await res.text().catch(() => "");
+			if (errBody.includes("VS402803")) {
+				throw new Error(
+					`[CREATE FAILED] Field "${adoFieldName}" (${adoFieldRefName}): VS402803 name conflict. Despite pre-flight check, ADO rejected. The org state may have changed.`
+				);
+			}
+			await throwForStatus(res);
+		}
+	}
+
+	function getAllUniqueSchemaFields(): Array<
+		(typeof TESTVAULT_SCHEMA.wits)[number]["fields"][number]
+	> {
+		const seen = new Set<string>();
+		const result: Array<(typeof TESTVAULT_SCHEMA.wits)[number]["fields"][number]> = [];
+		for (const wit of TESTVAULT_SCHEMA.wits) {
+			for (const field of wit.fields) {
+				if (!field.referenceName.startsWith("TestVault.")) continue;
+				if (!seen.has(field.referenceName)) {
+					seen.add(field.referenceName);
+					result.push(field);
+				}
+			}
+		}
+		return result;
+	}
+
+	async function preflightOrgFields(
+		schemaFields: ReadonlyArray<(typeof TESTVAULT_SCHEMA.wits)[number]["fields"][number]>,
+		typeMapping: Record<string, { type: string; isPicklist: boolean }>,
+		emit: (step: InstallProgressStep) => void
+	): Promise<PreflightReport> {
+		emit({
+			phase: "creating-wits",
+			message: "[VALIDATE] Pre-flight: fetching org-level fields...",
+		});
+
+		const res = await doFetch(`${orgUrl}/_apis/wit/fields?api-version=${API_VERSION}`, {
+			method: "GET",
+		});
+		const orgFields = await jsonOrThrow<{
+			value: Array<{ name: string; referenceName: string; type: string; isPicklist?: boolean }>;
+		}>(res);
+
+		const byRefName = new Map(orgFields.value.map((f) => [f.referenceName, f]));
+		const byName = new Map(orgFields.value.map((f) => [f.name, f]));
+
+		const actions: PreflightFieldAction[] = [];
+		const errors: string[] = [];
+
+		for (const schemaField of schemaFields) {
+			if (!schemaField.referenceName.startsWith("TestVault.")) continue;
+
+			const adoRef = schemaToAdoFieldRefName(schemaField.referenceName);
+			const adoName = schemaToAdoFieldName(schemaField.displayName);
+			const expectedType = typeMapping[schemaField.type]?.type ?? schemaField.type;
+
+			const nameError = validateAdoFieldName(adoName);
+			if (nameError) {
+				errors.push(`Schema field ${schemaField.referenceName}: ${nameError}`);
+				actions.push({ schemaRef: schemaField.referenceName, adoRef, adoName, action: "conflict" });
+				continue;
+			}
+
+			const existingByRef = byRefName.get(adoRef);
+			const existingByName = byName.get(adoName);
+
+			if (existingByRef) {
+				const typeMatch = existingByRef.type === expectedType;
+				if (!typeMatch) {
+					errors.push(
+						`Schema field ${schemaField.referenceName}: type mismatch ` +
+							`(schema=${expectedType}, ado=${existingByRef.type})`
+					);
+				}
+				actions.push({
+					schemaRef: schemaField.referenceName,
+					adoRef,
+					adoName,
+					action: "reuse",
+					typeCompatible: typeMatch,
+				});
+			} else if (existingByName) {
+				errors.push(
+					`Schema field ${schemaField.referenceName}: name "${adoName}" already used by ` +
+						`"${existingByName.referenceName}". Cannot create.`
+				);
+				actions.push({
+					schemaRef: schemaField.referenceName,
+					adoRef,
+					adoName,
+					action: "conflict",
+					conflictDetails: {
+						existingRefName: existingByName.referenceName,
+						existingType: existingByName.type,
+					},
+				});
+			} else {
+				actions.push({ schemaRef: schemaField.referenceName, adoRef, adoName, action: "create" });
+			}
+		}
+
+		const summary = {
+			toCreate: actions.filter((a) => a.action === "create").length,
+			toReuse: actions.filter((a) => a.action === "reuse").length,
+			conflicts: actions.filter((a) => a.action === "conflict").length,
+		};
+
+		emit({
+			phase: "creating-wits",
+			message: `[VALIDATE] Pre-flight: ${actions.length} schema fields. ${summary.toCreate} to create, ${summary.toReuse} to reuse, ${summary.conflicts} conflicts.`,
+		});
+
+		for (const err of errors) {
+			emit({ phase: "creating-wits", message: `[ERROR] ${err}` });
+		}
+
+		return { canProceed: errors.length === 0, actions, summary, errors };
 	}
 
 	return {
@@ -298,6 +430,19 @@ export function createProcessInstallService(
 				}
 			}
 
+			// ── Pre-flight: validate org-level fields before any POST ─────────
+			const uniqueSchemaFields = getAllUniqueSchemaFields();
+			const preflight = await preflightOrgFields(uniqueSchemaFields, ADO_FIELD_TYPE_REST, emit);
+
+			if (!preflight.canProceed) {
+				throw new ProcessInstallError(
+					400,
+					`Pre-flight validation failed:\n${preflight.errors.join("\n")}`
+				);
+			}
+
+			const preflightByRef = new Map(preflight.actions.map((a) => [a.schemaRef, a]));
+
 			// ── Step 3: Create each WIT with its fields and states (idempotent) ─
 			emit({ phase: "creating-wits", message: "Checking existing work item types..." });
 			const existingWitsRes = await doFetch(
@@ -367,27 +512,36 @@ export function createProcessInstallService(
 					total: wits.length,
 				});
 
-				// Add custom fields — 2-step: org-level create then WIT attach
+				// Add custom fields — ETAPE A: org create, ETAPE B: WIT attach
 				for (const field of wit.fields.filter((f) => f.referenceName.startsWith("TestVault."))) {
-					const adoFieldRefName = schemaToAdoFieldRefName(field.referenceName);
+					const planning = preflightByRef.get(field.referenceName);
+					if (!planning) {
+						throw new Error(`Pre-flight missing for ${field.referenceName} (internal error)`);
+					}
 
-					// ETAPE A : create field at organisation level (idempotent)
-					const exists = await orgFieldExists(adoFieldRefName);
-					if (exists) {
+					const adoFieldRefName = planning.adoRef;
+					const adoFieldName = planning.adoName;
+
+					// ETAPE A : create or reuse field at organisation level
+					if (planning.action === "create") {
 						emit({
 							phase: "creating-wits",
-							message: `  Reusing existing org-level field ${adoFieldRefName}`,
+							message: `  [CREATE] org-level field ${adoFieldRefName} (display: "${adoFieldName}")`,
+							current: i + 1,
+							total: wits.length,
+						});
+						await createFieldAtOrg(field, adoFieldRefName, adoFieldName);
+					} else if (planning.action === "reuse") {
+						emit({
+							phase: "creating-wits",
+							message: `  [REUSE] org-level field ${adoFieldRefName} (already exists, compatible)`,
 							current: i + 1,
 							total: wits.length,
 						});
 					} else {
-						emit({
-							phase: "creating-wits",
-							message: `  Creating org-level field ${adoFieldRefName}...`,
-							current: i + 1,
-							total: wits.length,
-						});
-						await createFieldAtOrg(field, adoFieldRefName);
+						throw new Error(
+							`Internal error: conflict for ${field.referenceName} but pre-flight passed`
+						);
 					}
 
 					// ETAPE B : attach field to WIT
@@ -409,11 +563,15 @@ export function createProcessInstallService(
 							body: JSON.stringify(attachBody),
 						}
 					);
-					await throwForStatus(fieldRes);
+
+					// 409 on attach = field already attached to this WIT (idempotent OK)
+					if (fieldRes.status !== 409) {
+						await throwForStatus(fieldRes);
+					}
 
 					emit({
 						phase: "creating-wits",
-						message: `  Attached ${field.displayName} (${adoFieldRefName}) to ${wit.displayName}`,
+						message: `  [ATTACH] "${adoFieldName}" -> ${wit.displayName}`,
 						current: i + 1,
 						total: wits.length,
 					});
