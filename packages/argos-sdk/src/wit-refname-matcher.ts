@@ -91,6 +91,55 @@ export function findSchemaFieldByAdoRefName<T extends { referenceName: string }>
 	return schemaFields.find((f) => isArgosField(adoFieldRefName, f.referenceName));
 }
 
+// ─── State name translation (Sprint 2.14) ────────────────────────────────────
+//
+// ADO POST /workItemTypes creates a WIT with DEFAULT STATES automatically
+// (New, Active, Resolved, Closed, Removed inherited from base process).
+// Schema state names like "Active" or "Closed" collide with these defaults.
+//
+// Solution: prefix all schema state names with "TestVault " at runtime.
+// Same pattern as Sprint 2.13 (field display names).
+//
+// Schema state name : "Active"
+// ADO state name    : "TestVault Active"
+
+/**
+ * Translate a schema state name to its ADO counterpart.
+ *
+ * Examples:
+ *   "Draft"           -> "TestVault Draft"
+ *   "Active"          -> "TestVault Active"
+ *   "Approved"        -> "TestVault Approved"
+ *   "TestVault Done"  -> "TestVault Done"  (idempotent, no double-prefix)
+ */
+export function schemaToAdoStateName(schemaStateName: string): string {
+	if (!schemaStateName || schemaStateName.trim().length === 0) {
+		throw new Error("Empty schema state name");
+	}
+	if (schemaStateName.length > 100) {
+		throw new Error(`Schema state name too long (>100 chars): "${schemaStateName}"`);
+	}
+	if (schemaStateName.startsWith("TestVault ")) {
+		return schemaStateName;
+	}
+	return `TestVault ${schemaStateName}`;
+}
+
+/**
+ * Validate that an ADO state name doesn't violate ADO constraints.
+ * Returns null if valid, error message string if invalid.
+ */
+export function validateAdoStateName(adoName: string): string | null {
+	if (adoName.length > 128) {
+		return `State name "${adoName}" exceeds 128 character limit`;
+	}
+	const FORBIDDEN = /[.,;':~\\/*|?"&%$!+=()[\]{}<>]/;
+	if (FORBIDDEN.test(adoName)) {
+		return `State name "${adoName}" contains forbidden characters`;
+	}
+	return null;
+}
+
 // ─── Field display name translation (Sprint 2.13) ────────────────────────────
 //
 // ADO enforces unique field NAMES across the entire organization.

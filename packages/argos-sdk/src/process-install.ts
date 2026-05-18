@@ -3,7 +3,9 @@ import {
 	isArgosWit,
 	schemaToAdoFieldName,
 	schemaToAdoFieldRefName,
+	schemaToAdoStateName,
 	validateAdoFieldName,
+	validateAdoStateName,
 } from "./wit-refname-matcher.js";
 
 // ─── Known ADO system process GUIDs ──────────────────────────────────────────
@@ -306,6 +308,22 @@ export function createProcessInstallService(
 		return { canProceed: errors.length === 0, actions, summary, errors };
 	}
 
+	interface AdoState {
+		id: string;
+		name: string;
+		color: string;
+		stateCategory: string;
+		order?: number;
+		customizationType?: string;
+	}
+
+	async function getExistingStates(procId: string, adoWitRefName: string): Promise<AdoState[]> {
+		const url = `${base}/${procId}/workItemTypes/${encodeURIComponent(adoWitRefName)}/states?api-version=${API_VERSION}`;
+		const res = await doFetch(url, { method: "GET" });
+		const data = await jsonOrThrow<{ value: AdoState[] }>(res);
+		return data.value;
+	}
+
 	return {
 		async detectInstallState() {
 			const res = await doFetch(`${base}?api-version=${API_VERSION}`);
@@ -577,21 +595,79 @@ export function createProcessInstallService(
 					});
 				}
 
-				// Add custom states — use ADO-generated refName in the URL
+				// Add custom states — 2-step: detect defaults then create with translated name
+				emit({
+					phase: "creating-wits",
+					message: `  [VALIDATE] Pre-flight states for ${wit.displayName}...`,
+					current: i + 1,
+					total: wits.length,
+				});
+				const existingStates = await getExistingStates(processId, adoRefName);
+				const existingStateNames = new Set(existingStates.map((s) => s.name));
+				emit({
+					phase: "creating-wits",
+					message: `  [VALIDATE] WIT has ${existingStates.length} default states: ${existingStates.map((s) => s.name).join(", ")}`,
+					current: i + 1,
+					total: wits.length,
+				});
+
 				for (const state of wit.states) {
+					const adoStateName = schemaToAdoStateName(state.name);
+
+					const nameError = validateAdoStateName(adoStateName);
+					if (nameError) {
+						throw new Error(`Schema state "${state.name}" for ${wit.referenceName}: ${nameError}`);
+					}
+
+					if (existingStateNames.has(adoStateName)) {
+						emit({
+							phase: "creating-wits",
+							message: `  [STATE-SKIP] "${adoStateName}" already exists in ${wit.displayName} (idempotent)`,
+							current: i + 1,
+							total: wits.length,
+						});
+						continue;
+					}
+
+					emit({
+						phase: "creating-wits",
+						message: `  [STATE-CREATE] "${adoStateName}" (category: ${state.stateCategory})`,
+						current: i + 1,
+						total: wits.length,
+					});
+
 					const stateRes = await doFetch(
 						`${base}/${processId}/workItemTypes/${encodeURIComponent(adoRefName)}/states?api-version=${API_VERSION}`,
 						{
 							method: "POST",
 							headers: { "Content-Type": "application/json" },
 							body: JSON.stringify({
-								name: state.name,
+								name: adoStateName,
 								color: state.color.replace("#", ""),
 								stateCategory: state.stateCategory,
 							}),
 						}
 					);
-					await throwForStatus(stateRes);
+
+					if (stateRes.status === 409) {
+						emit({
+							phase: "creating-wits",
+							message: `  [STATE-SKIP] "${adoStateName}" 409 conflict (idempotent OK)`,
+							current: i + 1,
+							total: wits.length,
+						});
+						continue;
+					}
+
+					if (!stateRes.ok) {
+						const errBody = await stateRes.text().catch(() => "");
+						if (errBody.includes("VS403083")) {
+							throw new Error(
+								`[STATE FAILED] State "${adoStateName}" in ${wit.displayName}: VS403083 name conflict. WIT may have been modified concurrently.`
+							);
+						}
+						await throwForStatus(stateRes);
+					}
 				}
 			}
 

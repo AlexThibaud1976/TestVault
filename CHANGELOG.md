@@ -7,6 +7,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.16] - 2026-05-18
+
+### Fixed
+
+#### Sprint 2.14 -- State name translation + smart idempotency
+
+CRITICAL fix discovered at E2E real test 2026-05-18 after Sprint 2.13 (robust fields):
+
+```
+VS403083: You specified a state Active that is already in use. Choose a different name.
+WorkItemStateNameAlreadyInUseException
+```
+
+Root cause: POST /workItemTypes creates a WIT with DEFAULT STATES automatically
+(New, Active, Resolved, Closed, Removed inherited from base process). Schema state
+"Active" collides with the default "Active".
+
+Architectural principle confirmed after 8 hotfix sprints today:
+> "Anything we create at the WIT level must be prefixed TestVault X"
+
+Sprint 2.14 transposes the Sprint 2.13 pattern (which worked for 40 fields) to STATES.
+
+New helpers in `wit-refname-matcher.ts`:
+- `schemaToAdoStateName("Active")` -> `"TestVault Active"` (idempotent on already-prefixed)
+- `validateAdoStateName(name)` -> length + forbidden char check
+
+New helper in `process-install.ts`:
+- `getExistingStates(procId, adoWitRefName)`: GET /states for a WIT
+- Used to detect default states (New, Active, Resolved, etc.) after POST /workItemTypes
+
+Step 3 states loop refactored:
+- After POST /workItemTypes, GET existing states for each WIT
+- Build Set of existing names
+- For each schema state: translate to "TestVault X", skip if exists, else POST create
+- Handle 409 (race condition) and VS403083 (name conflict) gracefully
+
+Structured logging:
+```
+[VALIDATE] Pre-flight states for TestVault Test Case...
+[VALIDATE] WIT has 5 default states: New, Active, Resolved, Closed, Removed
+[STATE-CREATE] "TestVault Design" (category: Proposed)
+[STATE-SKIP] "TestVault Active" already exists (idempotent)
+```
+
+Tests:
+- 8 unit tests for schemaToAdoStateName + validateAdoStateName
+- 5 integration tests for state idempotency scenarios
+- CFG-2026-05-18-state-name-custom regression test
+- All Sprint 2.7-2.13 tests (324 total) still green
+
+TECH-DEBT:
+- TECH-DEBT-056 LIVRE: state name custom + idempotency
+- TECH-DEBT-054 RENUMBERED Sprint 2.15: extension argos-detection-api CRUD refName translation
+- TECH-DEBT-019: E2E reel, retest after this sprint
+
+Bug cascade from E2E real testing (session 2026-05-18, 8 sprints):
+1. VS402848 picklist conflict (Sprint 2.8)
+2. VS403344 icon invalid (Sprint 2.9)
+3. VS402805 WIT refName not found (Sprint 2.10)
+4. TF51535 field "TestVault.X" (Sprint 2.11)
+5. TF51535 field "Custom.TestVaultX" (Sprint 2.12)
+6. VS402803 field name "Priority" (Sprint 2.13)
+7. VS403083 state name "Active" (Sprint 2.14) <- THIS
+
 ## [0.5.15] - 2026-05-18
 
 ### Fixed
