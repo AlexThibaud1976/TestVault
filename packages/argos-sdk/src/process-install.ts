@@ -181,9 +181,24 @@ export function createProcessInstallService(
 			const created = await jsonOrThrow<{ typeId: string; name: string }>(createRes);
 			const processId = created.typeId;
 
-			// ── Step 2: Create picklists ───────────────────────────────────────
-			emit({ phase: "creating-picklists", message: "Creating picklists..." });
+			// ── Step 2: Create picklists (idempotent) ────────────────────────
+			emit({ phase: "creating-picklists", message: "Checking existing picklists..." });
 			const picklistIds = new Map<string, string>(); // field referenceName → picklist id
+
+			const existingListsRes = await doFetch(
+				`${orgUrl}/_apis/work/processes/lists?api-version=${API_VERSION}`,
+				{ method: "GET" }
+			);
+			const existingLists = await jsonOrThrow<{ value: Array<{ id: string; name: string }> }>(
+				existingListsRes
+			);
+			const existingPicklistsByName = new Map<string, string>(
+				existingLists.value.map((p) => [p.name, p.id])
+			);
+			emit({
+				phase: "creating-picklists",
+				message: `Found ${existingLists.value.length} existing picklists in organization.`,
+			});
 
 			for (const wit of TESTVAULT_SCHEMA.wits) {
 				for (const field of wit.fields) {
@@ -193,13 +208,29 @@ export function createProcessInstallService(
 						!picklistIds.has(field.referenceName) &&
 						field.allowedValues
 					) {
+						const picklistName = field.referenceName.replace(".", "-");
+
+						const existingId = existingPicklistsByName.get(picklistName);
+						if (existingId) {
+							emit({
+								phase: "creating-picklists",
+								message: `Reusing existing picklist "${picklistName}"...`,
+							});
+							picklistIds.set(field.referenceName, existingId);
+							continue;
+						}
+
+						emit({
+							phase: "creating-picklists",
+							message: `Creating picklist "${picklistName}"...`,
+						});
 						const res = await doFetch(
 							`${orgUrl}/_apis/work/processes/lists?api-version=${API_VERSION}`,
 							{
 								method: "POST",
 								headers: { "Content-Type": "application/json" },
 								body: JSON.stringify({
-									name: field.referenceName.replace(".", "-"),
+									name: picklistName,
 									type: field.type === "picklistInteger" ? "Integer" : "String",
 									items: field.allowedValues.map(String),
 								}),
@@ -207,16 +238,44 @@ export function createProcessInstallService(
 						);
 						const pl = await jsonOrThrow<{ id: string }>(res);
 						picklistIds.set(field.referenceName, pl.id);
+						existingPicklistsByName.set(picklistName, pl.id);
 					}
 				}
 			}
 
-			// ── Step 3: Create each WIT with its fields and states ─────────────
+			// ── Step 3: Create each WIT with its fields and states (idempotent) ─
+			emit({ phase: "creating-wits", message: "Checking existing work item types..." });
+			const existingWitsRes = await doFetch(
+				`${base}/${processId}/workItemTypes?api-version=${API_VERSION}`,
+				{ method: "GET" }
+			);
+			const existingWitsData = await jsonOrThrow<{ value: Array<{ referenceName: string }> }>(
+				existingWitsRes
+			);
+			const existingWitRefs = new Set<string>(
+				existingWitsData.value.map((w) => w.referenceName).filter((r) => r.startsWith("TestVault."))
+			);
+			emit({
+				phase: "creating-wits",
+				message: `Found ${existingWitRefs.size} existing TestVault WITs in process.`,
+			});
+
 			const wits = TESTVAULT_SCHEMA.wits;
 
 			for (let i = 0; i < wits.length; i++) {
 				const wit = wits[i];
 				if (!wit) continue;
+
+				if (existingWitRefs.has(wit.referenceName)) {
+					emit({
+						phase: "creating-wits",
+						message: `Skipping ${wit.displayName} (already exists)`,
+						current: i + 1,
+						total: wits.length,
+					});
+					continue;
+				}
+
 				emit({
 					phase: "creating-wits",
 					message: `Creating ${wit.displayName}...`,
