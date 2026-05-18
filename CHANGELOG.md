@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.12] - 2026-05-18
+
+### Sprint 2.10 -- ADO auto-generated WIT refName resolution HOTFIX
+
+**Bug discovered at E2E real test 2026-05-18 (after Sprint 2.9 icon fix).**
+
+```text
+VS402805: Work item type 'TestVault.TestCase' does not exist in process 'TestVault - Agile'.
+```
+
+Root cause: ADO ignores the `referenceName` field in POST `/workItemTypes` bodies and generates its own
+refName as `{ProcessName_NoSpaces}.TestVault{WitName}` (e.g. `ArgosInheritedDemo.TestVaultTestCase`).
+All code that compared ADO refNames to schema refNames was using exact match, which never succeeded.
+
+#### Fixed -- argos-sdk process-install.ts (Lots A + C + D)
+
+- **Lot A** -- POST WIT body: removed `referenceName` field (ADO ignores it); capture ADO-generated
+  refName from response; use it for all subsequent field/state URLs
+- **Lot C** -- `detectInstallState`: replaced `Set.has(schemaRef)` exact match with `isArgosWit` pattern
+- **Lot D** -- Step 3 idempotency: replaced `existingWitRefs.has(schemaRef)` with `isArgosWit` pattern
+  against full ADO WIT list; log includes ADO-generated refName on skip
+
+#### Added -- argos-sdk wit-refname-matcher.ts (Lot B)
+
+New module `packages/argos-sdk/src/wit-refname-matcher.ts`:
+- `isArgosWit(adoRefName, schemaWitRefName)`: matches `X.TestVaultFoo` to `TestVault.Foo`
+- `findSchemaWitByAdoRefName(adoRefName, schemaWits)`: reverse-lookup schema entry from ADO refName
+- Exported from `@atconseil/argos-sdk` public surface
+- 10 unit tests in `wit-refname-matcher.test.ts`
+
+#### Fixed -- argos-detection-api wit-schema-reader.ts (Lot E)
+
+- `listWorkItemTypes`: maps ADO refNames back to schema names via `isArgosWit` pattern
+- `isArgosInstalled`: now correctly detects TestVault presence against ADO-generated names
+- Added `@atconseil/argos-sdk` workspace dependency
+
+#### TECH-DEBT
+
+- TECH-DEBT-051 NEW LIVRE: ADO WIT refName resolution
+- TECH-DEBT-052 NEW: E2E retest post Sprint 2.10
+
 ## [0.5.11] - 2026-05-18
 
 ### Sprint 2.9 -- WIT iconIds ADO compliance HOTFIX
