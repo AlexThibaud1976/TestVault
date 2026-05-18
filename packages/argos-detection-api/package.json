@@ -1,6 +1,6 @@
 {
 	"name": "@atconseil/argos-detection-api",
-	"version": "0.5.11",
+	"version": "0.5.12",
 	"description": "Argos detection API - public client for consumers reading Argos Custom WIT schema from Azure DevOps. Designed for external integrators (TestPulse v2.0+).",
 	"private": true,
 	"type": "module",
@@ -20,6 +20,7 @@
 		"lint": "biome check src/"
 	},
 	"dependencies": {
+		"@atconseil/argos-sdk": "workspace:*",
 		"@atconseil/argos-types": "workspace:*"
 	},
 	"devDependencies": {

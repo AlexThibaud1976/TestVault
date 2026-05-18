@@ -117,3 +117,4 @@ export type {
 export { buildTestCaseQuery, buildWiqlQuery } from "./wiql.js";
 export type { WiqlOptions } from "./wiql.js";
 export { paginate, paginateAsync } from "./paginator.js";
+export { findSchemaWitByAdoRefName, isArgosWit } from "./wit-refname-matcher.js";

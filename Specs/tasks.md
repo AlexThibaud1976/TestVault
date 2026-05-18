@@ -258,7 +258,16 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
   - 7 WIT iconIds renommes icon-xxx -> icon_xxx (mapping semantique D87-A)
   - 14 tests unitaires (whitelist 41 icons Microsoft + format regex)
   - CFG-2026-05-18-wit-icons-ado-valid.test.ts regression test
-- [ ] TECH-DEBT-019 (E2E reel) : couche 5 icons fixee, retest pending apres v0.5.11
+- [x] TECH-DEBT-051 LIVRE : ADO WIT refName resolution (Sprint 2.10 v0.5.12)
+  - wit-refname-matcher.ts : isArgosWit + findSchemaWitByAdoRefName (10 tests)
+  - process-install.ts : POST body sans referenceName, capture adoRefName response
+  - detectInstallState + idempotency Step 3 uses isArgosWit pattern
+  - argos-detection-api : listWorkItemTypes + isArgosInstalled corriges
+  - CFG-2026-05-18-process-install-idempotency.test.ts regression test
+- [ ] TECH-DEBT-052 NEW : E2E retest post Sprint 2.10 (v0.5.12)
+  - Prerequis : TECH-DEBT-051 livre
+  - Verifier que l installation ADO complete sans VS402805
+- [ ] TECH-DEBT-019 (E2E reel) : couche 6 refName fixee, retest pending apres v0.5.12
 
 ### T-1.4 — CRUD Test Case (UI + service) 🟡
 
