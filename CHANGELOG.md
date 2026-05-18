@@ -7,6 +7,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.18] - 2026-05-18
+
+### Fixed
+
+#### Sprint 2.16 -- CRUD ops refName resolver for ALL 7 WIT
+
+CRITICAL fix: after Sprint 2.15 fixed extension detection (bandeau disappeared),
+CREATE operations still failed:
+
+```
+VS402323: Work item type TestVault.TestPlan does not exist in project ...
+WorkItemTypeNotFoundException
+```
+
+Root cause: SDK services called `createWorkItem("TestVault.TestPlan", ...)` but
+ADO requires the process-prefixed refName `"ArgosInheritedDemo.TestVaultTestPlan"`.
+Similarly, field patches used `/fields/TestVault.Priority` instead of
+`/fields/Custom.TestVaultPriority`. All 7 WIT + all field paths affected.
+
+User requirement (2026-05-18 ~19h):
+> "Assure toi de prendre en compte tous les WIT que nous avons crees, ne pas fixer uniquement pour les test plans."
+
+### Architecture changes
+
+#### WitResolver service (argos-wit-schema)
+
+NEW `packages/argos-wit-schema/src/wit-resolver.ts`:
+
+- `createWitResolver(client, projectId)`: factory with lazy cache
+- `resolveAdoWitRefName(schemaRefName)`: schema -> ADO with session cache
+- `resolveSchemaWitRefName(adoRefName)`: reverse (pure, no async)
+- `translateFieldsToAdo(fields)`: `{ "TestVault.X": v }` -> `{ "Custom.TestVaultX": v }`
+- `translateFieldsFromAdo(fields)`: reverse for GET responses
+- `invalidateCache()`: for process changes during session
+
+The resolver caches the WIT type map on first call (1 GET per session).
+
+#### Transparent IAdoClient adapter (argos-extension/services.ts)
+
+NEW in `apps/argos-extension/src/hub/services.ts`:
+
+- `makeWitTypeProvider`: fetches WIT types from ADO REST API
+- `createArgosAdoClientAdapter`: wraps IAdoClient transparently
+  - `createWorkItem`: resolves schema type + translates `/fields/TestVault.X` patches
+  - `fetchWorkItem`: translates `Custom.TestVaultX` -> `TestVault.X` in response
+  - `updateWorkItem`: translates field paths in patch arrays
+- `createArgosWorkItem`: standalone generic creator
+- `createTestCase`, `createTestPlan`, `createTestSet`, `createPrecondition`,
+  `createTestExecution`, `createTestCaseVersion`, `createAuditLog`: typed wrappers
+
+All 7 SDK service factories now receive the wrapped adapter. No SDK modifications.
+
+### Tests
+
+- 16 unit tests in `wit-resolver.test.ts` (cache, all 7 WIT, fields, reverse)
+- 12 integration tests in `services.test.ts` (createArgosWorkItem + all 7 wrappers)
+- `CFG-2026-05-18-crud-refname-resolver` regression test (5 assertions)
+- All Sprint 2.7-2.15 tests still green (374 extension + 99 regression)
+
+### TECH-DEBT
+
+- TECH-DEBT-054 FULLY DELIVERED: detection (Sprint 2.15) + CRUD ops (Sprint 2.16)
+- TECH-DEBT-019: E2E real-world retest pending after this sprint
+
 ## [0.5.17] - 2026-05-18
 
 ### Fixed
