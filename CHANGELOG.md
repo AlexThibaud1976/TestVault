@@ -7,6 +7,125 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.13] - 2026-05-18
+
+### Fixed
+
+#### Sprint 2.11 -- ADO custom field "Custom." prefix translation
+
+CRITICAL bug discovered at E2E real test 2026-05-18 after Sprint 2.10 (WIT refName fix):
+
+```text
+TF51535: Cannot find field TestVault.Priority.
+WorkItemTrackingFieldDefinitionNotFoundException
+```
+
+Root cause: ADO inherited processes force "Custom." prefix for custom field referenceNames.
+Microsoft documentation:
+
+> "When you add a custom field to an inherited process, Azure DevOps assigns it a
+> reference name prefixed with Custom and removes any spaces from the field name."
+
+POST `/workItemTypes/{adoWitRefName}/fields` with `referenceName="TestVault.Priority"`:
+
+- ADO interprets a non-"Custom." prefix as a reference to an existing field
+- ADO searches for a field named "TestVault.Priority" which doesn't exist
+- Returns TF51535 instead of creating the field
+
+With `referenceName="Custom.TestVaultPriority"`:
+
+- ADO creates the custom field at organisation level
+- Attaches it to the WIT
+
+#### Architecture
+
+Extended `packages/argos-sdk/src/wit-refname-matcher.ts`:
+
+- `schemaToAdoFieldRefName(schemaRefName)`: translates "TestVault.X" -> "Custom.TestVaultX"
+- `isArgosField(adoRefName, schemaRefName)`: exact pattern match for fields
+- `findSchemaFieldByAdoRefName(adoRefName, schemaFields)`: reverse lookup
+
+Modified `packages/argos-sdk/src/process-install.ts`:
+
+- Step 3 field POST: translate `referenceName` before sending to ADO
+- Body otherwise unchanged (name, type, picklistId, required, defaultValue preserved)
+- URL still uses `adoRefName` from WIT response (Sprint 2.10)
+
+#### Translation pattern summary
+
+```text
+Sprint   Entity   Schema                  ADO
+-------  ------   ------                  ---
+2.10     WIT      TestVault.TestCase       {ProcessName}.TestVaultTestCase
+2.11     Field    TestVault.Priority       Custom.TestVaultPriority
+```
+
+System fields (System.*) and Microsoft fields (Microsoft.*) pass through unchanged.
+
+#### Tests
+
+- 24 new unit tests: `schemaToAdoFieldRefName`, `isArgosField`, `findSchemaFieldByAdoRefName`
+- `CFG-2026-05-18-field-refname-translation` regression test (4 assertions)
+- All Sprint 2.7-2.10 tests still green (290 total)
+
+#### TECH-DEBT
+
+- TECH-DEBT-052 LIVRE: Custom. prefix translation for fields
+- TECH-DEBT-053 NEW: field-level idempotency at org level (deferred Sprint 2.12)
+- TECH-DEBT-054 NEW: extension argos-detection-api fields refName translation for CRUD (deferred Sprint 2.12)
+- TECH-DEBT-019 (E2E reel): retest after this sprint
+
+#### Lessons learned
+
+- ADO inherited process has different namespace conventions per entity type:
+  - WITs: `{ProcessName}.X` (Sprint 2.10)
+  - Fields: `Custom.X` (Sprint 2.11)
+  - Picklists: our naming, org-level (Sprint 2.8)
+  - States: local to WIT, no refName
+- Custom fields are organisation-level (not process-level), shared across processes
+- Microsoft REST API doc does not explicitly state the Custom. requirement inline
+
+## [0.5.12] - 2026-05-18
+
+### Sprint 2.10 -- ADO auto-generated WIT refName resolution HOTFIX
+
+**Bug discovered at E2E real test 2026-05-18 (after Sprint 2.9 icon fix).**
+
+```text
+VS402805: Work item type 'TestVault.TestCase' does not exist in process 'TestVault - Agile'.
+```
+
+Root cause: ADO ignores the `referenceName` field in POST `/workItemTypes` bodies and generates its own
+refName as `{ProcessName_NoSpaces}.TestVault{WitName}` (e.g. `ArgosInheritedDemo.TestVaultTestCase`).
+All code that compared ADO refNames to schema refNames was using exact match, which never succeeded.
+
+#### Fixed -- argos-sdk process-install.ts (Lots A + C + D)
+
+- **Lot A** -- POST WIT body: removed `referenceName` field (ADO ignores it); capture ADO-generated
+  refName from response; use it for all subsequent field/state URLs
+- **Lot C** -- `detectInstallState`: replaced `Set.has(schemaRef)` exact match with `isArgosWit` pattern
+- **Lot D** -- Step 3 idempotency: replaced `existingWitRefs.has(schemaRef)` with `isArgosWit` pattern
+  against full ADO WIT list; log includes ADO-generated refName on skip
+
+#### Added -- argos-sdk wit-refname-matcher.ts (Lot B)
+
+New module `packages/argos-sdk/src/wit-refname-matcher.ts`:
+- `isArgosWit(adoRefName, schemaWitRefName)`: matches `X.TestVaultFoo` to `TestVault.Foo`
+- `findSchemaWitByAdoRefName(adoRefName, schemaWits)`: reverse-lookup schema entry from ADO refName
+- Exported from `@atconseil/argos-sdk` public surface
+- 10 unit tests in `wit-refname-matcher.test.ts`
+
+#### Fixed -- argos-detection-api wit-schema-reader.ts (Lot E)
+
+- `listWorkItemTypes`: maps ADO refNames back to schema names via `isArgosWit` pattern
+- `isArgosInstalled`: now correctly detects TestVault presence against ADO-generated names
+- Added `@atconseil/argos-sdk` workspace dependency
+
+#### TECH-DEBT
+
+- TECH-DEBT-051 NEW LIVRE: ADO WIT refName resolution
+- TECH-DEBT-052 NEW: E2E retest post Sprint 2.10
+
 ## [0.5.11] - 2026-05-18
 
 ### Sprint 2.9 -- WIT iconIds ADO compliance HOTFIX

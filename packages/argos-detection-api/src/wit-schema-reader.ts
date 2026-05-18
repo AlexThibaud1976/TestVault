@@ -1,3 +1,5 @@
+import { isArgosWit } from "@atconseil/argos-sdk";
+
 export const ARGOS_WIT_NAMES = [
 	"TestVault.TestCase",
 	"TestVault.TestSet",
@@ -36,9 +38,10 @@ export function createArgosSchemaReader(client: IAdoWorkItemClient): IArgosSchem
 	return {
 		async listWorkItemTypes(orgUrl, project) {
 			const all = await client.listWorkItemTypeNames(orgUrl, project);
-			return all.filter((n): n is ArgosWorkItemType =>
-				(ARGOS_WIT_NAMES as readonly string[]).includes(n)
-			);
+			// ADO generates refNames as {ProcessName}.TestVault{WitName} — map back to schema names
+			return all
+				.map((adoRef) => ARGOS_WIT_NAMES.find((schemaRef) => isArgosWit(adoRef, schemaRef)))
+				.filter((n): n is ArgosWorkItemType => n !== undefined);
 		},
 
 		async getFields(orgUrl, project, witName) {

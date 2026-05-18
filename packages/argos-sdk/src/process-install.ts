@@ -1,4 +1,5 @@
 import { TESTVAULT_SCHEMA } from "@atconseil/argos-wit-schema";
+import { isArgosWit, schemaToAdoFieldRefName } from "./wit-refname-matcher.js";
 
 // ─── Known ADO system process GUIDs ──────────────────────────────────────────
 
@@ -148,9 +149,13 @@ export function createProcessInstallService(
 				witsRes
 			);
 
-			const present = new Set(wits.map((w) => w.referenceName));
-			const expected = TESTVAULT_SCHEMA.wits.map((w) => w.referenceName);
-			const missingWitRefs = expected.filter((ref) => !present.has(ref));
+			// ADO generates its own refName; use pattern matching to detect presence
+			const missingWitRefs = TESTVAULT_SCHEMA.wits
+				.filter(
+					(schemaWit) =>
+						!wits.some((adoWit) => isArgosWit(adoWit.referenceName, schemaWit.referenceName))
+				)
+				.map((schemaWit) => schemaWit.referenceName);
 
 			if (missingWitRefs.length === 0) {
 				return {
@@ -252,12 +257,13 @@ export function createProcessInstallService(
 			const existingWitsData = await jsonOrThrow<{ value: Array<{ referenceName: string }> }>(
 				existingWitsRes
 			);
-			const existingWitRefs = new Set<string>(
-				existingWitsData.value.map((w) => w.referenceName).filter((r) => r.startsWith("TestVault."))
-			);
+			const existingAdoWits = existingWitsData.value;
+			const existingArgosCount = existingAdoWits.filter((adoWit) =>
+				TESTVAULT_SCHEMA.wits.some((s) => isArgosWit(adoWit.referenceName, s.referenceName))
+			).length;
 			emit({
 				phase: "creating-wits",
-				message: `Found ${existingWitRefs.size} existing TestVault WITs in process.`,
+				message: `Found ${existingArgosCount} existing TestVault WITs in process.`,
 			});
 
 			const wits = TESTVAULT_SCHEMA.wits;
@@ -266,10 +272,13 @@ export function createProcessInstallService(
 				const wit = wits[i];
 				if (!wit) continue;
 
-				if (existingWitRefs.has(wit.referenceName)) {
+				const existingAdoWit = existingAdoWits.find((adoWit) =>
+					isArgosWit(adoWit.referenceName, wit.referenceName)
+				);
+				if (existingAdoWit) {
 					emit({
 						phase: "creating-wits",
-						message: `Skipping ${wit.displayName} (already exists)`,
+						message: `Skipping ${wit.displayName} (already exists as ${existingAdoWit.referenceName})`,
 						current: i + 1,
 						total: wits.length,
 					});
@@ -283,7 +292,7 @@ export function createProcessInstallService(
 					total: wits.length,
 				});
 
-				// Create the WIT
+				// Create the WIT — ADO ignores our referenceName and generates its own
 				const witRes = await doFetch(
 					`${base}/${processId}/workItemTypes?api-version=${API_VERSION}`,
 					{
@@ -291,19 +300,29 @@ export function createProcessInstallService(
 						headers: { "Content-Type": "application/json" },
 						body: JSON.stringify({
 							name: wit.displayName,
-							referenceName: wit.referenceName,
 							description: wit.description,
 							color: wit.color.replace("#", ""),
 							icon: wit.icon,
 						}),
 					}
 				);
-				await throwForStatus(witRes);
+				// Read the ADO-generated referenceName from the response
+				const witData = await jsonOrThrow<{ referenceName: string; name: string }>(witRes);
+				const adoRefName = witData.referenceName;
 
-				// Add custom fields (skip System.* — those are inherited)
+				emit({
+					phase: "creating-wits",
+					message: `Created ${wit.displayName} (ADO refName: ${adoRefName})`,
+					current: i + 1,
+					total: wits.length,
+				});
+
+				// Add custom fields — use ADO-generated refName in URL + Custom. prefix for field refName
 				for (const field of wit.fields.filter((f) => f.referenceName.startsWith("TestVault."))) {
+					const adoFieldRefName = schemaToAdoFieldRefName(field.referenceName);
+
 					const body: Record<string, unknown> = {
-						referenceName: field.referenceName,
+						referenceName: adoFieldRefName,
 						name: field.displayName,
 						type: ADO_FIELD_TYPE[field.type] ?? field.type,
 						required: field.required,
@@ -315,7 +334,7 @@ export function createProcessInstallService(
 					if (plId) body.picklistId = plId;
 
 					const fieldRes = await doFetch(
-						`${base}/${processId}/workItemTypes/${encodeURIComponent(wit.referenceName)}/fields?api-version=${API_VERSION}`,
+						`${base}/${processId}/workItemTypes/${encodeURIComponent(adoRefName)}/fields?api-version=${API_VERSION}`,
 						{
 							method: "POST",
 							headers: { "Content-Type": "application/json" },
@@ -323,12 +342,19 @@ export function createProcessInstallService(
 						}
 					);
 					await throwForStatus(fieldRes);
+
+					emit({
+						phase: "creating-wits",
+						message: `  Added field "${field.displayName}" (${adoFieldRefName}) to ${wit.displayName}`,
+						current: i + 1,
+						total: wits.length,
+					});
 				}
 
-				// Add custom states
+				// Add custom states — use ADO-generated refName in the URL
 				for (const state of wit.states) {
 					const stateRes = await doFetch(
-						`${base}/${processId}/workItemTypes/${encodeURIComponent(wit.referenceName)}/states?api-version=${API_VERSION}`,
+						`${base}/${processId}/workItemTypes/${encodeURIComponent(adoRefName)}/states?api-version=${API_VERSION}`,
 						{
 							method: "POST",
 							headers: { "Content-Type": "application/json" },

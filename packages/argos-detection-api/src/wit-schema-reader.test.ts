@@ -2,9 +2,20 @@ import { describe, expect, it, vi } from "vitest";
 import { ARGOS_WIT_NAMES, createArgosSchemaReader } from "./wit-schema-reader.js";
 import type { IAdoWorkItemClient } from "./wit-schema-reader.js";
 
+// ADO generates refNames as {ProcessName}.TestVault{WitName} — not the schema names directly
+const ADO_WIT_NAMES = [
+	"SomeProcess.TestVaultTestCase",
+	"SomeProcess.TestVaultTestSet",
+	"SomeProcess.TestVaultTestPlan",
+	"SomeProcess.TestVaultPrecondition",
+	"SomeProcess.TestVaultTestExecution",
+	"SomeProcess.TestVaultTestPlanEntry",
+	"SomeProcess.TestVaultAuditLog",
+];
+
 function makeClient(overrides?: Partial<IAdoWorkItemClient>): IAdoWorkItemClient {
 	return {
-		listWorkItemTypeNames: vi.fn().mockResolvedValue([...ARGOS_WIT_NAMES, "System.Bug"]),
+		listWorkItemTypeNames: vi.fn().mockResolvedValue([...ADO_WIT_NAMES, "System.Bug"]),
 		getWorkItemTypeFields: vi.fn().mockResolvedValue([
 			{ referenceName: "TestVault.TestCase.Title", name: "Title", type: "string", readOnly: false },
 			{
