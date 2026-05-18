@@ -281,12 +281,20 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
   - [CREATE]/[REUSE]/[ATTACH]/[VALIDATE] structured logging
   - VS402803 explicit handling in createFieldAtOrg
   - CFG-2026-05-18-field-robustness.test.ts regression test (7 assertions)
-- [ ] TECH-DEBT-054 (renumbered Sprint 2.14) : extension argos-detection-api CRUD operations field refName translation
-  - After Sprint 2.13, install chain should succeed end-to-end
+- [x] TECH-DEBT-056 (Sprint 2.14 LIVRE) : state name custom translation + smart idempotency (v0.5.16)
+  - schemaToAdoStateName: "Active" -> "TestVault Active" (idempotent on already-prefixed)
+  - validateAdoStateName: 128 char limit + forbidden chars check
+  - getExistingStates: GET /states per WIT after POST /workItemTypes to detect defaults
+  - existingStateNames Set: skip if translated name already exists
+  - [STATE-CREATE]/[STATE-SKIP] structured logging + [VALIDATE] pre-flight per WIT
+  - VS403083 explicit handling for name conflict
+  - CFG-2026-05-18-state-name-custom.test.ts regression test (4 assertions)
+  - Bug cascade 2026-05-18 complete (Sprint 2.7-2.14, 7 ADO bugs fixed)
+- [ ] TECH-DEBT-054 (renumbered Sprint 2.15) : extension argos-detection-api CRUD operations field refName translation
+  - After Sprint 2.14, install chain should succeed end-to-end
   - Probable bug 10: Create Test Case in extension uses schema refName instead of ADO refName
-  - schemaToAdoFieldName + isArgosField already available for Sprint 2.14
-- [ ] TECH-DEBT-019 : E2E real ADO instance, retest after Sprint 2.13
-- [ ] TECH-DEBT-019 (E2E reel) : retest pending apres Sprint 2.12 v0.5.14
+  - schemaToAdoFieldName + isArgosField already available
+- [ ] TECH-DEBT-019 : E2E real ADO instance, retest after Sprint 2.14
 
 ### T-1.4 — CRUD Test Case (UI + service) 🟡
 

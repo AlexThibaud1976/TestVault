@@ -28,11 +28,15 @@ const ALL_WIT_REFS = [
 // Default org-level field handlers — overridden per test when needed.
 // Sprint 2.13: pre-flight list GET returns empty (all fields to create by default).
 // Sprint 2.12: per-field POST returns 201 (created).
+// Sprint 2.14: GET states returns empty by default (fresh WIT has no custom states yet).
 const server = setupServer(
 	http.get(ORG_FIELDS_URL, () => HttpResponse.json({ value: [] })),
 	http.get(`${ORG_FIELDS_URL}/:refName`, () => new HttpResponse(null, { status: 404 })),
 	http.post(ORG_FIELDS_URL, () =>
 		HttpResponse.json({ referenceName: "Custom.TestVaultX" }, { status: 201 })
+	),
+	http.get(new RegExp(`${BASE.replace(/\//g, "\\/")}\\/.+\\/workItemTypes\\/.+\\/states`), () =>
+		HttpResponse.json({ value: [] })
 	)
 );
 
@@ -749,5 +753,166 @@ describe("Sprint 2.13 robust field creation", () => {
 		});
 
 		expect(steps.some((m) => m.includes("[VALIDATE]") && m.includes("Pre-flight"))).toBe(true);
+	});
+});
+
+// ─── Sprint 2.14 robust state creation ───────────────────────────────────────
+
+describe("Sprint 2.14 -- robust state creation", () => {
+	const PROC = "new-proc-guid";
+	const LISTS_URL = `${ORG_URL}/_apis/work/processes/lists`;
+	const fieldsRegex = new RegExp(
+		`${BASE.replace(/\//g, "\\/")}\\/${PROC}\\/workItemTypes\\/.+\\/fields`
+	);
+	const statesUrl = new RegExp(
+		`${BASE.replace(/\//g, "\\/")}\\/${PROC}\\/workItemTypes\\/.+\\/states`
+	);
+
+	function setupBase3() {
+		server.use(
+			http.post(BASE, () =>
+				HttpResponse.json({ typeId: PROC, name: "TestVault - Agile" }, { status: 201 })
+			),
+			http.get(LISTS_URL, () => HttpResponse.json({ value: [] })),
+			http.post(LISTS_URL, () => HttpResponse.json({ id: "pl-guid" }, { status: 201 })),
+			http.get(`${BASE}/${PROC}/workItemTypes`, () => HttpResponse.json({ value: [] })),
+			http.post(`${BASE}/${PROC}/workItemTypes`, () =>
+				HttpResponse.json({ referenceName: `${PROC}.TestVaultTestCase` }, { status: 201 })
+			),
+			http.post(fieldsRegex, () => HttpResponse.json({}, { status: 200 }))
+		);
+	}
+
+	it("creates state with translated name 'TestVault Active'", async () => {
+		const statePostBodies: Array<Record<string, unknown>> = [];
+		server.use(
+			http.get(statesUrl, () =>
+				HttpResponse.json({
+					value: [
+						{ id: "s1", name: "New", color: "b2b2b2", stateCategory: "Proposed" },
+						{ id: "s2", name: "Active", color: "007acc", stateCategory: "InProgress" },
+					],
+				})
+			),
+			http.post(statesUrl, async ({ request }) => {
+				statePostBodies.push((await request.json()) as Record<string, unknown>);
+				return HttpResponse.json({}, { status: 201 });
+			})
+		);
+		setupBase3();
+
+		await makeService().install({ processName: "TestVault - Agile", baseProcess: "Agile" });
+
+		// Schema state "Active" should be translated to "TestVault Active"
+		expect(statePostBodies.some((b) => b.name === "TestVault Active")).toBe(true);
+		// Raw "Active" should never be POSTed
+		expect(statePostBodies.every((b) => b.name !== "Active")).toBe(true);
+	});
+
+	it("skips state creation if translated name already exists in WIT", async () => {
+		let statePostCount = 0;
+		// Pre-populate ALL translated state names that appear across any WIT in the schema
+		server.use(
+			http.get(statesUrl, () =>
+				HttpResponse.json({
+					value: [
+						{ id: "s1", name: "TestVault Active", color: "28a745", stateCategory: "InProgress" },
+						{ id: "s2", name: "TestVault Closed", color: "393939", stateCategory: "Completed" },
+						{ id: "s3", name: "TestVault Completed", color: "393939", stateCategory: "Completed" },
+						{ id: "s4", name: "TestVault Deprecated", color: "6c757d", stateCategory: "Completed" },
+						{ id: "s5", name: "TestVault Design", color: "b2b2b2", stateCategory: "Proposed" },
+						{ id: "s6", name: "TestVault Draft", color: "b2b2b2", stateCategory: "Proposed" },
+						{ id: "s7", name: "TestVault Locked", color: "007acc", stateCategory: "InProgress" },
+						{ id: "s8", name: "TestVault Ready", color: "007acc", stateCategory: "Proposed" },
+					],
+				})
+			),
+			http.post(statesUrl, () => {
+				statePostCount++;
+				return HttpResponse.json({}, { status: 201 });
+			})
+		);
+		setupBase3();
+
+		await makeService().install({ processName: "TestVault - Agile", baseProcess: "Agile" });
+
+		// All states already exist -> no POST should be made
+		expect(statePostCount).toBe(0);
+	});
+
+	it("emits [VALIDATE] with count of default states", async () => {
+		server.use(
+			http.get(statesUrl, () =>
+				HttpResponse.json({
+					value: [
+						{ id: "s1", name: "New", color: "b2b2b2", stateCategory: "Proposed" },
+						{ id: "s2", name: "Active", color: "007acc", stateCategory: "InProgress" },
+						{ id: "s3", name: "Resolved", color: "ff9d00", stateCategory: "Resolved" },
+						{ id: "s4", name: "Closed", color: "393939", stateCategory: "Completed" },
+						{ id: "s5", name: "Removed", color: "d0d0d0", stateCategory: "Completed" },
+					],
+				})
+			),
+			http.post(statesUrl, () => HttpResponse.json({}, { status: 201 }))
+		);
+		setupBase3();
+
+		const steps: string[] = [];
+		await makeService().install({
+			processName: "TestVault - Agile",
+			baseProcess: "Agile",
+			onProgress: (s) => steps.push(s.message),
+		});
+
+		expect(steps.some((m) => m.includes("[VALIDATE]") && m.includes("5 default states"))).toBe(
+			true
+		);
+	});
+
+	it("treats 409 on state POST as idempotent success", async () => {
+		server.use(
+			http.get(statesUrl, () => HttpResponse.json({ value: [] })),
+			http.post(statesUrl, () => new HttpResponse(null, { status: 409 }))
+		);
+		setupBase3();
+
+		const steps: string[] = [];
+		// Should NOT throw
+		await expect(
+			makeService().install({
+				processName: "TestVault - Agile",
+				baseProcess: "Agile",
+				onProgress: (s) => steps.push(s.message),
+			})
+		).resolves.toBeDefined();
+		expect(steps.some((m) => m.includes("[STATE-SKIP]") && m.includes("409 conflict"))).toBe(true);
+	});
+
+	it("emits [STATE-CREATE] and [STATE-SKIP] structured logs", async () => {
+		server.use(
+			http.get(statesUrl, () =>
+				HttpResponse.json({
+					value: [
+						{ id: "s1", name: "TestVault Design", color: "b2b2b2", stateCategory: "Proposed" },
+					],
+				})
+			),
+			http.post(statesUrl, () => HttpResponse.json({}, { status: 201 }))
+		);
+		setupBase3();
+
+		const steps: string[] = [];
+		await makeService().install({
+			processName: "TestVault - Agile",
+			baseProcess: "Agile",
+			onProgress: (s) => steps.push(s.message),
+		});
+
+		// "Design" already exists as "TestVault Design" -> SKIP
+		expect(steps.some((m) => m.includes("[STATE-SKIP]") && m.includes("TestVault Design"))).toBe(
+			true
+		);
+		// Other states (Ready, Active, Closed, Deprecated) -> CREATE
+		expect(steps.some((m) => m.includes("[STATE-CREATE]"))).toBe(true);
 	});
 });

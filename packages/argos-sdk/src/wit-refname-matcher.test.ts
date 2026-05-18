@@ -6,7 +6,9 @@ import {
 	isArgosWit,
 	schemaToAdoFieldName,
 	schemaToAdoFieldRefName,
+	schemaToAdoStateName,
 	validateAdoFieldName,
+	validateAdoStateName,
 } from "./wit-refname-matcher.js";
 
 describe("isArgosWit", () => {
@@ -183,6 +185,56 @@ describe("findSchemaFieldByAdoRefName", () => {
 
 	it("returns undefined for empty array", () => {
 		expect(findSchemaFieldByAdoRefName("Custom.TestVaultPriority", [])).toBeUndefined();
+	});
+});
+
+// ─── State name translation (Sprint 2.14) ────────────────────────────────────
+
+describe("schemaToAdoStateName (Sprint 2.14)", () => {
+	it("prefixes simple names with 'TestVault '", () => {
+		expect(schemaToAdoStateName("Active")).toBe("TestVault Active");
+		expect(schemaToAdoStateName("Draft")).toBe("TestVault Draft");
+		expect(schemaToAdoStateName("Approved")).toBe("TestVault Approved");
+		expect(schemaToAdoStateName("Deprecated")).toBe("TestVault Deprecated");
+		expect(schemaToAdoStateName("Closed")).toBe("TestVault Closed");
+		expect(schemaToAdoStateName("Design")).toBe("TestVault Design");
+	});
+
+	it("is idempotent on already-prefixed names", () => {
+		expect(schemaToAdoStateName("TestVault Active")).toBe("TestVault Active");
+		expect(schemaToAdoStateName("TestVault Done")).toBe("TestVault Done");
+	});
+
+	it("throws on empty name", () => {
+		expect(() => schemaToAdoStateName("")).toThrow();
+		expect(() => schemaToAdoStateName("   ")).toThrow();
+	});
+
+	it("throws on excessively long name", () => {
+		expect(() => schemaToAdoStateName("X".repeat(101))).toThrow(/too long/);
+	});
+});
+
+describe("validateAdoStateName (Sprint 2.14)", () => {
+	it("returns null for valid names", () => {
+		expect(validateAdoStateName("TestVault Active")).toBeNull();
+		expect(validateAdoStateName("TestVault Approved")).toBeNull();
+		expect(validateAdoStateName("Simple Name")).toBeNull();
+	});
+
+	it("returns error for forbidden characters", () => {
+		expect(validateAdoStateName("Test.State")).toContain("forbidden");
+		expect(validateAdoStateName("Test/State")).toContain("forbidden");
+		expect(validateAdoStateName("Test?State")).toContain("forbidden");
+	});
+
+	it("returns error for excessive length", () => {
+		expect(validateAdoStateName("X".repeat(129))).toContain("128");
+	});
+
+	it("returns null for names without forbidden chars", () => {
+		expect(validateAdoStateName("TestVault Design")).toBeNull();
+		expect(validateAdoStateName("TestVault Ready for Test")).toBeNull();
 	});
 });
 
