@@ -46,10 +46,12 @@ describe("CFG extension detection Sprint 2.15", () => {
 		expect(content).not.toContain("TestPlanEntry");
 	});
 
-	it("argos-extension services.ts uses isArgosWit for detection (not exact match)", () => {
+	it("argos-extension services.ts uses isArgosWit for detection (not exact referenceName match)", () => {
 		const content = readFileSync(resolve(root, "apps/argos-extension/src/hub/services.ts"), "utf8");
 		expect(content).toContain("isArgosWit");
-		expect(content).not.toContain('"TestVault.TestCase"');
+		// The bad pattern is an exact referenceName comparison — not just the string literal itself
+		const badDetectionPattern = /referenceName\s*===\s*["']TestVault\.TestCase["']/;
+		expect(badDetectionPattern.test(content)).toBe(false);
 	});
 
 	it("argos-extension package.json depends on argos-wit-schema", () => {

@@ -18,3 +18,5 @@ export {
 	validateAdoFieldName,
 	validateAdoStateName,
 } from "./naming.js";
+export type { WitResolver, IWitTypeProvider } from "./wit-resolver.js";
+export { createWitResolver } from "./wit-resolver.js";

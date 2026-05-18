@@ -11,6 +11,8 @@ import {
 	type ITestPlanService,
 	type ITestSetService,
 	type IWorkItemLinkService,
+	type RawWorkItem,
+	type WorkItemFieldPatch,
 	createAdoClient,
 	createBugCreationService,
 	createEnvironmentConfigService,
@@ -23,7 +25,13 @@ import {
 	createTestSetService,
 	createWorkItemLinkService,
 } from "@atconseil/argos-sdk";
-import { isArgosWit } from "@atconseil/argos-wit-schema";
+import {
+	type IWitTypeProvider,
+	type WitResolver,
+	createWitResolver,
+	isArgosWit,
+	schemaToAdoFieldRefName,
+} from "@atconseil/argos-wit-schema";
 import type { IFlakinessReportService } from "./FlakinessReport.js";
 import type { IQuotaSettingsService } from "./QuotaSettings.js";
 import type { IWebhookAdminService } from "./WebhookAdmin.js";
@@ -88,6 +96,122 @@ async function checkArgosInstalled(
 	}
 }
 
+// ─── WitResolver infrastructure ───────────────────────────────────────────────
+
+function makeWitTypeProvider(
+	orgUrl: string,
+	project: string,
+	tokenFactory: () => Promise<string>
+): IWitTypeProvider {
+	return {
+		async getWorkItemTypes() {
+			const url = `${orgUrl}/${encodeURIComponent(project)}/_apis/wit/workitemtypes?api-version=7.1`;
+			const res = await fetch(url, {
+				headers: { Authorization: `Bearer ${await tokenFactory()}`, Accept: "application/json" },
+			});
+			if (!res.ok) throw new Error(`[WitTypeProvider] HTTP ${res.status}`);
+			const data = (await res.json()) as { value: Array<{ referenceName: string; name: string }> };
+			return data.value;
+		},
+	};
+}
+
+function createArgosAdoClientAdapter(inner: IAdoClient, resolver: WitResolver): IAdoClient {
+	function translatePatches(patches: WorkItemFieldPatch[]): WorkItemFieldPatch[] {
+		return patches.map((patch) =>
+			patch.path.startsWith("/fields/TestVault.")
+				? {
+						...patch,
+						path: `/fields/${schemaToAdoFieldRefName(patch.path.slice("/fields/".length))}`,
+					}
+				: patch
+		);
+	}
+	return {
+		async createWorkItem(type: string, fields: WorkItemFieldPatch[]): Promise<RawWorkItem> {
+			return inner.createWorkItem(
+				await resolver.resolveAdoWitRefName(type),
+				translatePatches(fields)
+			);
+		},
+		async fetchWorkItem(id: number): Promise<RawWorkItem> {
+			const raw = await inner.fetchWorkItem(id);
+			return { ...raw, fields: resolver.translateFieldsFromAdo(raw.fields) };
+		},
+		async updateWorkItem(id: number, fields: WorkItemFieldPatch[]): Promise<RawWorkItem> {
+			return inner.updateWorkItem(id, translatePatches(fields));
+		},
+		deleteWorkItem: (id) => inner.deleteWorkItem(id),
+		queryByWiql: (wiql) => inner.queryByWiql(wiql),
+		uploadAttachment: (f, c, t) => inner.uploadAttachment(f, c, t),
+	};
+}
+
+// ─── Convenience wrappers for all 7 WIT ───────────────────────────────────────
+// Schema refNames are translated to ADO refNames transparently by the adapter.
+
+export async function createArgosWorkItem(
+	adoClient: IAdoClient,
+	resolver: WitResolver,
+	schemaWitRefName: string,
+	patches: WorkItemFieldPatch[]
+): Promise<RawWorkItem> {
+	const adoType = await resolver.resolveAdoWitRefName(schemaWitRefName);
+	const translated = patches.map((patch) =>
+		patch.path.startsWith("/fields/TestVault.")
+			? {
+					...patch,
+					path: `/fields/${schemaToAdoFieldRefName(patch.path.slice("/fields/".length))}`,
+				}
+			: patch
+	);
+	return adoClient.createWorkItem(adoType, translated);
+}
+
+export const createTestCase = (
+	adoClient: IAdoClient,
+	resolver: WitResolver,
+	patches: WorkItemFieldPatch[]
+) => createArgosWorkItem(adoClient, resolver, "TestVault.TestCase", patches);
+
+export const createTestPlan = (
+	adoClient: IAdoClient,
+	resolver: WitResolver,
+	patches: WorkItemFieldPatch[]
+) => createArgosWorkItem(adoClient, resolver, "TestVault.TestPlan", patches);
+
+export const createTestSet = (
+	adoClient: IAdoClient,
+	resolver: WitResolver,
+	patches: WorkItemFieldPatch[]
+) => createArgosWorkItem(adoClient, resolver, "TestVault.TestSet", patches);
+
+export const createPrecondition = (
+	adoClient: IAdoClient,
+	resolver: WitResolver,
+	patches: WorkItemFieldPatch[]
+) => createArgosWorkItem(adoClient, resolver, "TestVault.Precondition", patches);
+
+export const createTestExecution = (
+	adoClient: IAdoClient,
+	resolver: WitResolver,
+	patches: WorkItemFieldPatch[]
+) => createArgosWorkItem(adoClient, resolver, "TestVault.TestExecution", patches);
+
+export const createTestCaseVersion = (
+	adoClient: IAdoClient,
+	resolver: WitResolver,
+	patches: WorkItemFieldPatch[]
+) => createArgosWorkItem(adoClient, resolver, "TestVault.TestCaseVersion", patches);
+
+export const createAuditLog = (
+	adoClient: IAdoClient,
+	resolver: WitResolver,
+	patches: WorkItemFieldPatch[]
+) => createArgosWorkItem(adoClient, resolver, "TestVault.AuditLog", patches);
+
+// ─── Services factory ─────────────────────────────────────────────────────────
+
 export function buildServices(ctx: AdoContext): Services {
 	// ADO WIT client: tokenFactory ensures Bearer token is refreshed on each API call
 	const adoClient: IAdoClient = createAdoClient({
@@ -96,12 +220,17 @@ export function buildServices(ctx: AdoContext): Services {
 		tokenFactory: ctx.accessTokenFactory,
 	});
 
+	// WitResolver: translates schema refNames (TestVault.X) to ADO refNames (ProcessName.TestVaultX)
+	const witProvider = makeWitTypeProvider(ctx.baseUrl, ctx.project, ctx.accessTokenFactory);
+	const witResolver = createWitResolver(witProvider, ctx.project);
+	const resolvedAdoClient = createArgosAdoClientAdapter(adoClient, witResolver);
+
 	// LLM settings: User-scoped extension data (BYOK — each user has their own credentials)
 	const dataClient = createExtensionDataClient();
 	const aiStore = createAiSettingsStore(dataClient);
 	const llmProviderService = createLlmProviderService(aiStore);
 
-	const testExecutionService = createTestExecutionService(adoClient, ctx.project);
+	const testExecutionService = createTestExecutionService(resolvedAdoClient, ctx.project);
 
 	const webhookAdminServiceStub: IWebhookAdminService = {
 		listTokens: () => Promise.resolve([]),
@@ -121,17 +250,17 @@ export function buildServices(ctx: AdoContext): Services {
 	};
 
 	return {
-		testPlanService: createTestPlanService(adoClient, ctx.project),
-		testCaseService: createTestCaseService(adoClient, ctx.project),
-		testSetService: createTestSetService(adoClient, ctx.project),
-		preconditionService: createPreconditionService(adoClient, ctx.project),
+		testPlanService: createTestPlanService(resolvedAdoClient, ctx.project),
+		testCaseService: createTestCaseService(resolvedAdoClient, ctx.project),
+		testSetService: createTestSetService(resolvedAdoClient, ctx.project),
+		preconditionService: createPreconditionService(resolvedAdoClient, ctx.project),
 		llmProviderService,
 		testExecutionService,
-		evidenceUploadService: createEvidenceUploadService(adoClient, testExecutionService),
+		evidenceUploadService: createEvidenceUploadService(resolvedAdoClient, testExecutionService),
 		environmentConfigService: createEnvironmentConfigService(dataClient),
-		bugCreationService: createBugCreationService(adoClient, testExecutionService),
-		testCaseVersionService: createTestCaseVersionService(adoClient),
-		workItemLinkService: createWorkItemLinkService(adoClient),
+		bugCreationService: createBugCreationService(resolvedAdoClient, testExecutionService),
+		testCaseVersionService: createTestCaseVersionService(resolvedAdoClient),
+		workItemLinkService: createWorkItemLinkService(resolvedAdoClient),
 		webhookAdminService: webhookAdminServiceStub,
 		auditLogService: createAuditLogService({
 			getAll: (c) => aiStore.getAll(c),
