@@ -4,7 +4,7 @@ export const TEST_CASE_WIT: WitDefinition = {
 	referenceName: "TestVault.TestCase",
 	displayName: "TestVault Test Case",
 	description: "Reusable test case with structured steps, priority, and automation status.",
-	icon: "icon-test-case",
+	icon: "icon_clipboard",
 	color: "#00b4ef",
 	fields: [
 		{ referenceName: "System.Title", displayName: "Title", type: "string", required: true },

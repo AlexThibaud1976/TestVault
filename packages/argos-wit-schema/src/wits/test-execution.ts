@@ -5,7 +5,7 @@ export const TEST_EXECUTION_WIT: WitDefinition = {
 	displayName: "TestVault Test Execution",
 	description:
 		"Immutable record of a single test run against a Test Case. Never modified after save.",
-	icon: "icon-run",
+	icon: "icon_check_box",
 	color: "#ff9d00",
 	isImmutableAfterCreate: true,
 	fields: [

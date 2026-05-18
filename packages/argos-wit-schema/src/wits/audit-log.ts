@@ -4,7 +4,7 @@ export const AUDIT_LOG_WIT: WitDefinition = {
 	referenceName: "TestVault.AuditLog",
 	displayName: "TestVault Audit Log",
 	description: "Immutable audit trail entry for Admin-sensitive operations. Never deleted.",
-	icon: "icon-shield",
+	icon: "icon_review",
 	color: "#da0a00",
 	isImmutableAfterCreate: true,
 	fields: [

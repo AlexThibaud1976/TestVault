@@ -316,3 +316,69 @@ describe("ADO charset compliance (VS402800 prevention)", () => {
 		}
 	});
 });
+
+// ADO icon validation (VS403344 prevention)
+// Source: Microsoft REST API /_apis/wit/workitemicons?api-version=7.1
+
+describe("ADO icon validation (VS403344 prevention)", () => {
+	const ADO_VALID_ICONS = new Set<string>([
+		"icon_clipboard",
+		"icon_crown",
+		"icon_trophy",
+		"icon_list",
+		"icon_book",
+		"icon_sticky_note",
+		"icon_insect",
+		"icon_traffic_cone",
+		"icon_chat_bubble",
+		"icon_flame",
+		"icon_megaphone",
+		"icon_response_rate",
+		"icon_review",
+		"icon_ribbon",
+		"icon_test_parameter",
+		"icon_government",
+		"icon_gavel",
+		"icon_parachute",
+		"icon_paint_brush",
+		"icon_palette",
+		"icon_gear",
+		"icon_check_box",
+		"icon_gift",
+		"icon_globe",
+		"icon_headphone",
+		"icon_airplane",
+		"icon_chart",
+		"icon_diamond",
+		"icon_employee",
+		"icon_handshake",
+		"icon_hot_air_balloon",
+		"icon_journal",
+		"icon_key",
+		"icon_lifesaver",
+		"icon_money",
+		"icon_radar",
+		"icon_satellite",
+		"icon_search",
+		"icon_seedling",
+		"icon_star",
+		"icon_test_beaker",
+	]);
+
+	describe("WIT iconIds in ADO whitelist", () => {
+		for (const wit of ALL_WITS) {
+			it(`"${wit.icon}" for ${wit.referenceName} is in ADO whitelist`, () => {
+				expect(ADO_VALID_ICONS.has(wit.icon)).toBe(true);
+			});
+		}
+	});
+
+	describe("WIT iconIds format compliance", () => {
+		for (const wit of ALL_WITS) {
+			it(`"${wit.icon}" for ${wit.referenceName} uses underscore format`, () => {
+				expect(wit.icon).toMatch(/^icon_[a-z_]+$/);
+				expect(wit.icon).not.toMatch(/-/);
+			});
+		}
+	});
+});

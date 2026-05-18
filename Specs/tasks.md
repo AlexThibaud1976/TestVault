@@ -254,6 +254,11 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [ ] TECH-DEBT-049 NEW : Schema sync fields if WIT exists (deferred from Sprint 2.8)
   - D86-A: WIT entier skippe si existe (pas de sync champ par champ ce sprint)
   - Prerequis: TECH-DEBT-047 livre
+- [x] TECH-DEBT-050 LIVRE : ADO icon validation tests (Sprint 2.9)
+  - 7 WIT iconIds renommes icon-xxx -> icon_xxx (mapping semantique D87-A)
+  - 14 tests unitaires (whitelist 41 icons Microsoft + format regex)
+  - CFG-2026-05-18-wit-icons-ado-valid.test.ts regression test
+- [ ] TECH-DEBT-019 (E2E reel) : couche 5 icons fixee, retest pending apres v0.5.11
 
 ### T-1.4 — CRUD Test Case (UI + service) 🟡
 

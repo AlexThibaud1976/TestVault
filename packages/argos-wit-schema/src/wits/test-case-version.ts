@@ -4,7 +4,7 @@ export const TEST_CASE_VERSION_WIT: WitDefinition = {
 	referenceName: "TestVault.TestCaseVersion",
 	displayName: "TestVault Test Case Version",
 	description: "Immutable snapshot of a Test Case at a specific point in time.",
-	icon: "icon-tag",
+	icon: "icon_ribbon",
 	color: "#5c2d91",
 	isImmutableAfterCreate: true,
 	fields: [
