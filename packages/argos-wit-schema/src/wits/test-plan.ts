@@ -4,7 +4,7 @@ export const TEST_PLAN_WIT: WitDefinition = {
 	referenceName: "TestVault.TestPlan",
 	displayName: "TestVault Test Plan",
 	description: "Groups Test Sets and individual Test Cases for a release or sprint.",
-	icon: "icon-list",
+	icon: "icon_list",
 	color: "#773b93",
 	fields: [
 		{ referenceName: "System.Title", displayName: "Name", type: "string", required: true },

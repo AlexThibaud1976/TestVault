@@ -4,7 +4,7 @@ export const PRECONDITION_WIT: WitDefinition = {
 	referenceName: "TestVault.Precondition",
 	displayName: "TestVault Precondition",
 	description: "Prerequisite state or action required before executing linked Test Cases.",
-	icon: "icon-settings",
+	icon: "icon_gear",
 	color: "#e60017",
 	fields: [
 		{ referenceName: "System.Title", displayName: "Title", type: "string", required: true },

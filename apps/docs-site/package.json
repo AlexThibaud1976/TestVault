@@ -1,6 +1,6 @@
 {
 	"name": "docs-site",
-	"version": "0.5.10",
+	"version": "0.5.11",
 	"private": true,
 	"scripts": {
 		"build": "echo 'docs-site build placeholder'",

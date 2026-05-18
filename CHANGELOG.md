@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.11] - 2026-05-18
+
+### Sprint 2.9 -- WIT iconIds ADO compliance HOTFIX
+
+**Bug discovered at E2E real test 2026-05-18 (after Sprint 2.8 idempotency fix).**
+
+```text
+VS403344: You've specified an invalid icon Id 'icon-test-case'.
+```
+
+Root cause: 7 WIT in `TESTVAULT_SCHEMA` used invalid iconIds:
+- Format `icon-xxx` (dash) instead of `icon_xxx` (underscore required by ADO)
+- Names not in Microsoft's 41 valid icons whitelist
+
+#### Fixed — WIT iconIds renamed (7 files)
+
+| File | Before | After | Rationale |
+|------|--------|-------|-----------|
+| audit-log.ts | icon-shield | icon_review | Audit/govern theme |
+| precondition.ts | icon-settings | icon_gear | Config/setup theme |
+| test-case-version.ts | icon-tag | icon_ribbon | Version/tag theme |
+| test-case.ts | icon-test-case | icon_clipboard | icon_test_case is Microsoft-reserved |
+| test-execution.ts | icon-run | icon_check_box | Execution/check theme |
+| test-plan.ts | icon-list | icon_list | Was just dash format |
+| test-set.ts | icon-folder | icon_government | Set/structure theme |
+
+#### Added — ADO icon validation tests
+
+- `packages/argos-wit-schema/src/index.test.ts`: 2 new describe blocks (14 tests)
+  - WIT iconIds in ADO whitelist (41 icons from Microsoft REST API)
+  - WIT iconIds format compliance (`^icon_[a-z_]+$`, no dashes)
+- `tools/regression/CFG-2026-05-18-wit-icons-ado-valid.test.ts`: 3 regression tests
+
+#### Architecture preserved
+
+- `referenceName` immutable (constitution section 12)
+- `displayName` Sprint 2.7 charset compliance maintained
+- `color`, `fields`, `states` unchanged
+
+#### TECH-DEBT
+
+- TECH-DEBT-050 NEW LIVRE: ADO icon validation tests
+- TECH-DEBT-019 (E2E reel): couche 5 fixed, retest pending
+
 ## [0.5.10] - 2026-05-18
 
 ### Sprint 2.8 -- process-install.ts idempotency HOTFIX

@@ -4,7 +4,7 @@ export const TEST_SET_WIT: WitDefinition = {
 	referenceName: "TestVault.TestSet",
 	displayName: "TestVault Test Set",
 	description: "Named collection of Test Cases — static list or dynamic WIQL query.",
-	icon: "icon-folder",
+	icon: "icon_government",
 	color: "#009ccc",
 	fields: [
 		{ referenceName: "System.Title", displayName: "Name", type: "string", required: true },
