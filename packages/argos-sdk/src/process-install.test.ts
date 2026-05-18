@@ -12,14 +12,15 @@ import {
 const ORG_URL = "https://dev.azure.com/testorg";
 const BASE = `${ORG_URL}/_apis/work/processes`;
 
+// ADO generates refNames as {ProcessName}.TestVault{WitName} — use realistic mocks
 const ALL_WIT_REFS = [
-	"TestVault.TestCase",
-	"TestVault.TestPlan",
-	"TestVault.TestSet",
-	"TestVault.Precondition",
-	"TestVault.TestExecution",
-	"TestVault.TestCaseVersion",
-	"TestVault.AuditLog",
+	"MockProcess.TestVaultTestCase",
+	"MockProcess.TestVaultTestPlan",
+	"MockProcess.TestVaultTestSet",
+	"MockProcess.TestVaultPrecondition",
+	"MockProcess.TestVaultTestExecution",
+	"MockProcess.TestVaultTestCaseVersion",
+	"MockProcess.TestVaultAuditLog",
 ];
 
 const server = setupServer();
@@ -90,7 +91,10 @@ describe("detectInstallState", () => {
 			),
 			http.get(`${BASE}/tv-guid/workItemTypes`, () =>
 				HttpResponse.json({
-					value: [{ referenceName: "TestVault.TestCase" }, { referenceName: "TestVault.TestPlan" }],
+					value: [
+						{ referenceName: "MockProcess.TestVaultTestCase" },
+						{ referenceName: "MockProcess.TestVaultTestPlan" },
+					],
 				})
 			)
 		);
@@ -371,7 +375,7 @@ describe("Sprint 2.8 idempotency", () => {
 	});
 
 	describe("wits", () => {
-		it("skips WIT if referenceName already exists in process", async () => {
+		it("skips WIT if already exists in process (via ADO pattern match)", async () => {
 			let witPostCount = 0;
 			server.use(
 				http.post(BASE, () =>
@@ -379,12 +383,16 @@ describe("Sprint 2.8 idempotency", () => {
 				),
 				http.get(LISTS_URL, () => HttpResponse.json({ value: [] })),
 				http.post(LISTS_URL, () => HttpResponse.json({ id: "pl-guid" }, { status: 201 })),
+				// ADO-format refName returned by GET /workItemTypes
 				http.get(`${BASE}/${PROC}/workItemTypes`, () =>
-					HttpResponse.json({ value: [{ referenceName: "TestVault.TestCase" }] })
+					HttpResponse.json({ value: [{ referenceName: "SomeProcess.TestVaultTestCase" }] })
 				),
 				http.post(`${BASE}/${PROC}/workItemTypes`, () => {
 					witPostCount++;
-					return HttpResponse.json({ referenceName: "TestVault.TestPlan" }, { status: 201 });
+					return HttpResponse.json(
+						{ referenceName: "SomeProcess.TestVaultTestPlan" },
+						{ status: 201 }
+					);
 				}),
 				http.post(fieldsRegex, () => HttpResponse.json({}, { status: 200 })),
 				http.post(statesRegex, () => HttpResponse.json({}, { status: 200 }))
@@ -397,9 +405,14 @@ describe("Sprint 2.8 idempotency", () => {
 				onProgress: (s) => steps.push(s.message),
 			});
 
-			// TestCase skipped -> only 6 WIT POSTs
+			// TestCase skipped (pattern match) -> only 6 WIT POSTs
 			expect(witPostCount).toBe(6);
-			expect(steps.some((m) => m.includes("Skipping") && m.includes("already exists"))).toBe(true);
+			expect(
+				steps.some(
+					(m) =>
+						m.includes("Skipping") && m.includes("already exists as SomeProcess.TestVaultTestCase")
+				)
+			).toBe(true);
 		});
 
 		it("creates all WITs if none exist in process", async () => {
@@ -413,7 +426,10 @@ describe("Sprint 2.8 idempotency", () => {
 				http.get(`${BASE}/${PROC}/workItemTypes`, () => HttpResponse.json({ value: [] })),
 				http.post(`${BASE}/${PROC}/workItemTypes`, () => {
 					witPostCount++;
-					return HttpResponse.json({ referenceName: "TestVault.TestCase" }, { status: 201 });
+					return HttpResponse.json(
+						{ referenceName: "SomeProcess.TestVaultTestCase" },
+						{ status: 201 }
+					);
 				}),
 				http.post(fieldsRegex, () => HttpResponse.json({}, { status: 200 })),
 				http.post(statesRegex, () => HttpResponse.json({}, { status: 200 }))
@@ -434,15 +450,19 @@ describe("Sprint 2.8 idempotency", () => {
 				http.get(`${BASE}/${PROC}/workItemTypes`, () =>
 					HttpResponse.json({
 						value: [
-							{ referenceName: "TestVault.TestCase" },
-							{ referenceName: "TestVault.TestPlan" },
+							// ADO-format refNames
+							{ referenceName: "SomeProcess.TestVaultTestCase" },
+							{ referenceName: "SomeProcess.TestVaultTestPlan" },
 							{ referenceName: "System.Epic" }, // non-TestVault, filtered out
 						],
 					})
 				),
 				http.post(`${BASE}/${PROC}/workItemTypes`, () => {
 					witPostCount++;
-					return HttpResponse.json({ referenceName: "TestVault.TestSet" }, { status: 201 });
+					return HttpResponse.json(
+						{ referenceName: "SomeProcess.TestVaultTestSet" },
+						{ status: 201 }
+					);
 				}),
 				http.post(fieldsRegex, () => HttpResponse.json({}, { status: 200 })),
 				http.post(statesRegex, () => HttpResponse.json({}, { status: 200 }))
@@ -455,10 +475,10 @@ describe("Sprint 2.8 idempotency", () => {
 				onProgress: (s) => steps.push(s.message),
 			});
 
-			// 2 TestVault WITs skipped, 5 created; System.Epic filtered out
+			// 2 TestVault WITs skipped via pattern match, 5 created; System.Epic ignored
 			expect(witPostCount).toBe(5);
 			expect(
-				steps.filter((m) => m.includes("Skipping") && m.includes("already exists"))
+				steps.filter((m) => m.includes("Skipping") && m.includes("already exists as"))
 			).toHaveLength(2);
 		});
 	});

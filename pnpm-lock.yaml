@@ -160,6 +160,9 @@ importers:
 
   packages/argos-detection-api:
     dependencies:
+      '@atconseil/argos-sdk':
+        specifier: workspace:*
+        version: link:../argos-sdk
       '@atconseil/argos-types':
         specifier: workspace:*
         version: link:../argos-types
