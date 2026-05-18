@@ -1,6 +1,6 @@
 {
 	"name": "argosTesting",
-	"version": "0.5.16",
+	"version": "0.5.17",
 	"private": false,
 	"type": "module",
 	"scripts": {
@@ -17,6 +17,7 @@
 		"@atconseil/argos-importers": "workspace:^",
 		"@atconseil/argos-sdk": "workspace:^",
 		"@atconseil/argos-types": "workspace:^",
+		"@atconseil/argos-wit-schema": "workspace:*",
 		"@fluentui/react-components": "^9.54.0",
 		"azure-devops-extension-api": "^4.0.2",
 		"azure-devops-extension-sdk": "^4.0.2",
