@@ -8,6 +8,7 @@ import {
 	ProcessPermissionError,
 	createProcessInstallService,
 } from "./process-install.js";
+import { schemaToAdoFieldName, schemaToAdoFieldRefName } from "./wit-refname-matcher.js";
 
 const ORG_URL = "https://dev.azure.com/testorg";
 const BASE = `${ORG_URL}/_apis/work/processes`;
@@ -24,9 +25,11 @@ const ALL_WIT_REFS = [
 	"MockProcess.TestVaultAuditLog",
 ];
 
-// Default org-level field handlers (Sprint 2.12) — overridden per test when needed.
-// Default: GET -> 404 (field does not exist), POST -> 201 (created).
+// Default org-level field handlers — overridden per test when needed.
+// Sprint 2.13: pre-flight list GET returns empty (all fields to create by default).
+// Sprint 2.12: per-field POST returns 201 (created).
 const server = setupServer(
+	http.get(ORG_FIELDS_URL, () => HttpResponse.json({ value: [] })),
 	http.get(`${ORG_FIELDS_URL}/:refName`, () => new HttpResponse(null, { status: 404 })),
 	http.post(ORG_FIELDS_URL, () =>
 		HttpResponse.json({ referenceName: "Custom.TestVaultX" }, { status: 201 })
@@ -492,7 +495,7 @@ describe("Sprint 2.8 idempotency", () => {
 	});
 });
 
-// ─── Sprint 2.12 field 2-step workflow ───────────────────────────────────────
+// ─── Sprint 2.12 field 2-step workflow (updated for Sprint 2.13 pre-flight) ──
 
 describe("Sprint 2.12 field 2-step workflow", () => {
 	const PROC = "new-proc-guid";
@@ -520,42 +523,14 @@ describe("Sprint 2.12 field 2-step workflow", () => {
 		);
 	}
 
-	it("calls GET org-level field before creating (field not exists -> creates)", async () => {
-		let orgGetCount = 0;
+	it("creates fields when pre-flight finds none in org", async () => {
 		let orgPostCount = 0;
 
-		// Override defaults: GET -> 404, POST -> 201
+		// Default: list GET returns empty (all fields to create)
 		server.use(
-			http.get(`${ORG_FIELDS_URL}/:refName`, () => {
-				orgGetCount++;
-				return new HttpResponse(null, { status: 404 });
-			}),
 			http.post(ORG_FIELDS_URL, () => {
 				orgPostCount++;
 				return HttpResponse.json({ referenceName: "Custom.TestVaultX" }, { status: 201 });
-			})
-		);
-		setupBase();
-
-		await makeService().install({ processName: "TestVault - Agile", baseProcess: "Agile" });
-
-		// One GET per unique field per WIT (many fields across 7 WITs)
-		expect(orgGetCount).toBeGreaterThan(0);
-		// One POST per field that doesn't exist
-		expect(orgPostCount).toBeGreaterThan(0);
-	});
-
-	it("skips org-level create when field already exists (GET -> 200)", async () => {
-		let orgPostCount = 0;
-
-		// Override: GET -> 200 (all fields exist), POST should not be called
-		server.use(
-			http.get(`${ORG_FIELDS_URL}/:refName`, () =>
-				HttpResponse.json({ referenceName: "Custom.TestVaultX" }, { status: 200 })
-			),
-			http.post(ORG_FIELDS_URL, () => {
-				orgPostCount++;
-				return HttpResponse.json({}, { status: 201 });
 			})
 		);
 		setupBase();
@@ -567,8 +542,35 @@ describe("Sprint 2.12 field 2-step workflow", () => {
 			onProgress: (s) => steps.push(s.message),
 		});
 
-		expect(orgPostCount).toBe(0);
-		expect(steps.some((m) => m.includes("Reusing existing org-level field"))).toBe(true);
+		// Pre-flight returned empty -> all fields classified as "create"
+		expect(orgPostCount).toBeGreaterThan(0);
+		expect(steps.some((m) => m.includes("[CREATE] org-level field Custom."))).toBe(true);
+	});
+
+	it("reuses field when pre-flight finds it in org by refName", async () => {
+		// Pre-flight returns one specific field (Priority)
+		const priorityRefName = schemaToAdoFieldRefName("TestVault.Priority");
+		const priorityName = schemaToAdoFieldName("Priority");
+		server.use(
+			http.get(ORG_FIELDS_URL, () =>
+				HttpResponse.json({
+					value: [{ referenceName: priorityRefName, name: priorityName, type: "integer" }],
+				})
+			)
+		);
+		setupBase();
+
+		const steps: string[] = [];
+		await makeService().install({
+			processName: "TestVault - Agile",
+			baseProcess: "Agile",
+			onProgress: (s) => steps.push(s.message),
+		});
+
+		// Priority field should be reused (no POST for it), others still created
+		expect(
+			steps.some((m) => m.includes("[REUSE] org-level field") && m.includes(priorityRefName))
+		).toBe(true);
 	});
 
 	it("treats 409 from org-level create as success (attach still proceeds)", async () => {
@@ -577,7 +579,6 @@ describe("Sprint 2.12 field 2-step workflow", () => {
 		// setupBase first (lower priority), then overrides prepend on top (higher priority)
 		setupBase();
 		server.use(
-			http.get(`${ORG_FIELDS_URL}/:refName`, () => new HttpResponse(null, { status: 404 })),
 			http.post(ORG_FIELDS_URL, () => new HttpResponse(null, { status: 409 })),
 			http.post(fieldsRegex, () => {
 				attachCount++;
@@ -593,7 +594,7 @@ describe("Sprint 2.12 field 2-step workflow", () => {
 		expect(attachCount).toBeGreaterThan(0);
 	});
 
-	it("logs Creating/Reusing/Attached messages per field", async () => {
+	it("logs [CREATE]/[REUSE]/[ATTACH] structured messages per field", async () => {
 		setupBase();
 
 		const steps: string[] = [];
@@ -603,7 +604,150 @@ describe("Sprint 2.12 field 2-step workflow", () => {
 			onProgress: (s) => steps.push(s.message),
 		});
 
-		expect(steps.some((m) => m.includes("Creating org-level field Custom."))).toBe(true);
-		expect(steps.some((m) => m.includes("Attached") && m.includes("Custom."))).toBe(true);
+		expect(steps.some((m) => m.includes("[CREATE] org-level field Custom."))).toBe(true);
+		expect(steps.some((m) => m.startsWith("  [ATTACH]"))).toBe(true);
+	});
+});
+
+// ─── Sprint 2.13 robust field creation (pre-flight + translated names) ────────
+
+describe("Sprint 2.13 robust field creation", () => {
+	const PROC = "new-proc-guid";
+	const LISTS_URL = `${ORG_URL}/_apis/work/processes/lists`;
+	const fieldsRegex = new RegExp(
+		`${BASE.replace(/\//g, "\\/")}\\/${PROC}\\/workItemTypes\\/.+\\/fields`
+	);
+	const statesRegex = new RegExp(
+		`${BASE.replace(/\//g, "\\/")}\\/${PROC}\\/workItemTypes\\/.+\\/states`
+	);
+
+	function setupBase2() {
+		server.use(
+			http.post(BASE, () =>
+				HttpResponse.json({ typeId: PROC, name: "TestVault - Agile" }, { status: 201 })
+			),
+			http.get(LISTS_URL, () => HttpResponse.json({ value: [] })),
+			http.post(LISTS_URL, () => HttpResponse.json({ id: "pl-guid" }, { status: 201 })),
+			http.get(`${BASE}/${PROC}/workItemTypes`, () => HttpResponse.json({ value: [] })),
+			http.post(`${BASE}/${PROC}/workItemTypes`, () =>
+				HttpResponse.json({ referenceName: `${PROC}.TestVaultTestCase` }, { status: 201 })
+			),
+			http.post(fieldsRegex, () => HttpResponse.json({}, { status: 200 })),
+			http.post(statesRegex, () => HttpResponse.json({}, { status: 201 }))
+		);
+	}
+
+	it("creates field with translated display name (TestVault prefix)", async () => {
+		const bodies: Array<Record<string, unknown>> = [];
+		server.use(
+			http.post(ORG_FIELDS_URL, async ({ request }) => {
+				bodies.push((await request.json()) as Record<string, unknown>);
+				return HttpResponse.json({ referenceName: "Custom.TestVaultX" }, { status: 201 });
+			})
+		);
+		setupBase2();
+
+		await makeService().install({ processName: "TestVault - Agile", baseProcess: "Agile" });
+
+		// All org-level create bodies should have names starting with "TestVault "
+		expect(bodies.length).toBeGreaterThan(0);
+		expect(bodies.every((b) => typeof b.name === "string" && b.name.startsWith("TestVault "))).toBe(
+			true
+		);
+	});
+
+	it("pre-flight classifies field as reuse when refName exists with compatible type", async () => {
+		const priorityRef = schemaToAdoFieldRefName("TestVault.Priority");
+		const priorityName = schemaToAdoFieldName("Priority");
+
+		server.use(
+			http.get(ORG_FIELDS_URL, () =>
+				HttpResponse.json({
+					value: [{ referenceName: priorityRef, name: priorityName, type: "integer" }],
+				})
+			)
+		);
+		setupBase2();
+
+		const steps: string[] = [];
+		await makeService().install({
+			processName: "TestVault - Agile",
+			baseProcess: "Agile",
+			onProgress: (s) => steps.push(s.message),
+		});
+
+		// Priority field should be reused, not created
+		expect(steps.some((m) => m.includes("[REUSE]") && m.includes(priorityRef))).toBe(true);
+	});
+
+	it("pre-flight fails-fast when name conflict detected (different refName)", async () => {
+		const priorityRef = schemaToAdoFieldRefName("TestVault.Priority");
+		const priorityName = schemaToAdoFieldName("Priority");
+
+		server.use(
+			http.get(ORG_FIELDS_URL, () =>
+				HttpResponse.json({
+					value: [
+						{
+							referenceName: "Microsoft.VSTS.Common.Priority",
+							name: priorityName,
+							type: "integer",
+						},
+					],
+				})
+			)
+		);
+		setupBase2();
+
+		// Pre-flight detects name "TestVault Priority" used by Microsoft field -> CONFLICT
+		await expect(
+			makeService().install({ processName: "TestVault - Agile", baseProcess: "Agile" })
+		).rejects.toThrow(ProcessInstallError);
+
+		void priorityRef; // referenced for type safety
+	});
+
+	it("pre-flight fails-fast when type mismatch detected on reuse", async () => {
+		const priorityRef = schemaToAdoFieldRefName("TestVault.Priority");
+		const priorityName = schemaToAdoFieldName("Priority");
+
+		server.use(
+			http.get(ORG_FIELDS_URL, () =>
+				HttpResponse.json({
+					value: [
+						// Same refName but wrong type (string instead of integer for picklistInteger)
+						{ referenceName: priorityRef, name: priorityName, type: "string" },
+					],
+				})
+			)
+		);
+		setupBase2();
+
+		await expect(
+			makeService().install({ processName: "TestVault - Agile", baseProcess: "Agile" })
+		).rejects.toThrow(ProcessInstallError);
+	});
+
+	it("treats 409 on attach as idempotent success", async () => {
+		setupBase2();
+		server.use(http.post(fieldsRegex, () => new HttpResponse(null, { status: 409 })));
+
+		// 409 on attach = field already attached, should not throw
+		await expect(
+			makeService().install({ processName: "TestVault - Agile", baseProcess: "Agile" })
+		).resolves.toBeDefined();
+	});
+
+	it("emits [VALIDATE] pre-flight log before Step 3", async () => {
+		setupBase2();
+
+		const steps: string[] = [];
+		await makeService().install({
+			processName: "TestVault - Agile",
+			baseProcess: "Agile",
+			onProgress: (s) => steps.push(s.message),
+		});
+
+		expect(steps.some((m) => m.includes("[VALIDATE]") && m.includes("Pre-flight"))).toBe(true);
 	});
 });
