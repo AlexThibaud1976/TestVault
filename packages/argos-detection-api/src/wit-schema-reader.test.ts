@@ -9,7 +9,7 @@ const ADO_WIT_NAMES = [
 	"SomeProcess.TestVaultTestPlan",
 	"SomeProcess.TestVaultPrecondition",
 	"SomeProcess.TestVaultTestExecution",
-	"SomeProcess.TestVaultTestPlanEntry",
+	"SomeProcess.TestVaultTestCaseVersion",
 	"SomeProcess.TestVaultAuditLog",
 ];
 
@@ -76,6 +76,57 @@ describe("createArgosSchemaReader", () => {
 	it("listWorkItemTypes returns empty array when no TestVault types installed", async () => {
 		const client = makeClient({
 			listWorkItemTypeNames: vi.fn().mockResolvedValue(["System.Bug"]),
+		});
+		const reader = createArgosSchemaReader(client);
+		const types = await reader.listWorkItemTypes("https://dev.azure.com/org", "project");
+		expect(types).toHaveLength(0);
+	});
+});
+
+describe("Detection Sprint 2.15 -- suffix matching", () => {
+	it("detects Argos when ADO returns refNames with dynamic process prefix", async () => {
+		const client = makeClient({
+			listWorkItemTypeNames: vi
+				.fn()
+				.mockResolvedValue([
+					"ArgosInheritedDemo.TestVaultTestCase",
+					"ArgosInheritedDemo.TestVaultTestSet",
+					"ArgosInheritedDemo.TestVaultTestPlan",
+					"ArgosInheritedDemo.TestVaultPrecondition",
+					"ArgosInheritedDemo.TestVaultTestExecution",
+					"ArgosInheritedDemo.TestVaultTestCaseVersion",
+					"ArgosInheritedDemo.TestVaultAuditLog",
+					"Microsoft.VSTS.WorkItemTypes.Bug",
+				]),
+		});
+		const reader = createArgosSchemaReader(client);
+		const types = await reader.listWorkItemTypes("https://dev.azure.com/org", "project");
+		expect(types).toHaveLength(7);
+		expect(types).toContain("TestVault.TestCase");
+		expect(types).toContain("TestVault.TestCaseVersion");
+		expect(types).not.toContain("Microsoft.VSTS.WorkItemTypes.Bug");
+	});
+
+	it("isArgosInstalled returns true with ADO-generated suffix-matched refNames", async () => {
+		const client = makeClient({
+			listWorkItemTypeNames: vi
+				.fn()
+				.mockResolvedValue(["BCEEQA.TestVaultTestCase", "BCEEQA.TestVaultTestPlan"]),
+		});
+		const reader = createArgosSchemaReader(client);
+		const installed = await reader.isArgosInstalled("https://dev.azure.com/org", "project");
+		expect(installed).toBe(true);
+	});
+
+	it("ignores non-Argos WIT types — no false positives", async () => {
+		const client = makeClient({
+			listWorkItemTypeNames: vi
+				.fn()
+				.mockResolvedValue([
+					"Microsoft.VSTS.WorkItemTypes.Bug",
+					"Microsoft.VSTS.WorkItemTypes.Task",
+					"Custom.SomeOtherType",
+				]),
 		});
 		const reader = createArgosSchemaReader(client);
 		const types = await reader.listWorkItemTypes("https://dev.azure.com/org", "project");

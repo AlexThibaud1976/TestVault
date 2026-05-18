@@ -7,3 +7,14 @@ export * from "./wits/test-case.js";
 export * from "./wits/test-execution.js";
 export * from "./wits/test-plan.js";
 export * from "./wits/test-set.js";
+export {
+	isArgosWit,
+	findSchemaWitByAdoRefName,
+	schemaWitRefNameToAdoSuffix,
+	schemaToAdoFieldRefName,
+	isArgosField,
+	schemaToAdoFieldName,
+	schemaToAdoStateName,
+	validateAdoFieldName,
+	validateAdoStateName,
+} from "./naming.js";

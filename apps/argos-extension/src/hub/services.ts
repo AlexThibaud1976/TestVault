@@ -23,6 +23,7 @@ import {
 	createTestSetService,
 	createWorkItemLinkService,
 } from "@atconseil/argos-sdk";
+import { isArgosWit } from "@atconseil/argos-wit-schema";
 import type { IFlakinessReportService } from "./FlakinessReport.js";
 import type { IQuotaSettingsService } from "./QuotaSettings.js";
 import type { IWebhookAdminService } from "./WebhookAdmin.js";
@@ -81,7 +82,7 @@ async function checkArgosInstalled(
 		});
 		if (!res.ok) return false;
 		const data = (await res.json()) as { value: Array<{ referenceName: string }> };
-		return data.value.some((t) => t.referenceName === "TestVault.TestCase");
+		return data.value.some((t) => isArgosWit(t.referenceName));
 	} catch {
 		return false;
 	}

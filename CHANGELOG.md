@@ -7,6 +7,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.17] - 2026-05-18
+
+### Fixed
+
+#### Sprint 2.15 -- Extension detection uses suffix-matching refNames
+
+After Sprint 2.14 the SDK install was confirmed successful (7 WIT + 40 fields + custom
+states in BCEE-QA), but the extension UI continued showing:
+
+```
+LIMITED MODE -- Argos custom WIT not installed. Create/save features are disabled.
+```
+
+Root cause: `argos-detection-api` compared schema refNames to ADO-generated refNames
+using exact equality. ADO returns `"ArgosInheritedDemo.TestVaultTestCase"` but the
+code was checking `=== "TestVault.TestCase"` — always false.
+
+Second bug found: `ARGOS_WIT_NAMES` in `wit-schema-reader.ts` had `"TestVault.TestPlanEntry"`
+(non-existent) instead of `"TestVault.TestCaseVersion"`.
+
+### Architecture changes
+
+#### Naming helpers moved to argos-wit-schema (source of truth)
+
+New `packages/argos-wit-schema/src/naming.ts`:
+
+- `isArgosWit(adoRefName)` — suffix match, handles dynamic process prefix
+- `findSchemaWitByAdoRefName(adoRefName)` — resolves ADO refName to schema WIT
+- `schemaWitRefNameToAdoSuffix(schemaRef)` — computes ADO suffix from schema refName
+- `schemaToAdoFieldRefName(schemaRef)` — `"TestVault.X"` → `"Custom.TestVaultX"`
+- `isArgosField(adoFieldRef)` — checks `Custom.TestVault` prefix
+- `schemaToAdoFieldName(name)` — `"Priority"` → `"TestVault Priority"`
+- `schemaToAdoStateName(name)` — `"Active"` → `"TestVault Active"`
+- `validateAdoFieldName` / `validateAdoStateName` — ADO constraint checks
+
+All helpers re-exported from `argos-wit-schema/src/index.ts`.
+
+#### argos-detection-api updated
+
+- Changed import from `@atconseil/argos-sdk` to `@atconseil/argos-wit-schema`
+- Fixed `ARGOS_WIT_NAMES`: `"TestVault.TestPlanEntry"` → `"TestVault.TestCaseVersion"`
+- Detection uses 1-param `isArgosWit()` + `findSchemaWitByAdoRefName()` for suffix matching
+
+#### argos-extension services.ts updated
+
+- `checkArgosInstalled` now uses `isArgosWit(t.referenceName)` from `@atconseil/argos-wit-schema`
+- Previously: `t.referenceName === "TestVault.TestCase"` (always false at runtime)
+
+### Tests
+
+- 25 unit tests in `argos-wit-schema/src/naming.test.ts`
+- 9 tests in `argos-detection-api/src/wit-schema-reader.test.ts` (3 new Sprint 2.15)
+- `tools/regression/CFG-2026-05-18-extension-detection.test.ts` (7 assertions)
+- All Sprint 2.7-2.14 tests still green (324 SDK tests, 94 regression tests)
+
+### TECH-DEBT
+
+- TECH-DEBT-054 LIVRE: extension detection + CRUD refName translation
+- TECH-DEBT-019: E2E real test pending after this sprint (Lot E)
+
 ## [0.5.16] - 2026-05-18
 
 ### Fixed
