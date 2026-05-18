@@ -264,10 +264,17 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
   - detectInstallState + idempotency Step 3 uses isArgosWit pattern
   - argos-detection-api : listWorkItemTypes + isArgosInstalled corriges
   - CFG-2026-05-18-process-install-idempotency.test.ts regression test
-- [ ] TECH-DEBT-052 NEW : E2E retest post Sprint 2.10 (v0.5.12)
-  - Prerequis : TECH-DEBT-051 livre
-  - Verifier que l installation ADO complete sans VS402805
-- [ ] TECH-DEBT-019 (E2E reel) : couche 6 refName fixee, retest pending apres v0.5.12
+- [x] TECH-DEBT-052 LIVRE : ADO custom field "Custom." prefix translation (Sprint 2.11 v0.5.13)
+  - wit-refname-matcher.ts : schemaToAdoFieldRefName + isArgosField + findSchemaFieldByAdoRefName (24 tests)
+  - process-install.ts : Step 3 fields POST uses adoFieldRefName (Custom.TestVaultX)
+  - CFG-2026-05-18-field-refname-translation.test.ts regression test
+- [ ] TECH-DEBT-053 NEW : field-level idempotency at org level (deferred Sprint 2.12)
+  - Prerequis : TECH-DEBT-052 livre
+  - GET /fields avant creation chaque field, skip si Custom.TestVaultX existe deja
+- [ ] TECH-DEBT-054 NEW : extension argos-detection-api fields refName translation CRUD (deferred Sprint 2.12)
+  - Apres Sprint 2.11, Create Test Case dans extension probablement echoue (bug 8)
+  - Translation schema -> ADO pour toutes les operations CRUD de l extension
+- [ ] TECH-DEBT-019 (E2E reel) : retest pending apres Sprint 2.11 v0.5.13
 
 ### T-1.4 — CRUD Test Case (UI + service) 🟡
 

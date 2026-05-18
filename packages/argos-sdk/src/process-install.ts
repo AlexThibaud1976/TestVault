@@ -1,5 +1,5 @@
 import { TESTVAULT_SCHEMA } from "@atconseil/argos-wit-schema";
-import { isArgosWit } from "./wit-refname-matcher.js";
+import { isArgosWit, schemaToAdoFieldRefName } from "./wit-refname-matcher.js";
 
 // ─── Known ADO system process GUIDs ──────────────────────────────────────────
 
@@ -317,10 +317,12 @@ export function createProcessInstallService(
 					total: wits.length,
 				});
 
-				// Add custom fields — use ADO-generated refName in the URL
+				// Add custom fields — use ADO-generated refName in URL + Custom. prefix for field refName
 				for (const field of wit.fields.filter((f) => f.referenceName.startsWith("TestVault."))) {
+					const adoFieldRefName = schemaToAdoFieldRefName(field.referenceName);
+
 					const body: Record<string, unknown> = {
-						referenceName: field.referenceName,
+						referenceName: adoFieldRefName,
 						name: field.displayName,
 						type: ADO_FIELD_TYPE[field.type] ?? field.type,
 						required: field.required,
@@ -340,6 +342,13 @@ export function createProcessInstallService(
 						}
 					);
 					await throwForStatus(fieldRes);
+
+					emit({
+						phase: "creating-wits",
+						message: `  Added field "${field.displayName}" (${adoFieldRefName}) to ${wit.displayName}`,
+						current: i + 1,
+						total: wits.length,
+					});
 				}
 
 				// Add custom states — use ADO-generated refName in the URL

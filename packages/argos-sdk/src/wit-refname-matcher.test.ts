@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { findSchemaWitByAdoRefName, isArgosWit } from "./wit-refname-matcher.js";
+import {
+	findSchemaFieldByAdoRefName,
+	findSchemaWitByAdoRefName,
+	isArgosField,
+	isArgosWit,
+	schemaToAdoFieldRefName,
+} from "./wit-refname-matcher.js";
 
 describe("isArgosWit", () => {
 	it("matches ADO refName generated from TestVault schema entries", () => {
@@ -62,5 +68,118 @@ describe("findSchemaWitByAdoRefName", () => {
 
 	it("returns undefined for empty array", () => {
 		expect(findSchemaWitByAdoRefName("X.TestVaultTestCase", [])).toBeUndefined();
+	});
+});
+
+// ─── Field refName translation (Sprint 2.11) ──────────────────────────────────
+
+describe("schemaToAdoFieldRefName", () => {
+	it("translates TestVault.* to Custom.TestVault* (camel-preserved)", () => {
+		expect(schemaToAdoFieldRefName("TestVault.Priority")).toBe("Custom.TestVaultPriority");
+		expect(schemaToAdoFieldRefName("TestVault.Severity")).toBe("Custom.TestVaultSeverity");
+		expect(schemaToAdoFieldRefName("TestVault.Environment")).toBe("Custom.TestVaultEnvironment");
+		expect(schemaToAdoFieldRefName("TestVault.Steps")).toBe("Custom.TestVaultSteps");
+		expect(schemaToAdoFieldRefName("TestVault.TestCaseRef")).toBe("Custom.TestVaultTestCaseRef");
+		expect(schemaToAdoFieldRefName("TestVault.GherkinFeature")).toBe(
+			"Custom.TestVaultGherkinFeature"
+		);
+		expect(schemaToAdoFieldRefName("TestVault.AutomationStatus")).toBe(
+			"Custom.TestVaultAutomationStatus"
+		);
+		expect(schemaToAdoFieldRefName("TestVault.EstimatedDuration")).toBe(
+			"Custom.TestVaultEstimatedDuration"
+		);
+	});
+
+	it("passes through System.* fields unchanged", () => {
+		expect(schemaToAdoFieldRefName("System.Title")).toBe("System.Title");
+		expect(schemaToAdoFieldRefName("System.Description")).toBe("System.Description");
+		expect(schemaToAdoFieldRefName("System.State")).toBe("System.State");
+		expect(schemaToAdoFieldRefName("System.AssignedTo")).toBe("System.AssignedTo");
+	});
+
+	it("passes through Microsoft.* fields unchanged", () => {
+		expect(schemaToAdoFieldRefName("Microsoft.VSTS.Common.Priority")).toBe(
+			"Microsoft.VSTS.Common.Priority"
+		);
+		expect(schemaToAdoFieldRefName("Microsoft.VSTS.TCM.Steps")).toBe("Microsoft.VSTS.TCM.Steps");
+	});
+
+	it("throws on invalid TestVault.* format (more than 2 parts)", () => {
+		expect(() => schemaToAdoFieldRefName("TestVault.A.B")).toThrow(/Invalid schema field refName/);
+		expect(() => schemaToAdoFieldRefName("TestVault.A.B.C")).toThrow(
+			/Invalid schema field refName/
+		);
+	});
+
+	it("throws on TestVault. with empty suffix", () => {
+		expect(() => schemaToAdoFieldRefName("TestVault.")).toThrow();
+	});
+});
+
+describe("isArgosField", () => {
+	it("matches ADO refName generated from TestVault schema field", () => {
+		expect(isArgosField("Custom.TestVaultPriority", "TestVault.Priority")).toBe(true);
+		expect(isArgosField("Custom.TestVaultSteps", "TestVault.Steps")).toBe(true);
+		expect(isArgosField("Custom.TestVaultGherkinFeature", "TestVault.GherkinFeature")).toBe(true);
+		expect(isArgosField("Custom.TestVaultTestCaseRef", "TestVault.TestCaseRef")).toBe(true);
+		expect(isArgosField("Custom.TestVaultSeverity", "TestVault.Severity")).toBe(true);
+	});
+
+	it("does not match wrong prefix", () => {
+		expect(isArgosField("TestVault.Priority", "TestVault.Priority")).toBe(false);
+		expect(isArgosField("Custom.Priority", "TestVault.Priority")).toBe(false);
+		expect(isArgosField("MyOrg.TestVaultPriority", "TestVault.Priority")).toBe(false);
+	});
+
+	it("does not match wrong suffix", () => {
+		expect(isArgosField("Custom.TestVaultSeverity", "TestVault.Priority")).toBe(false);
+		expect(isArgosField("Custom.TestVaultPriorityX", "TestVault.Priority")).toBe(false);
+		expect(isArgosField("Custom.TestVaultpriority", "TestVault.Priority")).toBe(false);
+	});
+
+	it("does not match System or Microsoft fields", () => {
+		expect(isArgosField("System.Title", "TestVault.Priority")).toBe(false);
+		expect(isArgosField("Microsoft.VSTS.Common.Priority", "TestVault.Priority")).toBe(false);
+	});
+
+	it("handles invalid schema refName gracefully (returns false, no throw)", () => {
+		expect(isArgosField("Custom.TestVaultPriority", "TestVault.A.B")).toBe(false);
+		expect(isArgosField("Custom.TestVaultPriority", "")).toBe(false);
+	});
+});
+
+describe("findSchemaFieldByAdoRefName", () => {
+	const schemaFields = [
+		{ referenceName: "TestVault.Priority" },
+		{ referenceName: "TestVault.Severity" },
+		{ referenceName: "TestVault.Steps" },
+		{ referenceName: "TestVault.GherkinFeature" },
+		{ referenceName: "TestVault.AutomationStatus" },
+	];
+
+	it("finds matching schema entry from ADO refName", () => {
+		expect(
+			findSchemaFieldByAdoRefName("Custom.TestVaultSeverity", schemaFields)?.referenceName
+		).toBe("TestVault.Severity");
+		expect(findSchemaFieldByAdoRefName("Custom.TestVaultSteps", schemaFields)?.referenceName).toBe(
+			"TestVault.Steps"
+		);
+		expect(
+			findSchemaFieldByAdoRefName("Custom.TestVaultGherkinFeature", schemaFields)?.referenceName
+		).toBe("TestVault.GherkinFeature");
+		expect(
+			findSchemaFieldByAdoRefName("Custom.TestVaultAutomationStatus", schemaFields)?.referenceName
+		).toBe("TestVault.AutomationStatus");
+	});
+
+	it("returns undefined if no match", () => {
+		expect(findSchemaFieldByAdoRefName("Custom.OtherField", schemaFields)).toBeUndefined();
+		expect(findSchemaFieldByAdoRefName("System.Title", schemaFields)).toBeUndefined();
+		expect(findSchemaFieldByAdoRefName("TestVault.Priority", schemaFields)).toBeUndefined();
+	});
+
+	it("returns undefined for empty array", () => {
+		expect(findSchemaFieldByAdoRefName("Custom.TestVaultPriority", [])).toBeUndefined();
 	});
 });
