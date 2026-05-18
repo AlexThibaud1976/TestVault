@@ -11,6 +11,7 @@ import {
 
 const ORG_URL = "https://dev.azure.com/testorg";
 const BASE = `${ORG_URL}/_apis/work/processes`;
+const ORG_FIELDS_URL = `${ORG_URL}/_apis/wit/fields`;
 
 // ADO generates refNames as {ProcessName}.TestVault{WitName} — use realistic mocks
 const ALL_WIT_REFS = [
@@ -23,7 +24,14 @@ const ALL_WIT_REFS = [
 	"MockProcess.TestVaultAuditLog",
 ];
 
-const server = setupServer();
+// Default org-level field handlers (Sprint 2.12) — overridden per test when needed.
+// Default: GET -> 404 (field does not exist), POST -> 201 (created).
+const server = setupServer(
+	http.get(`${ORG_FIELDS_URL}/:refName`, () => new HttpResponse(null, { status: 404 })),
+	http.post(ORG_FIELDS_URL, () =>
+		HttpResponse.json({ referenceName: "Custom.TestVaultX" }, { status: 201 })
+	)
+);
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => server.resetHandlers());
@@ -481,5 +489,121 @@ describe("Sprint 2.8 idempotency", () => {
 				steps.filter((m) => m.includes("Skipping") && m.includes("already exists as"))
 			).toHaveLength(2);
 		});
+	});
+});
+
+// ─── Sprint 2.12 field 2-step workflow ───────────────────────────────────────
+
+describe("Sprint 2.12 field 2-step workflow", () => {
+	const PROC = "new-proc-guid";
+	const LISTS_URL = `${ORG_URL}/_apis/work/processes/lists`;
+	const fieldsRegex = new RegExp(
+		`${BASE.replace(/\//g, "\\/")}\\/${PROC}\\/workItemTypes\\/.+\\/fields`
+	);
+	const statesRegex = new RegExp(
+		`${BASE.replace(/\//g, "\\/")}\\/${PROC}\\/workItemTypes\\/.+\\/states`
+	);
+
+	function setupBase() {
+		server.use(
+			http.post(BASE, () =>
+				HttpResponse.json({ typeId: PROC, name: "TestVault - Agile" }, { status: 201 })
+			),
+			http.get(LISTS_URL, () => HttpResponse.json({ value: [] })),
+			http.post(LISTS_URL, () => HttpResponse.json({ id: "pl-guid" }, { status: 201 })),
+			http.get(`${BASE}/${PROC}/workItemTypes`, () => HttpResponse.json({ value: [] })),
+			http.post(`${BASE}/${PROC}/workItemTypes`, () =>
+				HttpResponse.json({ referenceName: `${PROC}.TestVaultTestCase` }, { status: 201 })
+			),
+			http.post(fieldsRegex, () => HttpResponse.json({}, { status: 200 })),
+			http.post(statesRegex, () => HttpResponse.json({}, { status: 201 }))
+		);
+	}
+
+	it("calls GET org-level field before creating (field not exists -> creates)", async () => {
+		let orgGetCount = 0;
+		let orgPostCount = 0;
+
+		// Override defaults: GET -> 404, POST -> 201
+		server.use(
+			http.get(`${ORG_FIELDS_URL}/:refName`, () => {
+				orgGetCount++;
+				return new HttpResponse(null, { status: 404 });
+			}),
+			http.post(ORG_FIELDS_URL, () => {
+				orgPostCount++;
+				return HttpResponse.json({ referenceName: "Custom.TestVaultX" }, { status: 201 });
+			})
+		);
+		setupBase();
+
+		await makeService().install({ processName: "TestVault - Agile", baseProcess: "Agile" });
+
+		// One GET per unique field per WIT (many fields across 7 WITs)
+		expect(orgGetCount).toBeGreaterThan(0);
+		// One POST per field that doesn't exist
+		expect(orgPostCount).toBeGreaterThan(0);
+	});
+
+	it("skips org-level create when field already exists (GET -> 200)", async () => {
+		let orgPostCount = 0;
+
+		// Override: GET -> 200 (all fields exist), POST should not be called
+		server.use(
+			http.get(`${ORG_FIELDS_URL}/:refName`, () =>
+				HttpResponse.json({ referenceName: "Custom.TestVaultX" }, { status: 200 })
+			),
+			http.post(ORG_FIELDS_URL, () => {
+				orgPostCount++;
+				return HttpResponse.json({}, { status: 201 });
+			})
+		);
+		setupBase();
+
+		const steps: string[] = [];
+		await makeService().install({
+			processName: "TestVault - Agile",
+			baseProcess: "Agile",
+			onProgress: (s) => steps.push(s.message),
+		});
+
+		expect(orgPostCount).toBe(0);
+		expect(steps.some((m) => m.includes("Reusing existing org-level field"))).toBe(true);
+	});
+
+	it("treats 409 from org-level create as success (attach still proceeds)", async () => {
+		let attachCount = 0;
+
+		// setupBase first (lower priority), then overrides prepend on top (higher priority)
+		setupBase();
+		server.use(
+			http.get(`${ORG_FIELDS_URL}/:refName`, () => new HttpResponse(null, { status: 404 })),
+			http.post(ORG_FIELDS_URL, () => new HttpResponse(null, { status: 409 })),
+			http.post(fieldsRegex, () => {
+				attachCount++;
+				return HttpResponse.json({}, { status: 200 });
+			})
+		);
+
+		// Should not throw; attach proceeds normally
+		await expect(
+			makeService().install({ processName: "TestVault - Agile", baseProcess: "Agile" })
+		).resolves.toBeDefined();
+
+		expect(attachCount).toBeGreaterThan(0);
+	});
+
+	it("logs Creating/Reusing/Attached messages per field", async () => {
+		setupBase();
+
+		const steps: string[] = [];
+		await makeService().install({
+			processName: "TestVault - Agile",
+			baseProcess: "Agile",
+			onProgress: (s) => steps.push(s.message),
+		});
+
+		expect(steps.some((m) => m.includes("Creating org-level field Custom."))).toBe(true);
+		expect(steps.some((m) => m.includes("Attached") && m.includes("Custom."))).toBe(true);
 	});
 });
