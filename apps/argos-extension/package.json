@@ -1,12 +1,14 @@
 {
 	"name": "argosTesting",
-	"version": "0.5.19",
+	"version": "0.5.20",
 	"private": false,
 	"type": "module",
 	"scripts": {
 		"build": "node scripts/build.mjs",
 		"dev": "node scripts/build.mjs --watch",
 		"build:vsix": "tfx extension create --manifest-globs vss-extension.json --output-path ../../dist/argos.vsix",
+		"preview": "node scripts/build-preview.mjs",
+		"preview:watch": "node scripts/build-preview.mjs --watch",
 		"typecheck": "tsc --noEmit",
 		"test": "vitest run --passWithNoTests",
 		"lint": "biome check src/"

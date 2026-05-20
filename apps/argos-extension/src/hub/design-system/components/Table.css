@@ -1,0 +1,75 @@
+.ds-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: var(--t-body);
+}
+
+.ds-table thead {
+	background: var(--neutral-1);
+	position: sticky;
+	top: 0;
+	z-index: 1;
+}
+
+.ds-table th {
+	text-align: left;
+	font-weight: 600;
+	font-size: var(--t-micro);
+	color: var(--neutral-8);
+	padding: 10px 16px;
+	border-bottom: 1px solid var(--neutral-4);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	white-space: nowrap;
+}
+
+.ds-table td {
+	padding: 10px 16px;
+	border-bottom: 1px solid var(--neutral-3);
+	vertical-align: middle;
+}
+
+.ds-table tbody tr {
+	transition: background 0.08s ease;
+}
+
+.ds-table tbody tr.ds-table-row-clickable {
+	cursor: pointer;
+}
+
+.ds-table tbody tr.ds-table-row-clickable:hover {
+	background: var(--neutral-1);
+}
+
+.ds-table-empty {
+	background: var(--neutral-0);
+}
+
+.ds-progress-bar {
+	display: flex;
+	align-items: center;
+	gap: var(--s-2);
+}
+
+.ds-progress-bar-track {
+	flex: 1;
+	height: 6px;
+	background: var(--neutral-3);
+	border-radius: 3px;
+	overflow: hidden;
+}
+
+.ds-progress-bar-fill {
+	height: 100%;
+	background: var(--success-fg);
+	border-radius: 3px;
+	transition: width 0.3s ease;
+}
+
+.ds-progress-bar-label {
+	font-size: var(--t-micro);
+	color: var(--neutral-8);
+	font-family: var(--font-mono);
+	white-space: nowrap;
+	min-width: 48px;
+}

@@ -1,0 +1,29 @@
+.ds-filter-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 4px 10px;
+	border: 1px solid var(--neutral-5);
+	border-radius: var(--r-1);
+	background: var(--neutral-0);
+	font-family: var(--font-family);
+	font-size: var(--t-small);
+	color: var(--neutral-9);
+	cursor: pointer;
+	transition: all 0.12s ease;
+	height: 28px;
+	white-space: nowrap;
+}
+
+.ds-filter-chip:hover {
+	border-color: var(--argos-blue-primary);
+	background: var(--argos-blue-bg);
+	color: var(--argos-blue-primary);
+}
+
+.ds-filter-chip.active {
+	background: var(--argos-blue-bg);
+	border-color: var(--argos-blue-primary);
+	color: var(--argos-blue-primary);
+	font-weight: 600;
+}

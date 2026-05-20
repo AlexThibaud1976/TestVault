@@ -1,0 +1,70 @@
+:root {
+	/* Brand Argos */
+	--argos-blue-primary: #0c447c;
+	--argos-blue-hover: #0a3a6b;
+	--argos-blue-light: #1a6cb8;
+	--argos-blue-bg: #eef4fa;
+	--argos-blue-border: #b8d1e8;
+
+	/* Neutrals (11 levels, Fluent UI aligned) */
+	--neutral-0: #ffffff;
+	--neutral-1: #fafafa;
+	--neutral-2: #f3f2f1;
+	--neutral-3: #edebe9;
+	--neutral-4: #e1dfdd;
+	--neutral-5: #d2d0ce;
+	--neutral-6: #c8c6c4;
+	--neutral-7: #a19f9d;
+	--neutral-8: #605e5c;
+	--neutral-9: #323130;
+	--neutral-10: #201f1e;
+
+	/* Status colors */
+	--success-fg: #107c10;
+	--success-bg: #dff6dd;
+	--warning-fg: #8a6d00;
+	--warning-bg: #fff4ce;
+	--error-fg: #a4262c;
+	--error-bg: #fde7e9;
+	--info-fg: var(--argos-blue-primary);
+	--info-bg: var(--argos-blue-bg);
+
+	/* Spacing scale */
+	--s-1: 4px;
+	--s-2: 8px;
+	--s-3: 12px;
+	--s-4: 16px;
+	--s-5: 20px;
+	--s-6: 24px;
+	--s-7: 32px;
+	--s-8: 48px;
+	--s-9: 64px;
+
+	/* Border radius */
+	--r-1: 2px;
+	--r-2: 4px;
+	--r-3: 8px;
+	--r-pill: 999px;
+
+	/* Shadows */
+	--shadow-2: 0 1.6px 3.6px rgba(0, 0, 0, 0.13), 0 0.3px 0.9px rgba(0, 0, 0, 0.11);
+	--shadow-4: 0 3.2px 7.2px rgba(0, 0, 0, 0.13), 0 0.6px 1.8px rgba(0, 0, 0, 0.11);
+	--shadow-8: 0 6.4px 14.4px rgba(0, 0, 0, 0.13), 0 1.2px 3.6px rgba(0, 0, 0, 0.11);
+	--shadow-16: 0 12.8px 28.8px rgba(0, 0, 0, 0.13), 0 2.4px 7.2px rgba(0, 0, 0, 0.11);
+
+	/* Typography */
+	--font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+	--font-mono: "Cascadia Code", "Consolas", "Monaco", monospace;
+
+	--t-display: 32px;
+	--t-h1: 24px;
+	--t-h2: 20px;
+	--t-h3: 16px;
+	--t-body: 14px;
+	--t-small: 12px;
+	--t-micro: 11px;
+
+	--lh-tight: 1.2;
+	--lh-normal: 1.4;
+	--lh-relaxed: 1.6;
+}

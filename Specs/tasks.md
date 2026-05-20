@@ -309,10 +309,31 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
   - CFG-2026-05-19-ui-refresh-after-create.test.ts (11 assertions)
 - [x] TECH-DEBT-019 VALIDE : E2E reel ADO instance -- 10 bugs E2E fixes en 11 sprints (Sprint 2.17)
   - MILESTONE PRODUIT FONCTIONNEL TOTAL ATTEINT (2026-05-20)
+- [x] TECH-DEBT-058 LIVRE (Sprint 2.18, v0.5.20) : Design system component library
+  - Button, Badge, FilterChip, Input (inputSize prop), Select, Table, EmptyState, SectionCollapsible
+  - 20 unit tests (Button x9, Badge x5, FilterChip x6)
+  - design-system/index.ts re-exports all components
+- [x] TECH-DEBT-059 LIVRE (Sprint 2.18, v0.5.20) : Test Plan list + form UI
+  - TestPlansListView: search, FilterChip status, count, empty state, columns (id/name/state/cases/owner/iter/created)
+  - TestPlanFormView: name (req), owner, tags (chip input), description, iteration select, coming-soon placeholders
+  - Bug A fix: iterationPath omitted from draft when None selected (avoids TF401347)
+  - use-argos-routing.ts: ArgosView discriminated union (7 kinds), goToTestPlansList/Form/Tab/navigate + sidebarKeyForView
+  - App.tsx: initialView: ArgosView replaces section: string; RouteRenderer centralises view dispatch
+  - 11+19 integration tests + CFG-2026-05-20-design-system-test-plan-ui.test.ts (38 assertions)
+  - 454 tests green (61 test files)
+- [ ] TECH-DEBT-060 NEW : Preview infrastructure (build-preview.mjs, preview.tsx mock SDK)
+  - Standalone Chrome preview with mock services, no ADO SDK dependency
+  - esbuild watch mode (build-preview.mjs --watch)
+  - Sprint 2.19: replace with real Vite dev server on real ADO
+- [ ] TECH-DEBT-061 NEW : Replace mock iteration/area paths with real ADO API calls
+  - GET {org}/{project}/_apis/wit/classificationNodes/areas
+  - GET {org}/{project}/_apis/wit/classificationNodes/iterations
+  - Remove _mock-data.ts, populate Select from real ADO data
 
 **Prochaines priorites :**
 - TECH-DEBT-017 Azure Functions deploy
 - TECH-DEBT-018 Commercial layer
+- TECH-DEBT-061 Real iteration/area paths from ADO (Sprint 2.19)
 - Specs/ARCHITECTURE.md (documenter principes architecturaux emerges)
 - Documentation public README + marketplace listing
 

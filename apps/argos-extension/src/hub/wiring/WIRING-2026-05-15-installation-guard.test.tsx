@@ -18,7 +18,7 @@ function renderAppInner(overrides?: Parameters<typeof createMockServices>[0]) {
 	render(
 		<FluentProvider theme={webLightTheme}>
 			<ServicesContext.Provider value={services}>
-				<AppInner section="plans" />
+				<AppInner initialView={{ kind: "test-plans-list" }} />
 			</ServicesContext.Provider>
 		</FluentProvider>
 	);

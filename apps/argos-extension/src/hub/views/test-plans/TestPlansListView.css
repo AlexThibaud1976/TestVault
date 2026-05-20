@@ -1,0 +1,75 @@
+.test-plans-list-view {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	background: var(--neutral-1);
+}
+
+.content-header {
+	background: var(--neutral-0);
+	border-bottom: 1px solid var(--neutral-4);
+	padding: var(--s-4) var(--s-6);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-shrink: 0;
+}
+
+.content-title {
+	display: flex;
+	align-items: baseline;
+	gap: var(--s-3);
+}
+
+.content-title h1 {
+	font-size: var(--t-h1);
+	font-weight: 600;
+	color: var(--neutral-9);
+	letter-spacing: -0.02em;
+	margin: 0;
+}
+
+.content-title .count {
+	font-size: var(--t-body);
+	color: var(--neutral-8);
+	font-weight: normal;
+}
+
+.content-actions {
+	display: flex;
+	gap: var(--s-2);
+	align-items: center;
+}
+
+.filter-bar {
+	background: var(--neutral-0);
+	border-bottom: 1px solid var(--neutral-4);
+	padding: var(--s-3) var(--s-6);
+	display: flex;
+	gap: var(--s-2);
+	align-items: center;
+	flex-shrink: 0;
+}
+
+.filter-search {
+	flex: 1;
+	max-width: 320px;
+}
+
+.content-body {
+	flex: 1;
+	overflow: auto;
+	background: var(--neutral-0);
+}
+
+.loading-state,
+.error-state {
+	padding: var(--s-8);
+	text-align: center;
+	color: var(--neutral-8);
+	font-size: var(--t-body);
+}
+
+.error-state {
+	color: var(--error-fg);
+}

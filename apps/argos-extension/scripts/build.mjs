@@ -1,5 +1,7 @@
-import { build } from "esbuild";
+import { build, context } from "esbuild";
 import { copyFileSync, mkdirSync } from "fs";
+
+const watch = process.argv.includes("--watch");
 
 mkdirSync("dist/hub", { recursive: true });
 mkdirSync("dist/widgets/coverage-panel", { recursive: true });
@@ -16,15 +18,28 @@ const sharedOptions = {
 	target: "es2020",
 };
 
-await Promise.all([
-	build({
-		...sharedOptions,
-		entryPoints: ["src/hub/index.tsx"],
-		outfile: "dist/hub/hub.js",
-	}),
-	build({
-		...sharedOptions,
-		entryPoints: ["src/widgets/coverage-panel/index.tsx"],
-		outfile: "dist/widgets/coverage-panel/index.js",
-	}),
-]);
+if (watch) {
+	const [hubCtx, widgetCtx] = await Promise.all([
+		context({ ...sharedOptions, entryPoints: ["src/hub/index.tsx"], outfile: "dist/hub/hub.js" }),
+		context({
+			...sharedOptions,
+			entryPoints: ["src/widgets/coverage-panel/index.tsx"],
+			outfile: "dist/widgets/coverage-panel/index.js",
+		}),
+	]);
+	await Promise.all([hubCtx.watch(), widgetCtx.watch()]);
+	console.log("[argos] Watching for changes...");
+} else {
+	await Promise.all([
+		build({
+			...sharedOptions,
+			entryPoints: ["src/hub/index.tsx"],
+			outfile: "dist/hub/hub.js",
+		}),
+		build({
+			...sharedOptions,
+			entryPoints: ["src/widgets/coverage-panel/index.tsx"],
+			outfile: "dist/widgets/coverage-panel/index.js",
+		}),
+	]);
+}
