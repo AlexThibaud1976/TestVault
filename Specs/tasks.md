@@ -330,10 +330,20 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
   - GET {org}/{project}/_apis/wit/classificationNodes/iterations
   - Remove _mock-data.ts, populate Select from real ADO data
 
+- [x] TECH-DEBT-067 LIVRE (Sprint 2.18.3, v0.5.23) : Single hub architecture
+  - REMOVED argos-hub-group + 5 sub-hubs (cases/sets/preconditions/reports/settings)
+  - RENAMED argos-hub-plans -> argos-hub, targets project-hub-groups-collection directly
+  - App.tsx: CONTRIBUTION_ID_TO_SECTION supprime, Section type supprime, getInitialView()
+  - T-1.0/T-0.9/CFG-top-level-hub tests mis a jour; CFG-single-hub.test.ts (9 assertions)
+  - Breaking URLs accepted (MVP): /apps/hub/...argos-hub-X -> 404 jusqu'a TECH-DEBT-068
+  - 449 argos-extension + 150 regression tests green
+- [ ] TECH-DEBT-068 NEW : URL redirect anciens argos-hub-X vers argos-hub (Sprint 2.19)
+
 **Prochaines priorites :**
 - TECH-DEBT-017 Azure Functions deploy
 - TECH-DEBT-018 Commercial layer
 - TECH-DEBT-061 Real iteration/area paths from ADO (Sprint 2.19)
+- TECH-DEBT-068 URL redirect anciens hub-X (Sprint 2.19)
 - Specs/ARCHITECTURE.md (documenter principes architecturaux emerges)
 - Documentation public README + marketplace listing
 

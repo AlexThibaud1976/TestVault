@@ -82,14 +82,15 @@ describe("CFG-2026-05-10-top-level-hub regression", () => {
 		expect(offenders).toEqual([]);
 	});
 
-	it("manifest must declare an argos-hub-group contribution of type hub-group", () => {
-		const hubGroup = manifest.contributions.find((c) => c.id === "argos-hub-group");
-		expect(hubGroup).toBeDefined();
-		expect(hubGroup?.type).toBe("ms.vss-web.hub-group");
+	it("manifest must declare argos-hub as single top-level hub (Sprint 2.18.3, D140)", () => {
+		const hub = manifest.contributions.find((c) => c.id === "argos-hub");
+		expect(hub).toBeDefined();
+		expect(hub?.type).toBe("ms.vss-web.hub");
+		expect(hub?.targets).toContain("ms.vss-web.project-hub-groups-collection");
 	});
 
-	it("argos-hub-group must contain at least one hub (no empty hub-group)", () => {
-		const hubs = manifest.contributions.filter((c) => c.targets?.includes(".argos-hub-group"));
-		expect(hubs.length).toBeGreaterThanOrEqual(1);
+	it("manifest must NOT declare argos-hub-group (suppressed Sprint 2.18.3, D145)", () => {
+		const hubGroup = manifest.contributions.find((c) => c.id === "argos-hub-group");
+		expect(hubGroup).toBeUndefined();
 	});
 });

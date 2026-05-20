@@ -2,43 +2,30 @@
  * Regression test: T-0.9-argos-top-level-placement (UX-decision)
  *
  * History:
- *   2026-05-10 (T-0.8) - Argos hub placed under Boards via vss-extension.json
- *                        contribution targeting "ms.vss-work-web.work-hub-group".
- *                        Decision later judged suboptimal: Argos is a transverse
- *                        product, not a Boards feature.
- *   2026-05-10 (T-0.9 v1, Sprint 3) - Argos hub moved to top-level via target
- *                        "ms.vss-web.project-hub-group". FAUSSE PREMISSE: ce
- *                        target n'existe pas chez Microsoft. L'extension est
- *                        acceptee a l'upload (Microsoft ne valide pas les
- *                        target IDs) mais le hub n'apparait pas dans la nav
- *                        ADO au runtime (silent failure).
- *   2026-05-11 (T-0.9 v2, Sprint 3.4) - Architecture refondee : creation d'un
- *                        hub-group dedie (argos-hub-group) targetant le vrai
- *                        conteneur Microsoft "ms.vss-web.project-hub-groups-collection".
- *                        Le hub interne (argos-hub) cible le hub-group via
- *                        reference relative ".argos-hub-group".
- *   2026-05-11 (T-0.9 v3, Sprint 4) - Architecture multi-hubs. Argos-hub
- *                        singulier supprime au profit de 6 hubs internes.
- *                        Voir T-1.0-argos-multi-hubs-architecture.
+ *   2026-05-10 (T-0.8)     - Argos under Boards (ms.vss-work-web.work-hub-group). Suboptimal.
+ *   2026-05-10 (T-0.9 v1)  - Moved to "ms.vss-web.project-hub-group". FAUSSE PREMISSE: this
+ *                            target does not exist at Microsoft. Extension accepted at upload
+ *                            but hub invisible at runtime (silent failure).
+ *   2026-05-11 (T-0.9 v2)  - Sprint 3.4: hub-group (argos-hub-group) targeting
+ *                            "ms.vss-web.project-hub-groups-collection". argos-hub child
+ *                            targeted ".argos-hub-group" via relative reference.
+ *   2026-05-11 (T-0.9 v3)  - Sprint 4 multi-hubs: 6 sub-hubs all targeting ".argos-hub-group".
+ *   2026-05-20 (Sprint 2.18.3) - Single hub (D140/D145). argos-hub targets
+ *                            "ms.vss-web.project-hub-groups-collection" DIRECTLY.
+ *                            No hub-group intermediary needed. 1 ADO sidebar icon.
  *
- * What this test guards (Sprint 4 version):
- *   - vss-extension.json must declare an "argos-hub-group" contribution
- *   - That contribution must be of type "ms.vss-web.hub-group"
- *   - Its targets[] must include "ms.vss-web.project-hub-groups-collection"
- *   - At least one hub must target ".argos-hub-group" (relative reference)
- *   - No contribution must target the invalid "ms.vss-web.project-hub-group"
- *     (Sprint 3 false premise guard)
- *
- * Rationale: prevents accidental return to under-Boards placement OR to the
- * invalid "project-hub-group" target. Architecture must remain top-level via
- * a dedicated hub-group following Microsoft's official pattern.
+ * What this test guards (Sprint 2.18.3):
+ *   - argos-hub exists, type ms.vss-web.hub
+ *   - argos-hub targets ms.vss-web.project-hub-groups-collection directly
+ *   - No contribution targets ms.vss-work-web.work-hub-group (Boards placement guard)
+ *   - No contribution targets ms.vss-web.project-hub-group (invalid target guard)
+ *   - No argos-hub-group (suppressed, would cause extra sidebar item)
  *
  * DO NOT delete without explicit spec-kit decision.
  *
  * Reference:
- *   - Specs/spec.md, Specs/tasks.md T-0.9
- *   - Microsoft docs: https://learn.microsoft.com/en-us/azure/devops/extend/develop/add-hub
- *   - REGISTRY entries: T-0.9 (active), CFG-2026-05-10-top-level-hub (active)
+ *   - Specs/tasks.md T-0.9, TECH-DEBT-067
+ *   - Decision D140/D145 2026-05-20
  */
 
 import { readFileSync } from "node:fs";
@@ -61,27 +48,25 @@ interface Manifest {
 	contributions: Contribution[];
 }
 
-describe("T-0.9-argos-top-level-placement regression (Sprint 4 architecture)", () => {
+describe("T-0.9-argos-top-level-placement regression (Sprint 2.18.3 single-hub)", () => {
 	const manifest: Manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"));
 
-	it("must declare an argos-hub-group contribution", () => {
-		const hubGroup = manifest.contributions.find((c) => c.id === "argos-hub-group");
-		expect(hubGroup).toBeDefined();
+	it("argos-hub must exist as a hub contribution", () => {
+		const hub = manifest.contributions.find((c) => c.id === "argos-hub");
+		expect(hub).toBeDefined();
+		expect(hub?.type).toBe("ms.vss-web.hub");
 	});
 
-	it("argos-hub-group must be of type ms.vss-web.hub-group", () => {
-		const hubGroup = manifest.contributions.find((c) => c.id === "argos-hub-group");
-		expect(hubGroup?.type).toBe("ms.vss-web.hub-group");
+	it("argos-hub must target ms.vss-web.project-hub-groups-collection directly", () => {
+		const hub = manifest.contributions.find((c) => c.id === "argos-hub");
+		expect(hub?.targets).toContain("ms.vss-web.project-hub-groups-collection");
 	});
 
-	it("argos-hub-group must target ms.vss-web.project-hub-groups-collection", () => {
-		const hubGroup = manifest.contributions.find((c) => c.id === "argos-hub-group");
-		expect(hubGroup?.targets).toContain("ms.vss-web.project-hub-groups-collection");
-	});
-
-	it("at least one hub must target .argos-hub-group (relative reference, Sprint 4 multi-hubs)", () => {
-		const hubs = manifest.contributions.filter((c) => c.targets?.includes(".argos-hub-group"));
-		expect(hubs.length).toBeGreaterThanOrEqual(1);
+	it("no contribution must target ms.vss-work-web.work-hub-group (Boards placement guard)", () => {
+		const offenders = manifest.contributions.filter((c) =>
+			c.targets?.includes("ms.vss-work-web.work-hub-group")
+		);
+		expect(offenders).toEqual([]);
 	});
 
 	it("no contribution must target the invalid ms.vss-web.project-hub-group (Sprint 3 false premise guard)", () => {
@@ -91,10 +76,13 @@ describe("T-0.9-argos-top-level-placement regression (Sprint 4 architecture)", (
 		expect(offenders).toEqual([]);
 	});
 
-	it("no contribution must target ms.vss-work-web.work-hub-group (no Boards placement)", () => {
-		const offenders = manifest.contributions.filter((c) =>
-			c.targets?.includes("ms.vss-work-web.work-hub-group")
-		);
+	it("must NOT declare argos-hub-group (suppressed Sprint 2.18.3 to avoid double sidebar entry)", () => {
+		const hubGroup = manifest.contributions.find((c) => c.id === "argos-hub-group");
+		expect(hubGroup).toBeUndefined();
+	});
+
+	it("no contribution must target .argos-hub-group relative reference (hub-group gone)", () => {
+		const offenders = manifest.contributions.filter((c) => c.targets?.includes(".argos-hub-group"));
 		expect(offenders).toEqual([]);
 	});
 });

@@ -74,26 +74,19 @@ describe("App contribution-id routing", () => {
 		mockExtensionDataService.getExtensionDataManager.mockResolvedValue(mockExtensionDataManager);
 	});
 
-	it.each([
-		["AlexThibaud.ArgosTesting.argos-hub-plans", "view-plans"],
-		["AlexThibaud.ArgosTesting.argos-hub-cases", "view-cases"],
-		["AlexThibaud.ArgosTesting.argos-hub-sets", "view-sets"],
-		["AlexThibaud.ArgosTesting.argos-hub-preconditions", "view-preconditions"],
-		["AlexThibaud.ArgosTesting.argos-hub-reports", "view-reports"],
-		["AlexThibaud.ArgosTesting.argos-hub-settings", "view-settings"],
-	])("renders correct view for contribution %s", async (contributionId, expectedTestId) => {
-		vi.mocked(SDK.getContributionId).mockReturnValue(contributionId);
+	it("always opens on test-plans-list (single hub, Sprint 2.18.3)", async () => {
+		vi.mocked(SDK.getContributionId).mockReturnValue("AlexThibaud.ArgosTesting.argos-hub");
 		render(<App />);
 		await waitFor(
 			() => {
-				expect(screen.getByTestId(expectedTestId)).toBeDefined();
+				expect(screen.getByTestId("view-plans")).toBeDefined();
 			},
 			{ timeout: 3000 }
 		);
 	});
 
-	it("falls back to plans section if contributionId is unknown", async () => {
-		vi.mocked(SDK.getContributionId).mockReturnValue("unknown.contribution.id");
+	it("opens on test-plans-list regardless of contributionId", async () => {
+		vi.mocked(SDK.getContributionId).mockReturnValue("any.contribution.id");
 		render(<App />);
 		await waitFor(
 			() => {
@@ -105,7 +98,7 @@ describe("App contribution-id routing", () => {
 
 	it("shows loading state before SDK init resolves", () => {
 		vi.mocked(SDK.init).mockReturnValue(new Promise(() => {}));
-		vi.mocked(SDK.getContributionId).mockReturnValue("AlexThibaud.ArgosTesting.argos-hub-plans");
+		vi.mocked(SDK.getContributionId).mockReturnValue("AlexThibaud.ArgosTesting.argos-hub");
 		render(<App />);
 		expect(screen.getByTestId("hub-loading")).toBeDefined();
 	});

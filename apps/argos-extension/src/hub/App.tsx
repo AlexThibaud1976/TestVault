@@ -45,40 +45,11 @@ import { Sidebar } from "./views/Sidebar.js";
 import { TestPlanFormView } from "./views/test-plans/TestPlanFormView.js";
 import { TestPlansListView } from "./views/test-plans/TestPlansListView.js";
 
-type Section = "plans" | "cases" | "sets" | "preconditions" | "reports" | "settings";
+// Sprint 2.18.3: single hub — always open on Test Plans list
+const DEFAULT_INITIAL_VIEW: ArgosView = { kind: "test-plans-list" };
 
-// Full contribution IDs (publisher.extension.contribution-id format, case-sensitive)
-const CONTRIBUTION_ID_TO_SECTION: Record<string, Section> = {
-	"AlexThibaud.ArgosTesting.argos-hub-plans": "plans",
-	"AlexThibaud.ArgosTesting.argos-hub-cases": "cases",
-	"AlexThibaud.ArgosTesting.argos-hub-sets": "sets",
-	"AlexThibaud.ArgosTesting.argos-hub-preconditions": "preconditions",
-	"AlexThibaud.ArgosTesting.argos-hub-reports": "reports",
-	"AlexThibaud.ArgosTesting.argos-hub-settings": "settings",
-};
-
-const DEFAULT_SECTION: Section = "plans";
-
-function resolveSection(contributionId: string | undefined): Section {
-	if (!contributionId) return DEFAULT_SECTION;
-	return CONTRIBUTION_ID_TO_SECTION[contributionId] ?? DEFAULT_SECTION;
-}
-
-function sectionToInitialView(section: Section): ArgosView {
-	switch (section) {
-		case "plans":
-			return { kind: "test-plans-list" };
-		case "cases":
-			return { kind: "test-cases-list" };
-		case "sets":
-			return { kind: "test-sets-list" };
-		case "preconditions":
-			return { kind: "preconditions-list" };
-		case "reports":
-			return { kind: "reports" };
-		case "settings":
-			return { kind: "settings" };
-	}
+function getInitialView(): ArgosView {
+	return DEFAULT_INITIAL_VIEW;
 }
 
 const PLACEHOLDER_MATRIX_INPUT: MatrixInput = {
@@ -455,7 +426,7 @@ export function App() {
 	useEffect(() => {
 		SDK.init()
 			.then(() => {
-				setInitialView(sectionToInitialView(resolveSection(SDK.getContributionId())));
+				setInitialView(getInitialView());
 				SDK.notifyLoadSucceeded();
 			})
 			.catch((err) => {
