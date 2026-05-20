@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Argos Design System — Tokens & Components</title>
+<style>
+:root {
+  /* Brand */
+  --argos-blue-primary: #0C447C;
+  --argos-blue-hover: #0a3a6b;
+  --argos-blue-light: #1A6CB8;
+  --argos-blue-bg: #EEF4FA;
+  --argos-blue-border: #B8D1E8;
+
+  /* Neutrals (Fluent UI alignment) */
+  --neutral-0: #FFFFFF;
+  --neutral-1: #FAFAFA;
+  --neutral-2: #F3F2F1;
+  --neutral-3: #EDEBE9;
+  --neutral-4: #E1DFDD;
+  --neutral-5: #D2D0CE;
+  --neutral-6: #C8C6C4;
+  --neutral-7: #A19F9D;
+  --neutral-8: #605E5C;
+  --neutral-9: #323130;
+  --neutral-10: #201F1E;
+
+  /* Status (Fluent UI) */
+  --success-fg: #107C10;
+  --success-bg: #DFF6DD;
+  --warning-fg: #8A6D00;
+  --warning-bg: #FFF4CE;
+  --error-fg: #A4262C;
+  --error-bg: #FDE7E9;
+  --info-fg: var(--argos-blue-primary);
+  --info-bg: var(--argos-blue-bg);
+
+  /* Spacing scale */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-7: 32px;
+  --s-8: 48px;
+  --s-9: 64px;
+
+  /* Border radius */
+  --r-1: 2px;
+  --r-2: 4px;
+  --r-3: 8px;
+  --r-pill: 999px;
+
+  /* Shadows (Fluent depth tokens) */
+  --shadow-2: 0 1.6px 3.6px rgba(0,0,0,0.13), 0 0.3px 0.9px rgba(0,0,0,0.11);
+  --shadow-4: 0 3.2px 7.2px rgba(0,0,0,0.13), 0 0.6px 1.8px rgba(0,0,0,0.11);
+  --shadow-8: 0 6.4px 14.4px rgba(0,0,0,0.13), 0 1.2px 3.6px rgba(0,0,0,0.11);
+  --shadow-16: 0 12.8px 28.8px rgba(0,0,0,0.13), 0 2.4px 7.2px rgba(0,0,0,0.11);
+
+  /* Typography */
+  --font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "Cascadia Code", "Consolas", "Monaco", monospace;
+
+  --t-display: 32px;
+  --t-h1: 24px;
+  --t-h2: 20px;
+  --t-h3: 16px;
+  --t-body: 14px;
+  --t-small: 12px;
+  --t-micro: 11px;
+
+  --lh-tight: 1.2;
+  --lh-normal: 1.4;
+  --lh-relaxed: 1.6;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--t-body);
+  color: var(--neutral-9);
+  background: var(--neutral-1);
+  padding: var(--s-7);
+  line-height: var(--lh-normal);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+header.page-header {
+  margin-bottom: var(--s-8);
+  padding-bottom: var(--s-5);
+  border-bottom: 2px solid var(--argos-blue-primary);
+}
+
+header.page-header h1 {
+  font-size: var(--t-display);
+  font-weight: 600;
+  color: var(--argos-blue-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: var(--s-2);
+}
+
+header.page-header p {
+  color: var(--neutral-8);
+  font-size: var(--t-h3);
+}
+
+section {
+  background: var(--neutral-0);
+  border: 1px solid var(--neutral-4);
+  border-radius: var(--r-3);
+  padding: var(--s-6);
+  margin-bottom: var(--s-6);
+  box-shadow: var(--shadow-2);
+}
+
+section h2 {
+  font-size: var(--t-h1);
+  font-weight: 600;
+  margin-bottom: var(--s-2);
+  color: var(--neutral-9);
+}
+
+section .section-intro {
+  color: var(--neutral-8);
+  margin-bottom: var(--s-6);
+  font-size: var(--t-body);
+}
+
+section h3 {
+  font-size: var(--t-h3);
+  font-weight: 600;
+  margin-top: var(--s-6);
+  margin-bottom: var(--s-3);
+  color: var(--neutral-9);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  font-size: var(--t-small);
+}
+
+/* ===== COLOR PALETTE ===== */
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--s-3);
+}
+
+.color-swatch {
+  border: 1px solid var(--neutral-4);
+  border-radius: var(--r-2);
+  overflow: hidden;
+  transition: transform 0.15s ease;
+}
+
+.color-swatch:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-4);
+}
+
+.color-swatch .preview {
+  height: 80px;
+  border-bottom: 1px solid var(--neutral-4);
+}
+
+.color-swatch .meta {
+  padding: var(--s-3);
+  font-size: var(--t-small);
+}
+
+.color-swatch .name {
+  font-weight: 600;
+  color: var(--neutral-9);
+  margin-bottom: 2px;
+}
+
+.color-swatch .hex {
+  font-family: var(--font-mono);
+  color: var(--neutral-8);
+  font-size: var(--t-micro);
+}
+
+/* ===== TYPOGRAPHY ===== */
+.typo-row {
+  display: grid;
+  grid-template-columns: 200px 1fr 120px;
+  gap: var(--s-4);
+  padding: var(--s-3) 0;
+  border-bottom: 1px solid var(--neutral-3);
+  align-items: baseline;
+}
+
+.typo-row:last-child { border-bottom: none; }
+
+.typo-label {
+  font-family: var(--font-mono);
+  font-size: var(--t-small);
+  color: var(--neutral-8);
+}
+
+.typo-sample-display { font-size: var(--t-display); font-weight: 600; letter-spacing: -0.02em; }
+.typo-sample-h1 { font-size: var(--t-h1); font-weight: 600; }
+.typo-sample-h2 { font-size: var(--t-h2); font-weight: 600; }
+.typo-sample-h3 { font-size: var(--t-h3); font-weight: 600; }
+.typo-sample-body { font-size: var(--t-body); }
+.typo-sample-small { font-size: var(--t-small); color: var(--neutral-8); }
+.typo-sample-micro { font-size: var(--t-micro); color: var(--neutral-7); text-transform: uppercase; letter-spacing: 0.05em; }
+
+.typo-meta {
+  font-family: var(--font-mono);
+  font-size: var(--t-micro);
+  color: var(--neutral-7);
+  text-align: right;
+}
+
+/* ===== SPACING ===== */
+.spacing-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 100px;
+  gap: var(--s-3);
+  padding: var(--s-2) 0;
+  align-items: center;
+}
+
+.spacing-bar {
+  background: var(--argos-blue-primary);
+  height: 12px;
+  border-radius: 1px;
+}
+
+.spacing-name {
+  font-family: var(--font-mono);
+  font-size: var(--t-small);
+  color: var(--neutral-9);
+}
+
+.spacing-value {
+  font-family: var(--font-mono);
+  font-size: var(--t-micro);
+  color: var(--neutral-7);
+  text-align: right;
+}
+
+/* ===== BUTTONS ===== */
+.btn-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  align-items: center;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 6px 16px;
+  font-family: var(--font-family);
+  font-size: var(--t-body);
+  font-weight: 600;
+  border-radius: var(--r-1);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  border: 1px solid transparent;
+  height: 32px;
+}
+
+.btn:hover { transform: translateY(-1px); }
+
+.btn-primary {
+  background: var(--argos-blue-primary);
+  color: var(--neutral-0);
+  border-color: var(--argos-blue-primary);
+}
+.btn-primary:hover { background: var(--argos-blue-hover); }
+
+.btn-secondary {
+  background: var(--neutral-0);
+  color: var(--neutral-9);
+  border-color: var(--neutral-5);
+}
+.btn-secondary:hover { background: var(--neutral-2); }
+
+.btn-subtle {
+  background: transparent;
+  color: var(--argos-blue-primary);
+}
+.btn-subtle:hover { background: var(--argos-blue-bg); }
+
+.btn-danger {
+  background: var(--error-fg);
+  color: var(--neutral-0);
+  border-color: var(--error-fg);
+}
+.btn-danger:hover { background: #872428; }
+
+.btn-icon-only {
+  width: 32px;
+  padding: 0;
+  justify-content: center;
+}
+
+/* ===== BADGES (status) ===== */
+.badge-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.badge-success { background: var(--success-bg); color: var(--success-fg); }
+.badge-success .badge-dot { background: var(--success-fg); }
+
+.badge-warning { background: var(--warning-bg); color: var(--warning-fg); }
+.badge-warning .badge-dot { background: var(--warning-fg); }
+
+.badge-error { background: var(--error-bg); color: var(--error-fg); }
+.badge-error .badge-dot { background: var(--error-fg); }
+
+.badge-info { background: var(--info-bg); color: var(--info-fg); }
+.badge-info .badge-dot { background: var(--info-fg); }
+
+.badge-neutral { background: var(--neutral-3); color: var(--neutral-8); }
+.badge-neutral .badge-dot { background: var(--neutral-7); }
+
+/* ===== INPUTS ===== */
+.input-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  max-width: 400px;
+}
+
+.input-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.input-label {
+  font-size: var(--t-small);
+  font-weight: 600;
+  color: var(--neutral-9);
+}
+
+.input {
+  border: 1px solid var(--neutral-5);
+  border-radius: var(--r-1);
+  padding: 6px 8px;
+  font-family: var(--font-family);
+  font-size: var(--t-body);
+  background: var(--neutral-0);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.input:hover { border-color: var(--neutral-7); }
+.input:focus {
+  outline: none;
+  border-color: var(--argos-blue-primary);
+  box-shadow: 0 0 0 1px var(--argos-blue-primary);
+}
+
+.input-help {
+  font-size: var(--t-micro);
+  color: var(--neutral-7);
+}
+
+/* ===== CARDS ===== */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--s-4);
+}
+
+.card {
+  background: var(--neutral-0);
+  border: 1px solid var(--neutral-4);
+  border-radius: var(--r-2);
+  padding: var(--s-4);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-4);
+  transform: translateY(-1px);
+}
+
+.card-title {
+  font-size: var(--t-h3);
+  font-weight: 600;
+  margin-bottom: var(--s-2);
+}
+
+.card-meta {
+  font-size: var(--t-small);
+  color: var(--neutral-8);
+  margin-bottom: var(--s-3);
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--s-4);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--neutral-3);
+  font-size: var(--t-small);
+  color: var(--neutral-8);
+}
+
+/* ===== DARK MODE PALETTE (documented for future) ===== */
+.dark-preview {
+  background: #1B1A19;
+  color: #F3F2F1;
+  padding: var(--s-5);
+  border-radius: var(--r-3);
+  margin-top: var(--s-3);
+}
+
+.dark-preview h4 {
+  color: #4FC3F7;
+  margin-bottom: var(--s-3);
+  font-size: var(--t-h3);
+}
+
+.dark-token-row {
+  display: grid;
+  grid-template-columns: 1fr 150px;
+  gap: var(--s-3);
+  padding: var(--s-2) 0;
+  font-family: var(--font-mono);
+  font-size: var(--t-small);
+  color: #D2D0CE;
+  border-bottom: 1px solid #323130;
+}
+
+.dark-token-row:last-child { border-bottom: none; }
+.dark-token-value { text-align: right; }
+
+footer {
+  margin-top: var(--s-8);
+  padding: var(--s-5);
+  text-align: center;
+  color: var(--neutral-7);
+  font-size: var(--t-small);
+}
+
+footer .footer-brand {
+  color: var(--argos-blue-primary);
+  font-weight: 600;
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="page-header">
+  <h1>Argos Design System</h1>
+  <p>Design tokens, typography, components — light theme reference (dark theme documented)</p>
+</header>
+
+<!-- ===== COLOR PALETTE ===== -->
+<section>
+  <h2>Color Palette</h2>
+  <p class="section-intro">Argos brand colors blended with Fluent UI neutrals for ADO native integration.</p>
+
+  <h3>Brand — Argos Blue</h3>
+  <div class="color-grid">
+    <div class="color-swatch">
+      <div class="preview" style="background:#0C447C"></div>
+      <div class="meta">
+        <div class="name">argos-blue-primary</div>
+        <div class="hex">#0C447C</div>
+      </div>
+    </div>
+    <div class="color-swatch">
+      <div class="preview" style="background:#0a3a6b"></div>
+      <div class="meta">
+        <div class="name">argos-blue-hover</div>
+        <div class="hex">#0A3A6B</div>
+      </div>
+    </div>
+    <div class="color-swatch">
+      <div class="preview" style="background:#1A6CB8"></div>
+      <div class="meta">
+        <div class="name">argos-blue-light</div>
+        <div class="hex">#1A6CB8</div>
+      </div>
+    </div>
+    <div class="color-swatch">
+      <div class="preview" style="background:#EEF4FA;border-bottom:1px solid #B8D1E8"></div>
+      <div class="meta">
+        <div class="name">argos-blue-bg</div>
+        <div class="hex">#EEF4FA</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Neutrals — Fluent UI aligned</h3>
+  <div class="color-grid">
+    <div class="color-swatch"><div class="preview" style="background:#FFFFFF;border-bottom:1px solid #E1DFDD"></div><div class="meta"><div class="name">neutral-0</div><div class="hex">#FFFFFF</div></div></div>
+    <div class="color-swatch"><div class="preview" style="background:#FAFAFA;border-bottom:1px solid #E1DFDD"></div><div class="meta"><div class="name">neutral-1</div><div class="hex">#FAFAFA</div></div></div>
+    <div class="color-swatch"><div class="preview" style="background:#F3F2F1"></div><div class="meta"><div class="name">neutral-2</div><div class="hex">#F3F2F1</div></div></div>
+    <div class="color-swatch"><div class="preview" style="background:#EDEBE9"></div><div class="meta"><div class="name">neutral-3</div><div class="hex">#EDEBE9</div></div></div>
+    <div class="color-swatch"><div class="preview" style="background:#E1DFDD"></div><div class="meta"><div class="name">neutral-4</div><div class="hex">#E1DFDD</div></div></div>
+    <div class="color-swatch"><div class="preview" style="background:#D2D0CE"></div><div class="meta"><div class="name">neutral-5</div><div class="hex">#D2D0CE</div></div></div>
+    <div class="color-swatch"><div class="preview" style="background:#A19F9D"></div><div class="meta"><div class="name">neutral-7</div><div class="hex">#A19F9D</div></div></div>
+    <div class="color-swatch"><div class="preview" style="background:#605E5C"></div><div class="meta"><div class="name">neutral-8</div><div class="hex">#605E5C</div></div></div>
+    <div class="color-swatch"><div class="preview" style="background:#323130"></div><div class="meta"><div class="name">neutral-9</div><div class="hex">#323130</div></div></div>
+  </div>
+
+  <h3>Status colors</h3>
+  <div class="color-grid">
+    <div class="color-swatch"><div class="preview" style="background:#107C10"></div><div class="meta"><div class="name">success-fg</div><div class="hex">#107C10</div></div></div>
+    <div class="color-swatch"><div class="preview" style="background:#DFF6DD;border-bottom:1px solid #C7E5C0"></div><div class="meta"><div class="name">success-bg</div><div class="hex">#DFF6DD</div></div></div>
+    <div class="color-swatch"><div class="preview" style="background:#8A6D00"></div><div class="meta"><div class="name">warning-fg</div><div class="hex">#8A6D00</div></div></div>
+    <div class="color-swatch"><div class="preview" style="background:#FFF4CE;border-bottom:1px solid #F0D77A"></div><div class="meta"><div class="name">warning-bg</div><div class="hex">#FFF4CE</div></div></div>
+    <div class="color-swatch"><div class="preview" style="background:#A4262C"></div><div class="meta"><div class="name">error-fg</div><div class="hex">#A4262C</div></div></div>
+    <div class="color-swatch"><div class="preview" style="background:#FDE7E9;border-bottom:1px solid #F0BABE"></div><div class="meta"><div class="name">error-bg</div><div class="hex">#FDE7E9</div></div></div>
+  </div>
+</section>
+
+<!-- ===== TYPOGRAPHY ===== -->
+<section>
+  <h2>Typography</h2>
+  <p class="section-intro">Segoe UI system font (Q6=a). Scale: 11/12/14/16/20/24/32. Weight 400/600.</p>
+
+  <div class="typo-row">
+    <span class="typo-label">--t-display</span>
+    <span class="typo-sample-display">Test Plans</span>
+    <span class="typo-meta">32px / 600</span>
+  </div>
+  <div class="typo-row">
+    <span class="typo-label">--t-h1</span>
+    <span class="typo-sample-h1">Plan section title</span>
+    <span class="typo-meta">24px / 600</span>
+  </div>
+  <div class="typo-row">
+    <span class="typo-label">--t-h2</span>
+    <span class="typo-sample-h2">Subsection heading</span>
+    <span class="typo-meta">20px / 600</span>
+  </div>
+  <div class="typo-row">
+    <span class="typo-label">--t-h3</span>
+    <span class="typo-sample-h3">Card or panel title</span>
+    <span class="typo-meta">16px / 600</span>
+  </div>
+  <div class="typo-row">
+    <span class="typo-label">--t-body</span>
+    <span class="typo-sample-body">Body text used for descriptions and main content.</span>
+    <span class="typo-meta">14px / 400</span>
+  </div>
+  <div class="typo-row">
+    <span class="typo-label">--t-small</span>
+    <span class="typo-sample-small">Helper, metadata, secondary labels</span>
+    <span class="typo-meta">12px / 400</span>
+  </div>
+  <div class="typo-row">
+    <span class="typo-label">--t-micro</span>
+    <span class="typo-sample-micro">OVERLINE / TAGS</span>
+    <span class="typo-meta">11px / 600</span>
+  </div>
+</section>
+
+<!-- ===== SPACING ===== -->
+<section>
+  <h2>Spacing scale</h2>
+  <p class="section-intro">4px-based scale. Use --s-2 (8px) and --s-4 (16px) most frequently.</p>
+
+  <div class="spacing-row"><span class="spacing-name">--s-1</span><div class="spacing-bar" style="width:4px"></div><span class="spacing-value">4px</span></div>
+  <div class="spacing-row"><span class="spacing-name">--s-2</span><div class="spacing-bar" style="width:8px"></div><span class="spacing-value">8px</span></div>
+  <div class="spacing-row"><span class="spacing-name">--s-3</span><div class="spacing-bar" style="width:12px"></div><span class="spacing-value">12px</span></div>
+  <div class="spacing-row"><span class="spacing-name">--s-4</span><div class="spacing-bar" style="width:16px"></div><span class="spacing-value">16px</span></div>
+  <div class="spacing-row"><span class="spacing-name">--s-5</span><div class="spacing-bar" style="width:20px"></div><span class="spacing-value">20px</span></div>
+  <div class="spacing-row"><span class="spacing-name">--s-6</span><div class="spacing-bar" style="width:24px"></div><span class="spacing-value">24px</span></div>
+  <div class="spacing-row"><span class="spacing-name">--s-7</span><div class="spacing-bar" style="width:32px"></div><span class="spacing-value">32px</span></div>
+  <div class="spacing-row"><span class="spacing-name">--s-8</span><div class="spacing-bar" style="width:48px"></div><span class="spacing-value">48px</span></div>
+</section>
+
+<!-- ===== BUTTONS ===== -->
+<section>
+  <h2>Buttons</h2>
+  <p class="section-intro">Height 32px (Fluent compact). 4 variants : primary, secondary, subtle, danger.</p>
+
+  <h3>Variants</h3>
+  <div class="btn-grid">
+    <button class="btn btn-primary">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5v13M1.5 8h13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      New Test Plan
+    </button>
+    <button class="btn btn-secondary">Import</button>
+    <button class="btn btn-subtle">Cancel</button>
+    <button class="btn btn-danger">Delete</button>
+  </div>
+
+  <h3>Icon-only</h3>
+  <div class="btn-grid">
+    <button class="btn btn-secondary btn-icon-only" title="Edit">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11.5 2.5l2 2-8 8H3.5v-2l8-8z"/></svg>
+    </button>
+    <button class="btn btn-secondary btn-icon-only" title="More">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><circle cx="3" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="13" cy="8" r="1.3"/></svg>
+    </button>
+    <button class="btn btn-subtle btn-icon-only" title="Filter">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h12l-4.5 5.5V14L6.5 12V8.5L2 3z"/></svg>
+    </button>
+  </div>
+</section>
+
+<!-- ===== BADGES ===== -->
+<section>
+  <h2>Status badges</h2>
+  <p class="section-intro">Pill-shaped, with optional dot indicator. Use 11px micro typography.</p>
+
+  <div class="badge-grid">
+    <span class="badge badge-success"><span class="badge-dot"></span>Passed</span>
+    <span class="badge badge-error"><span class="badge-dot"></span>Failed</span>
+    <span class="badge badge-warning"><span class="badge-dot"></span>Blocked</span>
+    <span class="badge badge-info"><span class="badge-dot"></span>In Progress</span>
+    <span class="badge badge-neutral"><span class="badge-dot"></span>Not Started</span>
+    <span class="badge badge-info">Draft</span>
+    <span class="badge badge-success">Active</span>
+    <span class="badge badge-neutral">Archived</span>
+  </div>
+</section>
+
+<!-- ===== INPUTS ===== -->
+<section>
+  <h2>Form inputs</h2>
+  <p class="section-intro">Standard Fluent UI heights with Argos blue focus state.</p>
+
+  <div class="input-stack">
+    <div class="input-field">
+      <label class="input-label">Plan name</label>
+      <input class="input" type="text" placeholder="e.g. Sprint 24 regression suite">
+      <span class="input-help">A short, descriptive title visible in lists and reports.</span>
+    </div>
+    <div class="input-field">
+      <label class="input-label">Description</label>
+      <textarea class="input" rows="3" placeholder="Optional context for this test plan..."></textarea>
+    </div>
+    <div class="input-field">
+      <label class="input-label">Owner</label>
+      <select class="input">
+        <option>Alexandre Thibaud</option>
+        <option>Choose a team member...</option>
+      </select>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CARDS ===== -->
+<section>
+  <h2>Cards</h2>
+  <p class="section-intro">Used for dashboard widgets and grouped content (Reports view, Settings sections).</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title">Sprint 24 Regression</div>
+      <div class="card-meta">42 test cases · Updated 2h ago</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span class="badge badge-success"><span class="badge-dot"></span>38 passed</span>
+        <span class="badge badge-error"><span class="badge-dot"></span>3 failed</span>
+        <span class="badge badge-neutral">1 skipped</span>
+      </div>
+      <div class="card-footer">
+        <span>Owner: A. Thibaud</span>
+        <span>v0.4.7</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Payment flow E2E</div>
+      <div class="card-meta">18 test cases · Updated yesterday</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span class="badge badge-success"><span class="badge-dot"></span>18 passed</span>
+      </div>
+      <div class="card-footer">
+        <span>Owner: J. Martin</span>
+        <span>100%</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Mobile UI smoke tests</div>
+      <div class="card-meta">12 test cases · Updated 4 days ago</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span class="badge badge-warning"><span class="badge-dot"></span>2 blocked</span>
+        <span class="badge badge-info"><span class="badge-dot"></span>10 in progress</span>
+      </div>
+      <div class="card-footer">
+        <span>Owner: M. Diallo</span>
+        <span>v0.4.6</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DARK MODE TOKENS (documented only, Q5=c) ===== -->
+<section>
+  <h2>Dark mode — palette documented</h2>
+  <p class="section-intro">Q5=c : light-only mockups, dark palette ready for future implementation aligned with ADO native dark theme.</p>
+
+  <div class="dark-preview">
+    <h4>Dark theme tokens (preview)</h4>
+    <div class="dark-token-row"><span>--argos-blue-primary (dark)</span><span class="dark-token-value" style="color:#4FC3F7">#4FC3F7</span></div>
+    <div class="dark-token-row"><span>--argos-blue-bg (dark)</span><span class="dark-token-value" style="color:#1A2D3F">#1A2D3F</span></div>
+    <div class="dark-token-row"><span>--bg-canvas</span><span class="dark-token-value" style="color:#1B1A19">#1B1A19</span></div>
+    <div class="dark-token-row"><span>--bg-surface</span><span class="dark-token-value" style="color:#252423">#252423</span></div>
+    <div class="dark-token-row"><span>--bg-elevated</span><span class="dark-token-value" style="color:#323130">#323130</span></div>
+    <div class="dark-token-row"><span>--text-primary</span><span class="dark-token-value" style="color:#F3F2F1">#F3F2F1</span></div>
+    <div class="dark-token-row"><span>--text-secondary</span><span class="dark-token-value" style="color:#A19F9D">#A19F9D</span></div>
+    <div class="dark-token-row"><span>--border-default</span><span class="dark-token-value" style="color:#605E5C">#605E5C</span></div>
+  </div>
+</section>
+
+<footer>
+  <p>Argos Design System v0.1 — <span class="footer-brand">AlexThibaud / ATConseil</span></p>
+  <p style="margin-top:4px">Mockup generated 2026-05-12 — Aligned on Fluent UI + Segoe UI for native ADO integration</p>
+</footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Argos — Test Plans (Mockup 1)</title>
+<style>
+:root {
+  --argos-blue-primary: #0C447C;
+  --argos-blue-hover: #0a3a6b;
+  --argos-blue-light: #1A6CB8;
+  --argos-blue-bg: #EEF4FA;
+  --argos-blue-border: #B8D1E8;
+  --neutral-0: #FFFFFF;
+  --neutral-1: #FAFAFA;
+  --neutral-2: #F3F2F1;
+  --neutral-3: #EDEBE9;
+  --neutral-4: #E1DFDD;
+  --neutral-5: #D2D0CE;
+  --neutral-6: #C8C6C4;
+  --neutral-7: #A19F9D;
+  --neutral-8: #605E5C;
+  --neutral-9: #323130;
+  --success-fg: #107C10;
+  --success-bg: #DFF6DD;
+  --warning-fg: #8A6D00;
+  --warning-bg: #FFF4CE;
+  --error-fg: #A4262C;
+  --error-bg: #FDE7E9;
+  --r-1: 2px;
+  --r-2: 4px;
+  --r-pill: 999px;
+  --shadow-2: 0 1.6px 3.6px rgba(0,0,0,0.13), 0 0.3px 0.9px rgba(0,0,0,0.11);
+  --shadow-4: 0 3.2px 7.2px rgba(0,0,0,0.13), 0 0.6px 1.8px rgba(0,0,0,0.11);
+  --shadow-16: 0 12.8px 28.8px rgba(0,0,0,0.13), 0 2.4px 7.2px rgba(0,0,0,0.11);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Segoe UI", -apple-system, sans-serif;
+  font-size: 14px;
+  color: var(--neutral-9);
+  background: var(--neutral-2);
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ===== SIMULATED ADO CHROME (just for context) ===== */
+.ado-chrome {
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--neutral-4);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--neutral-8);
+  height: 40px;
+}
+
+.ado-chrome .logo {
+  font-weight: 600;
+  color: #0078D4;
+}
+
+.ado-chrome .breadcrumb-sep {
+  color: var(--neutral-6);
+}
+
+.ado-chrome .crumb-active {
+  color: var(--neutral-9);
+  font-weight: 600;
+}
+
+/* ===== MAIN LAYOUT ===== */
+.app-container {
+  display: flex;
+  height: calc(100vh - 40px);
+}
+
+/* ===== ARGOS HUB SIDEBAR (vertical nav, like Test Plans sub-nav) ===== */
+.hub-sidebar {
+  width: 220px;
+  background: #FFFFFF;
+  border-right: 1px solid var(--neutral-4);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.hub-sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--neutral-3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hub-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.hub-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--neutral-9);
+}
+
+.hub-nav {
+  flex: 1;
+  padding: 8px 0;
+}
+
+.hub-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  font-size: 14px;
+  color: var(--neutral-9);
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: background 0.12s ease;
+}
+
+.hub-nav-item:hover { background: var(--neutral-2); }
+
+.hub-nav-item.active {
+  background: var(--neutral-2);
+  border-left-color: var(--argos-blue-primary);
+  font-weight: 600;
+}
+
+.hub-nav-item svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--neutral-8);
+}
+
+.hub-nav-item.active svg {
+  color: var(--argos-blue-primary);
+}
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--neutral-1);
+  overflow: hidden;
+}
+
+/* Header with title + primary actions */
+.content-header {
+  background: var(--neutral-0);
+  border-bottom: 1px solid var(--neutral-4);
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.content-title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.content-title h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--neutral-9);
+  letter-spacing: -0.02em;
+}
+
+.content-title .count {
+  font-size: 14px;
+  color: var(--neutral-8);
+  font-weight: normal;
+}
+
+.content-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Filter bar */
+.filter-bar {
+  background: var(--neutral-0);
+  border-bottom: 1px solid var(--neutral-4);
+  padding: 12px 24px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.filter-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  max-width: 320px;
+  background: var(--neutral-0);
+  border: 1px solid var(--neutral-5);
+  border-radius: var(--r-1);
+  padding: 4px 8px;
+  transition: border-color 0.12s ease;
+}
+
+.filter-search:focus-within {
+  border-color: var(--argos-blue-primary);
+  box-shadow: 0 0 0 1px var(--argos-blue-primary);
+}
+
+.filter-search svg {
+  color: var(--neutral-7);
+  flex-shrink: 0;
+}
+
+.filter-search input {
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 14px;
+  flex: 1;
+  background: transparent;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--neutral-5);
+  border-radius: var(--r-1);
+  background: var(--neutral-0);
+  font-size: 13px;
+  color: var(--neutral-9);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  height: 28px;
+}
+
+.filter-chip:hover {
+  border-color: var(--argos-blue-primary);
+  background: var(--argos-blue-bg);
+  color: var(--argos-blue-primary);
+}
+
+.filter-chip.active {
+  background: var(--argos-blue-bg);
+  border-color: var(--argos-blue-primary);
+  color: var(--argos-blue-primary);
+  font-weight: 600;
+}
+
+.filter-chip svg { width: 12px; height: 12px; }
+
+.filter-spacer { flex: 1; }
+
+.view-toggle {
+  display: flex;
+  border: 1px solid var(--neutral-5);
+  border-radius: var(--r-1);
+  overflow: hidden;
+}
+
+.view-toggle-btn {
+  background: var(--neutral-0);
+  border: none;
+  padding: 4px 10px;
+  cursor: pointer;
+  color: var(--neutral-8);
+  font-family: inherit;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+}
+
+.view-toggle-btn:hover { background: var(--neutral-2); }
+.view-toggle-btn.active {
+  background: var(--argos-blue-bg);
+  color: var(--argos-blue-primary);
+  font-weight: 600;
+}
+
+.view-toggle-btn svg { width: 14px; height: 14px; }
+
+/* ===== TABLE + DRAWER ===== */
+.content-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.table-wrapper {
+  flex: 1;
+  overflow: auto;
+  background: var(--neutral-0);
+}
+
+table.test-plans {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+table.test-plans thead {
+  background: var(--neutral-1);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+table.test-plans th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--neutral-8);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--neutral-4);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+table.test-plans th .sort-icon {
+  margin-left: 4px;
+  opacity: 0.5;
+}
+
+table.test-plans th.sortable { cursor: pointer; }
+table.test-plans th.sortable:hover { background: var(--neutral-2); color: var(--argos-blue-primary); }
+
+table.test-plans td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--neutral-3);
+  vertical-align: middle;
+}
+
+table.test-plans tbody tr {
+  cursor: pointer;
+  transition: background 0.08s ease;
+}
+
+table.test-plans tbody tr:hover {
+  background: var(--neutral-1);
+}
+
+table.test-plans tbody tr.selected {
+  background: var(--argos-blue-bg);
+}
+
+table.test-plans tbody tr.selected td:first-child {
+  box-shadow: inset 3px 0 0 var(--argos-blue-primary);
+}
+
+.cell-checkbox {
+  width: 32px;
+}
+
+.cell-id {
+  font-family: "Cascadia Code", "Consolas", monospace;
+  font-size: 12px;
+  color: var(--neutral-8);
+  width: 80px;
+}
+
+.cell-name {
+  font-weight: 600;
+  color: var(--neutral-9);
+}
+
+.cell-name .name-meta {
+  font-weight: normal;
+  font-size: 12px;
+  color: var(--neutral-8);
+  margin-top: 2px;
+}
+
+.cell-owner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--argos-blue-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.avatar.colored-1 { background: #6B5BFF; }
+.avatar.colored-2 { background: #00B294; }
+.avatar.colored-3 { background: #B05E00; }
+
+.cell-progress {
+  width: 160px;
+}
+
+.progress-bar {
+  background: var(--neutral-3);
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 4px;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--success-fg);
+  border-radius: 3px;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.progress-fill.warning { background: var(--warning-fg); }
+.progress-fill.error { background: var(--error-fg); }
+.progress-fill.argos { background: var(--argos-blue-primary); }
+
+.progress-label {
+  font-size: 11px;
+  color: var(--neutral-8);
+  font-family: "Cascadia Code", "Consolas", monospace;
+}
+
+.cell-date {
+  color: var(--neutral-8);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.cell-actions {
+  width: 60px;
+  text-align: right;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-1);
+  cursor: pointer;
+  color: var(--neutral-8);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s ease;
+}
+
+.icon-btn:hover {
+  background: var(--neutral-2);
+  color: var(--argos-blue-primary);
+}
+
+/* Badges (status) */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.badge-success { background: var(--success-bg); color: var(--success-fg); }
+.badge-success .badge-dot { background: var(--success-fg); }
+.badge-warning { background: var(--warning-bg); color: var(--warning-fg); }
+.badge-warning .badge-dot { background: var(--warning-fg); }
+.badge-error { background: var(--error-bg); color: var(--error-fg); }
+.badge-error .badge-dot { background: var(--error-fg); }
+.badge-info { background: var(--argos-blue-bg); color: var(--argos-blue-primary); }
+.badge-info .badge-dot { background: var(--argos-blue-primary); }
+.badge-neutral { background: var(--neutral-3); color: var(--neutral-8); }
+.badge-neutral .badge-dot { background: var(--neutral-7); }
+
+/* Tags inline */
+.tag {
+  display: inline-flex;
+  padding: 1px 6px;
+  background: var(--neutral-2);
+  color: var(--neutral-8);
+  border-radius: var(--r-1);
+  font-size: 11px;
+  margin-right: 4px;
+}
+
+/* Footer pagination */
+.table-footer {
+  background: var(--neutral-0);
+  border-top: 1px solid var(--neutral-4);
+  padding: 8px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  font-size: 13px;
+  color: var(--neutral-8);
+}
+
+.pagination {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.pagination button {
+  background: transparent;
+  border: 1px solid transparent;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--neutral-8);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.pagination button:hover { background: var(--neutral-2); }
+.pagination button.active {
+  background: var(--argos-blue-primary);
+  color: white;
+  border-color: var(--argos-blue-primary);
+}
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ===== DRAWER (right) ===== */
+.drawer {
+  width: 420px;
+  background: var(--neutral-0);
+  border-left: 1px solid var(--neutral-4);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: var(--shadow-4);
+}
+
+.drawer-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--neutral-3);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.drawer-title-block {
+  flex: 1;
+}
+
+.drawer-meta-top {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: var(--neutral-8);
+}
+
+.drawer-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--neutral-9);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+
+.drawer-description {
+  color: var(--neutral-8);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.drawer-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--neutral-8);
+  padding: 4px;
+  border-radius: var(--r-1);
+}
+
+.drawer-close:hover { background: var(--neutral-2); }
+
+.drawer-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--neutral-3);
+  padding: 0 20px;
+}
+
+.drawer-tab {
+  background: transparent;
+  border: none;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--neutral-8);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.12s ease;
+}
+
+.drawer-tab:hover { color: var(--argos-blue-primary); }
+
+.drawer-tab.active {
+  color: var(--argos-blue-primary);
+  border-bottom-color: var(--argos-blue-primary);
+  font-weight: 600;
+}
+
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+.drawer-section {
+  margin-bottom: 20px;
+}
+
+.drawer-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--neutral-8);
+  margin-bottom: 8px;
+}
+
+.drawer-prop {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 13px;
+  align-items: center;
+}
+
+.drawer-prop-label {
+  color: var(--neutral-8);
+}
+
+.drawer-prop-value {
+  color: var(--neutral-9);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.execution-summary {
+  background: var(--neutral-1);
+  border: 1px solid var(--neutral-4);
+  border-radius: var(--r-2);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.execution-summary-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.execution-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.exec-stat {
+  text-align: center;
+  padding: 8px;
+  border-radius: var(--r-2);
+}
+
+.exec-stat-value {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.exec-stat-label {
+  font-size: 11px;
+  color: var(--neutral-8);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+
+.exec-stat.passed { background: var(--success-bg); color: var(--success-fg); }
+.exec-stat.failed { background: var(--error-bg); color: var(--error-fg); }
+.exec-stat.blocked { background: var(--warning-bg); color: var(--warning-fg); }
+.exec-stat.skipped { background: var(--neutral-3); color: var(--neutral-8); }
+
+.drawer-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--neutral-3);
+  display: flex;
+  gap: 8px;
+  background: var(--neutral-1);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--r-1);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  border: 1px solid transparent;
+  height: 32px;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--argos-blue-primary);
+  color: white;
+  border-color: var(--argos-blue-primary);
+}
+.btn-primary:hover { background: var(--argos-blue-hover); }
+
+.btn-secondary {
+  background: var(--neutral-0);
+  color: var(--neutral-9);
+  border-color: var(--neutral-5);
+}
+.btn-secondary:hover {
+  background: var(--neutral-2);
+  border-color: var(--neutral-7);
+}
+
+.btn-subtle {
+  background: transparent;
+  color: var(--argos-blue-primary);
+}
+.btn-subtle:hover { background: var(--argos-blue-bg); }
+
+/* Cases list (in drawer) */
+.case-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: var(--r-2);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.08s ease;
+}
+
+.case-row:hover { background: var(--neutral-2); }
+
+.case-id {
+  font-family: "Cascadia Code", "Consolas", monospace;
+  font-size: 11px;
+  color: var(--neutral-7);
+  min-width: 50px;
+}
+
+.case-title {
+  flex: 1;
+  color: var(--neutral-9);
+}
+</style>
+</head>
+<body>
+
+<!-- Simulated ADO chrome -->
+<div class="ado-chrome">
+  <span class="logo">Azure DevOps</span>
+  <span class="breadcrumb-sep">/</span>
+  <span>BCEE-QA</span>
+  <span class="breadcrumb-sep">/</span>
+  <span>Demo</span>
+  <span class="breadcrumb-sep">/</span>
+  <span class="crumb-active">Argos · Test Plans</span>
+</div>
+
+<div class="app-container">
+
+  <!-- Argos hub sidebar (replicates ADO native sub-navigation) -->
+  <aside class="hub-sidebar">
+    <div class="hub-sidebar-header">
+      <!-- Argos shield-eye icon -->
+      <svg class="hub-icon" viewBox="0 0 24 24" fill="none" stroke="#0C447C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-12V5l-8-3-8 3v5c0 8 8 12 8 12z"/>
+        <circle cx="12" cy="11" r="3.5"/>
+        <circle cx="12" cy="11" r="1.5" fill="#0C447C" stroke="none"/>
+      </svg>
+      <div class="hub-title">Argos</div>
+    </div>
+    <nav class="hub-nav">
+      <a class="hub-nav-item active">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h12M2 12h12"/><circle cx="2" cy="4" r="0.5" fill="currentColor"/><circle cx="2" cy="8" r="0.5" fill="currentColor"/><circle cx="2" cy="12" r="0.5" fill="currentColor"/></svg>
+        Test Plans
+      </a>
+      <a class="hub-nav-item">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2l-1 3h6L10 2M5 5h6M5 5l-1 2h8l-1-2M4 7l-1 7h10l-1-7"/></svg>
+        Test Cases
+      </a>
+      <a class="hub-nav-item">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4a1 1 0 0 1 1-1h3l2 2h6a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4z"/></svg>
+        Test Sets
+      </a>
+      <a class="hub-nav-item">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2 L14 13 L2 13 Z"/><line x1="8" y1="6" x2="8" y2="10"/><circle cx="8" cy="11.5" r="0.5" fill="currentColor"/></svg>
+        Preconditions
+      </a>
+      <a class="hub-nav-item">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="3" y1="13" x2="3" y2="9"/><line x1="7" y1="13" x2="7" y2="5"/><line x1="11" y1="13" x2="11" y2="7"/><line x1="2" y1="14" x2="14" y2="14"/></svg>
+        Reports
+      </a>
+      <a class="hub-nav-item">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2"/><path d="M8 1.5v2M8 12.5v2M14.5 8h-2M3.5 8h-2M12.5 3.5l-1.5 1.5M5 11l-1.5 1.5M12.5 12.5l-1.5-1.5M5 5L3.5 3.5"/></svg>
+        Settings
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main content -->
+  <div class="main-content">
+
+    <!-- Header -->
+    <header class="content-header">
+      <div class="content-title">
+        <h1>Test Plans</h1>
+        <span class="count">12 plans · 287 cases</span>
+      </div>
+      <div class="content-actions">
+        <button class="btn btn-secondary">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 11V3M4 7l4 4 4-4M2 13h12"/></svg>
+          Import
+        </button>
+        <button class="btn btn-primary">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5v13M1.5 8h13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          New Test Plan
+        </button>
+      </div>
+    </header>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <div class="filter-search">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4.5"/><line x1="10.5" y1="10.5" x2="13.5" y2="13.5"/></svg>
+        <input type="text" placeholder="Search test plans...">
+      </div>
+
+      <button class="filter-chip active">
+        Status: Active
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+      </button>
+
+      <button class="filter-chip">
+        Owner: All
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+      </button>
+
+      <button class="filter-chip">
+        Tags
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+      </button>
+
+      <button class="filter-chip">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h12l-4.5 5.5V14L6.5 12V8.5L2 3z"/></svg>
+        Add filter
+      </button>
+
+      <div class="filter-spacer"></div>
+
+      <div class="view-toggle">
+        <button class="view-toggle-btn active">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
+          List
+        </button>
+        <button class="view-toggle-btn">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="5" height="5"/><rect x="9" y="2" width="5" height="5"/><rect x="2" y="9" width="5" height="5"/><rect x="9" y="9" width="5" height="5"/></svg>
+          Grid
+        </button>
+      </div>
+    </div>
+
+    <!-- Body : table + drawer -->
+    <div class="content-body">
+
+      <!-- Table -->
+      <div class="table-wrapper">
+        <table class="test-plans">
+          <thead>
+            <tr>
+              <th class="cell-checkbox"><input type="checkbox"></th>
+              <th class="cell-id">ID</th>
+              <th class="sortable">Name <span class="sort-icon">▲</span></th>
+              <th>Status</th>
+              <th>Cases</th>
+              <th>Progress</th>
+              <th>Owner</th>
+              <th>Updated</th>
+              <th class="cell-actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="selected">
+              <td class="cell-checkbox"><input type="checkbox" checked></td>
+              <td class="cell-id">TP-024</td>
+              <td class="cell-name">
+                Sprint 24 — Regression suite
+                <div class="name-meta">
+                  <span class="tag">regression</span>
+                  <span class="tag">sprint-24</span>
+                  <span class="tag">priority-high</span>
+                </div>
+              </td>
+              <td><span class="badge badge-info"><span class="badge-dot"></span>In Progress</span></td>
+              <td>42</td>
+              <td class="cell-progress">
+                <div class="progress-bar">
+                  <div class="progress-fill argos" style="width:90%"></div>
+                </div>
+                <span class="progress-label">38/42 (90%)</span>
+              </td>
+              <td><div class="cell-owner"><span class="avatar">AT</span>A. Thibaud</div></td>
+              <td class="cell-date">2h ago</td>
+              <td class="cell-actions">
+                <button class="icon-btn" title="More">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><circle cx="3" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="13" cy="8" r="1.3"/></svg>
+                </button>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="cell-checkbox"><input type="checkbox"></td>
+              <td class="cell-id">TP-023</td>
+              <td class="cell-name">
+                Payment flow — E2E
+                <div class="name-meta">
+                  <span class="tag">e2e</span>
+                  <span class="tag">payment</span>
+                </div>
+              </td>
+              <td><span class="badge badge-success"><span class="badge-dot"></span>Passed</span></td>
+              <td>18</td>
+              <td class="cell-progress">
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width:100%"></div>
+                </div>
+                <span class="progress-label">18/18 (100%)</span>
+              </td>
+              <td><div class="cell-owner"><span class="avatar colored-1">JM</span>J. Martin</div></td>
+              <td class="cell-date">Yesterday</td>
+              <td class="cell-actions">
+                <button class="icon-btn"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><circle cx="3" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="13" cy="8" r="1.3"/></svg></button>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="cell-checkbox"><input type="checkbox"></td>
+              <td class="cell-id">TP-022</td>
+              <td class="cell-name">
+                Mobile UI — smoke tests
+                <div class="name-meta">
+                  <span class="tag">smoke</span>
+                  <span class="tag">mobile</span>
+                </div>
+              </td>
+              <td><span class="badge badge-warning"><span class="badge-dot"></span>Blocked</span></td>
+              <td>12</td>
+              <td class="cell-progress">
+                <div class="progress-bar">
+                  <div class="progress-fill warning" style="width:35%"></div>
+                </div>
+                <span class="progress-label">4/12 — 2 blocked</span>
+              </td>
+              <td><div class="cell-owner"><span class="avatar colored-2">MD</span>M. Diallo</div></td>
+              <td class="cell-date">4 days ago</td>
+              <td class="cell-actions">
+                <button class="icon-btn"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><circle cx="3" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="13" cy="8" r="1.3"/></svg></button>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="cell-checkbox"><input type="checkbox"></td>
+              <td class="cell-id">TP-021</td>
+              <td class="cell-name">
+                Auth SSO — Microsoft Entra
+                <div class="name-meta">
+                  <span class="tag">auth</span>
+                  <span class="tag">sso</span>
+                </div>
+              </td>
+              <td><span class="badge badge-error"><span class="badge-dot"></span>Failed</span></td>
+              <td>8</td>
+              <td class="cell-progress">
+                <div class="progress-bar">
+                  <div class="progress-fill error" style="width:62%"></div>
+                </div>
+                <span class="progress-label">5/8 — 3 failed</span>
+              </td>
+              <td><div class="cell-owner"><span class="avatar colored-3">PB</span>P. Bernard</div></td>
+              <td class="cell-date">1 week ago</td>
+              <td class="cell-actions">
+                <button class="icon-btn"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><circle cx="3" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="13" cy="8" r="1.3"/></svg></button>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="cell-checkbox"><input type="checkbox"></td>
+              <td class="cell-id">TP-020</td>
+              <td class="cell-name">
+                API — REST endpoints v2
+                <div class="name-meta">
+                  <span class="tag">api</span>
+                  <span class="tag">v2</span>
+                </div>
+              </td>
+              <td><span class="badge badge-neutral"><span class="badge-dot"></span>Draft</span></td>
+              <td>24</td>
+              <td class="cell-progress">
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width:0%"></div>
+                </div>
+                <span class="progress-label">Not started</span>
+              </td>
+              <td><div class="cell-owner"><span class="avatar">AT</span>A. Thibaud</div></td>
+              <td class="cell-date">2 weeks ago</td>
+              <td class="cell-actions">
+                <button class="icon-btn"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><circle cx="3" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="13" cy="8" r="1.3"/></svg></button>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="cell-checkbox"><input type="checkbox"></td>
+              <td class="cell-id">TP-019</td>
+              <td class="cell-name">
+                Accessibility — WCAG 2.2 AA
+                <div class="name-meta">
+                  <span class="tag">a11y</span>
+                  <span class="tag">compliance</span>
+                </div>
+              </td>
+              <td><span class="badge badge-success"><span class="badge-dot"></span>Passed</span></td>
+              <td>34</td>
+              <td class="cell-progress">
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width:97%"></div>
+                </div>
+                <span class="progress-label">33/34 (97%)</span>
+              </td>
+              <td><div class="cell-owner"><span class="avatar colored-2">MD</span>M. Diallo</div></td>
+              <td class="cell-date">3 weeks ago</td>
+              <td class="cell-actions">
+                <button class="icon-btn"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><circle cx="3" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="13" cy="8" r="1.3"/></svg></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Drawer (right panel, details of selected) -->
+      <aside class="drawer">
+        <div class="drawer-header">
+          <div class="drawer-title-block">
+            <div class="drawer-meta-top">
+              <span style="font-family:'Cascadia Code',monospace">TP-024</span>
+              <span>·</span>
+              <span class="badge badge-info" style="font-size:10px;padding:1px 6px"><span class="badge-dot"></span>In Progress</span>
+            </div>
+            <div class="drawer-title">Sprint 24 — Regression suite</div>
+            <div class="drawer-description">Comprehensive regression suite covering core user flows, payment, authentication and notifications for the Sprint 24 release.</div>
+          </div>
+          <button class="drawer-close">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2l12 12M14 2L2 14"/></svg>
+          </button>
+        </div>
+
+        <div class="drawer-tabs">
+          <button class="drawer-tab active">Overview</button>
+          <button class="drawer-tab">Cases (42)</button>
+          <button class="drawer-tab">Executions</button>
+          <button class="drawer-tab">Activity</button>
+        </div>
+
+        <div class="drawer-body">
+
+          <!-- Execution summary -->
+          <div class="execution-summary">
+            <div class="execution-summary-title">
+              <span>Last execution</span>
+              <span style="font-weight:normal;color:var(--neutral-8)">2h ago</span>
+            </div>
+            <div class="execution-stats">
+              <div class="exec-stat passed">
+                <div class="exec-stat-value">38</div>
+                <div class="exec-stat-label">Passed</div>
+              </div>
+              <div class="exec-stat failed">
+                <div class="exec-stat-value">3</div>
+                <div class="exec-stat-label">Failed</div>
+              </div>
+              <div class="exec-stat blocked">
+                <div class="exec-stat-value">0</div>
+                <div class="exec-stat-label">Blocked</div>
+              </div>
+              <div class="exec-stat skipped">
+                <div class="exec-stat-value">1</div>
+                <div class="exec-stat-label">Skipped</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Properties -->
+          <div class="drawer-section">
+            <div class="drawer-section-title">Properties</div>
+            <div class="drawer-prop">
+              <span class="drawer-prop-label">Owner</span>
+              <span class="drawer-prop-value"><span class="avatar" style="width:20px;height:20px;font-size:10px">AT</span>Alexandre Thibaud</span>
+            </div>
+            <div class="drawer-prop">
+              <span class="drawer-prop-label">Iteration</span>
+              <span class="drawer-prop-value">BCEE-QA\Sprint 24</span>
+            </div>
+            <div class="drawer-prop">
+              <span class="drawer-prop-label">Area</span>
+              <span class="drawer-prop-value">Demo\Frontend\Payment</span>
+            </div>
+            <div class="drawer-prop">
+              <span class="drawer-prop-label">Created</span>
+              <span class="drawer-prop-value">2026-04-28</span>
+            </div>
+            <div class="drawer-prop">
+              <span class="drawer-prop-label">Last execution</span>
+              <span class="drawer-prop-value">2026-05-12, 15:22</span>
+            </div>
+          </div>
+
+          <!-- Recent cases -->
+          <div class="drawer-section">
+            <div class="drawer-section-title">Recent failures</div>
+            <div class="case-row">
+              <span class="case-id">TC-1247</span>
+              <span class="case-title">Checkout — apply discount code edge case</span>
+              <span class="badge badge-error"><span class="badge-dot"></span>Failed</span>
+            </div>
+            <div class="case-row">
+              <span class="case-id">TC-1183</span>
+              <span class="case-title">Login — password reset email delivery</span>
+              <span class="badge badge-error"><span class="badge-dot"></span>Failed</span>
+            </div>
+            <div class="case-row">
+              <span class="case-id">TC-1098</span>
+              <span class="case-title">User profile — avatar upload over 5MB</span>
+              <span class="badge badge-error"><span class="badge-dot"></span>Failed</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="drawer-footer">
+          <button class="btn btn-primary" style="flex:1">Run plan</button>
+          <button class="btn btn-secondary">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11.5 2.5l2 2-8 8H3.5v-2l8-8z"/></svg>
+            Edit
+          </button>
+        </div>
+
+      </aside>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="table-footer">
+      <span>1—6 of 12</span>
+      <div class="pagination">
+        <button disabled>‹</button>
+        <button class="active">1</button>
+        <button>2</button>
+        <button>›</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

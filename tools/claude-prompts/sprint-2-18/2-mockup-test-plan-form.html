@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Argos — New Test Plan (Mockup 2)</title>
+<style>
+:root {
+  --argos-blue-primary: #0C447C;
+  --argos-blue-hover: #0a3a6b;
+  --argos-blue-light: #1A6CB8;
+  --argos-blue-bg: #EEF4FA;
+  --argos-blue-border: #B8D1E8;
+  --neutral-0: #FFFFFF;
+  --neutral-1: #FAFAFA;
+  --neutral-2: #F3F2F1;
+  --neutral-3: #EDEBE9;
+  --neutral-4: #E1DFDD;
+  --neutral-5: #D2D0CE;
+  --neutral-6: #C8C6C4;
+  --neutral-7: #A19F9D;
+  --neutral-8: #605E5C;
+  --neutral-9: #323130;
+  --success-fg: #107C10;
+  --success-bg: #DFF6DD;
+  --warning-fg: #8A6D00;
+  --warning-bg: #FFF4CE;
+  --error-fg: #A4262C;
+  --error-bg: #FDE7E9;
+  --r-1: 2px;
+  --r-2: 4px;
+  --r-3: 8px;
+  --r-pill: 999px;
+  --shadow-2: 0 1.6px 3.6px rgba(0,0,0,0.13), 0 0.3px 0.9px rgba(0,0,0,0.11);
+  --shadow-4: 0 3.2px 7.2px rgba(0,0,0,0.13), 0 0.6px 1.8px rgba(0,0,0,0.11);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Segoe UI", -apple-system, sans-serif;
+  font-size: 14px;
+  color: var(--neutral-9);
+  background: var(--neutral-2);
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ===== SIMULATED ADO CHROME ===== */
+.ado-chrome {
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--neutral-4);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--neutral-8);
+  height: 40px;
+}
+
+.ado-chrome .logo { font-weight: 600; color: #0078D4; }
+.ado-chrome .breadcrumb-sep { color: var(--neutral-6); }
+.ado-chrome .crumb-active { color: var(--neutral-9); font-weight: 600; }
+.ado-chrome a {
+  color: var(--argos-blue-primary);
+  text-decoration: none;
+  cursor: pointer;
+}
+.ado-chrome a:hover { text-decoration: underline; }
+
+/* ===== MAIN LAYOUT ===== */
+.app-container {
+  display: flex;
+  height: calc(100vh - 40px);
+}
+
+/* ===== ARGOS HUB SIDEBAR ===== */
+.hub-sidebar {
+  width: 220px;
+  background: #FFFFFF;
+  border-right: 1px solid var(--neutral-4);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.hub-sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--neutral-3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hub-icon { width: 24px; height: 24px; flex-shrink: 0; }
+.hub-title { font-size: 16px; font-weight: 600; color: var(--neutral-9); }
+
+.hub-nav { flex: 1; padding: 8px 0; }
+
+.hub-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  font-size: 14px;
+  color: var(--neutral-9);
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: background 0.12s ease;
+}
+
+.hub-nav-item:hover { background: var(--neutral-2); }
+
+.hub-nav-item.active {
+  background: var(--neutral-2);
+  border-left-color: var(--argos-blue-primary);
+  font-weight: 600;
+}
+
+.hub-nav-item svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--neutral-8);
+}
+
+.hub-nav-item.active svg { color: var(--argos-blue-primary); }
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--neutral-1);
+  overflow: hidden;
+}
+
+/* Header with breadcrumb-back + title */
+.content-header {
+  background: var(--neutral-0);
+  border-bottom: 1px solid var(--neutral-4);
+  padding: 20px 40px 16px;
+  flex-shrink: 0;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--argos-blue-primary);
+  text-decoration: none;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+.back-link:hover { text-decoration: underline; }
+
+.content-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.content-header h1 {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--neutral-9);
+  letter-spacing: -0.02em;
+}
+
+.draft-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  background: var(--neutral-3);
+  color: var(--neutral-8);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--r-pill);
+}
+
+.content-header .subtitle {
+  font-size: 14px;
+  color: var(--neutral-8);
+}
+
+/* ===== BODY : 2 columns ===== */
+.content-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.form-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 40px 120px;
+}
+
+.form-inner {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* ===== SECTIONS (Notion-style aéré) ===== */
+.form-section {
+  background: var(--neutral-0);
+  border: 1px solid var(--neutral-4);
+  border-radius: var(--r-3);
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: box-shadow 0.15s ease;
+}
+
+.form-section:hover {
+  box-shadow: var(--shadow-2);
+}
+
+.form-section.expanded {
+  box-shadow: var(--shadow-2);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 24px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s ease;
+}
+
+.section-header:hover {
+  background: var(--neutral-1);
+}
+
+.section-icon-wrapper {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-2);
+  background: var(--argos-blue-bg);
+  color: var(--argos-blue-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.section-icon-wrapper svg { width: 18px; height: 18px; }
+
+.section-title-block {
+  flex: 1;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--neutral-9);
+}
+
+.section-subtitle {
+  font-size: 13px;
+  color: var(--neutral-8);
+  margin-top: 2px;
+}
+
+.section-status {
+  font-size: 12px;
+  color: var(--neutral-8);
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.section-status.completed {
+  color: var(--success-fg);
+}
+
+.section-status svg {
+  width: 14px;
+  height: 14px;
+}
+
+.section-chevron {
+  color: var(--neutral-7);
+  transition: transform 0.2s ease;
+}
+
+.form-section.expanded .section-chevron {
+  transform: rotate(180deg);
+}
+
+.section-body {
+  padding: 0 24px 24px;
+  border-top: 1px solid var(--neutral-3);
+  padding-top: 20px;
+  display: none;
+}
+
+.form-section.expanded .section-body {
+  display: block;
+}
+
+/* ===== FORM FIELDS ===== */
+.field {
+  margin-bottom: 20px;
+}
+
+.field:last-child { margin-bottom: 0; }
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.field-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--neutral-9);
+  margin-bottom: 6px;
+}
+
+.field-label .required { color: var(--error-fg); margin-left: 2px; }
+.field-label .optional {
+  font-size: 11px;
+  font-weight: normal;
+  color: var(--neutral-7);
+  margin-left: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.field-help {
+  font-size: 12px;
+  color: var(--neutral-8);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid var(--neutral-5);
+  border-radius: var(--r-2);
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 14px;
+  background: var(--neutral-0);
+  color: var(--neutral-9);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.input:hover { border-color: var(--neutral-7); }
+
+.input:focus {
+  outline: none;
+  border-color: var(--argos-blue-primary);
+  box-shadow: 0 0 0 1px var(--argos-blue-primary);
+}
+
+.input.large {
+  font-size: 18px;
+  font-weight: 600;
+  padding: 12px 16px;
+}
+
+textarea.input {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.5;
+}
+
+select.input {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='none' stroke='%23605E5C' stroke-width='1.5'%3e%3cpath d='M4 6l4 4 4-4'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 32px;
+  appearance: none;
+}
+
+/* ===== TAGS INPUT ===== */
+.tags-input {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid var(--neutral-5);
+  border-radius: var(--r-2);
+  background: var(--neutral-0);
+  min-height: 38px;
+  align-items: center;
+}
+
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: var(--argos-blue-bg);
+  color: var(--argos-blue-primary);
+  border-radius: var(--r-pill);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tag-pill .remove {
+  cursor: pointer;
+  opacity: 0.6;
+  display: flex;
+  align-items: center;
+}
+
+.tag-pill .remove:hover { opacity: 1; }
+
+.tag-input-inner {
+  border: none;
+  outline: none;
+  flex: 1;
+  min-width: 120px;
+  font-family: inherit;
+  font-size: 13px;
+  background: transparent;
+}
+
+/* ===== TEST CASES PICKER ===== */
+.cases-picker {
+  border: 1px solid var(--neutral-4);
+  border-radius: var(--r-2);
+  background: var(--neutral-1);
+  padding: 16px;
+}
+
+.cases-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.cases-picker-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--neutral-9);
+}
+
+.cases-picker-count {
+  font-size: 12px;
+  color: var(--neutral-8);
+  background: var(--neutral-3);
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+}
+
+.case-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  background: var(--neutral-0);
+  border: 1px solid var(--neutral-3);
+  border-radius: var(--r-2);
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.case-item:last-child { margin-bottom: 12px; }
+
+.case-handle {
+  color: var(--neutral-6);
+  cursor: grab;
+}
+
+.case-handle:hover { color: var(--neutral-8); }
+
+.case-item-id {
+  font-family: "Cascadia Code", "Consolas", monospace;
+  font-size: 11px;
+  color: var(--neutral-7);
+  min-width: 56px;
+}
+
+.case-item-title {
+  flex: 1;
+  color: var(--neutral-9);
+}
+
+.case-item-meta {
+  font-size: 11px;
+  color: var(--neutral-8);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.case-item-remove {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--neutral-7);
+  padding: 4px;
+  border-radius: var(--r-1);
+}
+
+.case-item-remove:hover {
+  background: var(--error-bg);
+  color: var(--error-fg);
+}
+
+.cases-add-row {
+  display: flex;
+  gap: 8px;
+}
+
+/* ===== CHECKBOX GROUP ===== */
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--neutral-3);
+  border-radius: var(--r-2);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.checkbox-row:hover {
+  background: var(--neutral-1);
+  border-color: var(--neutral-5);
+}
+
+.checkbox-row.checked {
+  background: var(--argos-blue-bg);
+  border-color: var(--argos-blue-border);
+}
+
+.checkbox-row input[type="checkbox"] {
+  margin-top: 2px;
+  accent-color: var(--argos-blue-primary);
+}
+
+.checkbox-content {
+  flex: 1;
+}
+
+.checkbox-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--neutral-9);
+}
+
+.checkbox-help {
+  font-size: 12px;
+  color: var(--neutral-8);
+  margin-top: 2px;
+}
+
+/* ===== USERS PICKER (Permissions) ===== */
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-bottom: 1px solid var(--neutral-3);
+}
+
+.user-row:last-of-type { border-bottom: none; }
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--argos-blue-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.user-avatar.c1 { background: #6B5BFF; }
+.user-avatar.c2 { background: #00B294; }
+.user-avatar.c3 { background: #B05E00; }
+
+.user-info { flex: 1; }
+.user-name { font-size: 14px; font-weight: 600; color: var(--neutral-9); }
+.user-email { font-size: 12px; color: var(--neutral-8); }
+
+.role-select {
+  width: 140px;
+}
+
+/* ===== SAVE BAR (sticky bottom) ===== */
+.save-bar {
+  background: var(--neutral-0);
+  border-top: 1px solid var(--neutral-4);
+  padding: 12px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
+}
+
+.save-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--neutral-8);
+}
+
+.save-status svg {
+  width: 14px;
+  height: 14px;
+  color: var(--neutral-7);
+}
+
+.save-actions { display: flex; gap: 8px; }
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--r-2);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  border: 1px solid transparent;
+  height: 36px;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--argos-blue-primary);
+  color: white;
+  border-color: var(--argos-blue-primary);
+}
+
+.btn-primary:hover { background: var(--argos-blue-hover); }
+
+.btn-secondary {
+  background: var(--neutral-0);
+  color: var(--neutral-9);
+  border-color: var(--neutral-5);
+}
+
+.btn-secondary:hover {
+  background: var(--neutral-2);
+  border-color: var(--neutral-7);
+}
+
+.btn-subtle {
+  background: transparent;
+  color: var(--argos-blue-primary);
+}
+
+.btn-subtle:hover { background: var(--argos-blue-bg); }
+
+.btn-small {
+  height: 28px;
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+/* ===== PROPERTIES SIDEBAR ===== */
+.properties-sidebar {
+  width: 320px;
+  background: var(--neutral-0);
+  border-left: 1px solid var(--neutral-4);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.properties-header {
+  padding: 20px 20px 12px;
+  border-bottom: 1px solid var(--neutral-3);
+}
+
+.properties-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--neutral-8);
+}
+
+.properties-section {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--neutral-3);
+}
+
+.properties-section:last-child { border-bottom: none; }
+
+.prop-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--neutral-8);
+  margin-bottom: 12px;
+}
+
+.prop-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.prop-row:last-child { margin-bottom: 0; }
+
+.prop-label {
+  font-size: 11px;
+  color: var(--neutral-8);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.prop-value {
+  font-size: 13px;
+  color: var(--neutral-9);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.prop-value .avatar-mini {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--argos-blue-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.prop-value-mono {
+  font-family: "Cascadia Code", "Consolas", monospace;
+  font-size: 12px;
+}
+
+.prop-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 13px;
+  border-bottom: 1px dashed var(--neutral-3);
+}
+
+.prop-stat:last-child { border-bottom: none; }
+
+.prop-stat-value {
+  font-weight: 600;
+  color: var(--neutral-9);
+  font-family: "Cascadia Code", "Consolas", monospace;
+}
+
+/* ===== DATE INPUT special ===== */
+.date-input-wrapper {
+  position: relative;
+}
+
+.date-input-wrapper svg.date-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--neutral-7);
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<!-- Simulated ADO chrome -->
+<div class="ado-chrome">
+  <span class="logo">Azure DevOps</span>
+  <span class="breadcrumb-sep">/</span>
+  <span>BCEE-QA</span>
+  <span class="breadcrumb-sep">/</span>
+  <span>Demo</span>
+  <span class="breadcrumb-sep">/</span>
+  <a>Argos · Test Plans</a>
+  <span class="breadcrumb-sep">/</span>
+  <span class="crumb-active">New Test Plan</span>
+</div>
+
+<div class="app-container">
+
+  <!-- Argos hub sidebar -->
+  <aside class="hub-sidebar">
+    <div class="hub-sidebar-header">
+      <svg class="hub-icon" viewBox="0 0 24 24" fill="none" stroke="#0C447C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-12V5l-8-3-8 3v5c0 8 8 12 8 12z"/>
+        <circle cx="12" cy="11" r="3.5"/>
+        <circle cx="12" cy="11" r="1.5" fill="#0C447C" stroke="none"/>
+      </svg>
+      <div class="hub-title">Argos</div>
+    </div>
+    <nav class="hub-nav">
+      <a class="hub-nav-item active">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h12M2 12h12"/><circle cx="2" cy="4" r="0.5" fill="currentColor"/><circle cx="2" cy="8" r="0.5" fill="currentColor"/><circle cx="2" cy="12" r="0.5" fill="currentColor"/></svg>
+        Test Plans
+      </a>
+      <a class="hub-nav-item">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2l-1 3h6L10 2M5 5h6M5 5l-1 2h8l-1-2M4 7l-1 7h10l-1-7"/></svg>
+        Test Cases
+      </a>
+      <a class="hub-nav-item">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4a1 1 0 0 1 1-1h3l2 2h6a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4z"/></svg>
+        Test Sets
+      </a>
+      <a class="hub-nav-item">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2 L14 13 L2 13 Z"/><line x1="8" y1="6" x2="8" y2="10"/><circle cx="8" cy="11.5" r="0.5" fill="currentColor"/></svg>
+        Preconditions
+      </a>
+      <a class="hub-nav-item">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="3" y1="13" x2="3" y2="9"/><line x1="7" y1="13" x2="7" y2="5"/><line x1="11" y1="13" x2="11" y2="7"/><line x1="2" y1="14" x2="14" y2="14"/></svg>
+        Reports
+      </a>
+      <a class="hub-nav-item">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2"/><path d="M8 1.5v2M8 12.5v2M14.5 8h-2M3.5 8h-2M12.5 3.5l-1.5 1.5M5 11l-1.5 1.5M12.5 12.5l-1.5-1.5M5 5L3.5 3.5"/></svg>
+        Settings
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main content -->
+  <div class="main-content">
+
+    <!-- Header -->
+    <header class="content-header">
+      <a class="back-link">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 4l-4 4 4 4"/></svg>
+        Back to Test Plans
+      </a>
+      <div class="content-title-row">
+        <h1>New Test Plan</h1>
+        <span class="draft-badge">
+          <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="3"/></svg>
+          Draft
+        </span>
+      </div>
+      <div class="subtitle">Configure scope, schedule, notifications and permissions.</div>
+    </header>
+
+    <!-- Body : form + sidebar -->
+    <div class="content-body">
+
+      <!-- Form area -->
+      <div class="form-area">
+        <div class="form-inner">
+
+          <!-- ===== Section 1 : General info (expanded by default) ===== -->
+          <div class="form-section expanded">
+            <div class="section-header">
+              <div class="section-icon-wrapper">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><line x1="8" y1="6" x2="8" y2="10"/><circle cx="8" cy="4" r="0.5" fill="currentColor"/></svg>
+              </div>
+              <div class="section-title-block">
+                <div class="section-title">General information</div>
+                <div class="section-subtitle">Name, description and tags for your test plan</div>
+              </div>
+              <span class="section-status completed">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l3 3 7-7"/></svg>
+                Complete
+              </span>
+              <svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+            </div>
+            <div class="section-body">
+              <div class="field">
+                <label class="field-label">Plan name <span class="required">*</span></label>
+                <input class="input large" type="text" value="Sprint 25 — Regression suite">
+                <div class="field-help">A short, descriptive title visible in lists and reports.</div>
+              </div>
+
+              <div class="field">
+                <label class="field-label">Description <span class="optional">Optional</span></label>
+                <textarea class="input" rows="3">Comprehensive regression suite covering core user flows, payment, authentication and notifications for the Sprint 25 release. Inherits cases from TP-024.</textarea>
+              </div>
+
+              <div class="field">
+                <label class="field-label">Tags <span class="optional">Optional</span></label>
+                <div class="tags-input">
+                  <span class="tag-pill">regression <span class="remove"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l10 10M13 3L3 13"/></svg></span></span>
+                  <span class="tag-pill">sprint-25 <span class="remove"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l10 10M13 3L3 13"/></svg></span></span>
+                  <span class="tag-pill">priority-high <span class="remove"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l10 10M13 3L3 13"/></svg></span></span>
+                  <input class="tag-input-inner" type="text" placeholder="Add tag...">
+                </div>
+                <div class="field-help">Press Enter to add. Tags help filter and group plans in reports.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== Section 2 : Test scope (expanded) ===== -->
+          <div class="form-section expanded">
+            <div class="section-header">
+              <div class="section-icon-wrapper">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4a1 1 0 0 1 1-1h3l2 2h6a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4z"/></svg>
+              </div>
+              <div class="section-title-block">
+                <div class="section-title">Test scope</div>
+                <div class="section-subtitle">Select cases and sets included in this plan</div>
+              </div>
+              <span class="section-status">3 cases · 1 set</span>
+              <svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+            </div>
+            <div class="section-body">
+
+              <div class="field">
+                <label class="field-label">Area path</label>
+                <select class="input">
+                  <option>Demo\Frontend\Payment</option>
+                  <option>Demo\Frontend</option>
+                  <option>Demo\Backend\API</option>
+                </select>
+                <div class="field-help">Auto-include cases under this area path matching the iteration.</div>
+              </div>
+
+              <div class="field">
+                <label class="field-label">Iteration</label>
+                <select class="input">
+                  <option>BCEE-QA\Sprint 25</option>
+                  <option>BCEE-QA\Sprint 24</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label class="field-label">Linked test cases <span class="optional">Drag to reorder</span></label>
+                <div class="cases-picker">
+                  <div class="cases-picker-header">
+                    <span class="cases-picker-title">Cases included in this plan</span>
+                    <span class="cases-picker-count">3 cases</span>
+                  </div>
+
+                  <div class="case-item">
+                    <span class="case-handle">
+                      <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor"><circle cx="2" cy="3" r="1.2"/><circle cx="2" cy="7" r="1.2"/><circle cx="2" cy="11" r="1.2"/><circle cx="8" cy="3" r="1.2"/><circle cx="8" cy="7" r="1.2"/><circle cx="8" cy="11" r="1.2"/></svg>
+                    </span>
+                    <span class="case-item-id">TC-1247</span>
+                    <span class="case-item-title">Checkout — apply discount code edge case</span>
+                    <span class="case-item-meta">Priority 1</span>
+                    <button class="case-item-remove">
+                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3l10 10M13 3L3 13"/></svg>
+                    </button>
+                  </div>
+
+                  <div class="case-item">
+                    <span class="case-handle">
+                      <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor"><circle cx="2" cy="3" r="1.2"/><circle cx="2" cy="7" r="1.2"/><circle cx="2" cy="11" r="1.2"/><circle cx="8" cy="3" r="1.2"/><circle cx="8" cy="7" r="1.2"/><circle cx="8" cy="11" r="1.2"/></svg>
+                    </span>
+                    <span class="case-item-id">TC-1183</span>
+                    <span class="case-item-title">Login — password reset email delivery</span>
+                    <span class="case-item-meta">Priority 1</span>
+                    <button class="case-item-remove">
+                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3l10 10M13 3L3 13"/></svg>
+                    </button>
+                  </div>
+
+                  <div class="case-item">
+                    <span class="case-handle">
+                      <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor"><circle cx="2" cy="3" r="1.2"/><circle cx="2" cy="7" r="1.2"/><circle cx="2" cy="11" r="1.2"/><circle cx="8" cy="3" r="1.2"/><circle cx="8" cy="7" r="1.2"/><circle cx="8" cy="11" r="1.2"/></svg>
+                    </span>
+                    <span class="case-item-id">TC-1098</span>
+                    <span class="case-item-title">User profile — avatar upload over 5MB</span>
+                    <span class="case-item-meta">Priority 2</span>
+                    <button class="case-item-remove">
+                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3l10 10M13 3L3 13"/></svg>
+                    </button>
+                  </div>
+
+                  <div class="cases-add-row">
+                    <button class="btn btn-subtle btn-small">
+                      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5v13M1.5 8h13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                      Add test case
+                    </button>
+                    <button class="btn btn-subtle btn-small">
+                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4a1 1 0 0 1 1-1h3l2 2h6a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4z"/></svg>
+                      Add from test set
+                    </button>
+                    <button class="btn btn-subtle btn-small">
+                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v6M5 8h6"/></svg>
+                      AI suggest from area
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== Section 3 : Schedule (collapsed) ===== -->
+          <div class="form-section">
+            <div class="section-header">
+              <div class="section-icon-wrapper">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1"/><line x1="2" y1="6" x2="14" y2="6"/><line x1="5" y1="1.5" x2="5" y2="4"/><line x1="11" y1="1.5" x2="11" y2="4"/></svg>
+              </div>
+              <div class="section-title-block">
+                <div class="section-title">Schedule</div>
+                <div class="section-subtitle">Plan validity window and execution frequency</div>
+              </div>
+              <span class="section-status">2026-05-15 → 2026-05-29</span>
+              <svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+            </div>
+            <div class="section-body">
+              <div class="field-row">
+                <div class="field">
+                  <label class="field-label">Start date</label>
+                  <div class="date-input-wrapper">
+                    <input class="input" type="text" value="2026-05-15">
+                    <svg class="date-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1"/><line x1="2" y1="6" x2="14" y2="6"/></svg>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label">End date</label>
+                  <div class="date-input-wrapper">
+                    <input class="input" type="text" value="2026-05-29">
+                    <svg class="date-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1"/><line x1="2" y1="6" x2="14" y2="6"/></svg>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label">Execution frequency</label>
+                <select class="input">
+                  <option>On demand (manual)</option>
+                  <option>Daily</option>
+                  <option>On every pull request</option>
+                  <option>On every push to main</option>
+                </select>
+                <div class="field-help">Argos can trigger automated executions via webhooks once configured.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== Section 4 : Notifications (collapsed) ===== -->
+          <div class="form-section">
+            <div class="section-header">
+              <div class="section-icon-wrapper">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2c-2.5 0-4 2-4 4.5V9l-1.5 2h11L12 9V6.5C12 4 10.5 2 8 2zM6.5 13.5a1.5 1.5 0 0 0 3 0"/></svg>
+              </div>
+              <div class="section-title-block">
+                <div class="section-title">Notifications</div>
+                <div class="section-subtitle">Who gets pinged when tests fail or pass</div>
+              </div>
+              <span class="section-status">Email · 2 channels</span>
+              <svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+            </div>
+            <div class="section-body">
+              <div class="field">
+                <label class="field-label">Trigger notifications when</label>
+                <div class="checkbox-group">
+                  <label class="checkbox-row checked">
+                    <input type="checkbox" checked>
+                    <div class="checkbox-content">
+                      <div class="checkbox-title">Test execution fails</div>
+                      <div class="checkbox-help">At least one case in the plan failed.</div>
+                    </div>
+                  </label>
+                  <label class="checkbox-row checked">
+                    <input type="checkbox" checked>
+                    <div class="checkbox-content">
+                      <div class="checkbox-title">Test execution completes</div>
+                      <div class="checkbox-help">Full plan finished, regardless of result.</div>
+                    </div>
+                  </label>
+                  <label class="checkbox-row">
+                    <input type="checkbox">
+                    <div class="checkbox-content">
+                      <div class="checkbox-title">Flakiness detected</div>
+                      <div class="checkbox-help">A case has alternated pass/fail across recent runs.</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="field-label">Channels</label>
+                <div class="checkbox-group">
+                  <label class="checkbox-row checked">
+                    <input type="checkbox" checked>
+                    <div class="checkbox-content">
+                      <div class="checkbox-title">Email</div>
+                      <div class="checkbox-help">Sent to plan owner and watchers.</div>
+                    </div>
+                  </label>
+                  <label class="checkbox-row">
+                    <input type="checkbox">
+                    <div class="checkbox-content">
+                      <div class="checkbox-title">Microsoft Teams webhook</div>
+                      <div class="checkbox-help">Post to a Teams channel (URL required).</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== Section 5 : Permissions (collapsed) ===== -->
+          <div class="form-section">
+            <div class="section-header">
+              <div class="section-icon-wrapper">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="2.5"/><path d="M3 14c0-2.5 2.5-4.5 5-4.5s5 2 5 4.5"/></svg>
+              </div>
+              <div class="section-title-block">
+                <div class="section-title">Permissions</div>
+                <div class="section-subtitle">Who can view, edit and run this plan</div>
+              </div>
+              <span class="section-status">3 members</span>
+              <svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+            </div>
+            <div class="section-body">
+              <div class="field">
+                <label class="field-label">Members</label>
+                <div style="border:1px solid var(--neutral-3);border-radius:var(--r-2);background:var(--neutral-0)">
+                  <div class="user-row">
+                    <span class="user-avatar">AT</span>
+                    <div class="user-info">
+                      <div class="user-name">Alexandre Thibaud</div>
+                      <div class="user-email">alex@atconseil.info</div>
+                    </div>
+                    <select class="input role-select">
+                      <option>Owner</option>
+                    </select>
+                  </div>
+                  <div class="user-row">
+                    <span class="user-avatar c1">JM</span>
+                    <div class="user-info">
+                      <div class="user-name">Julie Martin</div>
+                      <div class="user-email">j.martin@bcee.com</div>
+                    </div>
+                    <select class="input role-select">
+                      <option>Editor</option>
+                      <option>Viewer</option>
+                    </select>
+                  </div>
+                  <div class="user-row">
+                    <span class="user-avatar c2">MD</span>
+                    <div class="user-info">
+                      <div class="user-name">Mamadou Diallo</div>
+                      <div class="user-email">m.diallo@bcee.com</div>
+                    </div>
+                    <select class="input role-select">
+                      <option>Viewer</option>
+                      <option>Editor</option>
+                    </select>
+                  </div>
+                </div>
+                <button class="btn btn-subtle btn-small" style="margin-top:10px">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5v13M1.5 8h13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  Add member
+                </button>
+              </div>
+
+              <div class="field">
+                <label class="field-label">Visibility</label>
+                <div class="checkbox-group">
+                  <label class="checkbox-row checked">
+                    <input type="radio" name="vis" checked>
+                    <div class="checkbox-content">
+                      <div class="checkbox-title">Project members</div>
+                      <div class="checkbox-help">All BCEE-QA members can view this plan.</div>
+                    </div>
+                  </label>
+                  <label class="checkbox-row">
+                    <input type="radio" name="vis">
+                    <div class="checkbox-content">
+                      <div class="checkbox-title">Members only</div>
+                      <div class="checkbox-help">Restricted to people listed above.</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Properties sidebar -->
+      <aside class="properties-sidebar">
+        <div class="properties-header">
+          <div class="properties-title">Properties</div>
+        </div>
+
+        <div class="properties-section">
+          <div class="prop-section-title">Identity</div>
+          <div class="prop-row">
+            <span class="prop-label">ID</span>
+            <span class="prop-value prop-value-mono">TP-025 <span style="color:var(--neutral-7);font-size:11px">(generated on save)</span></span>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label">Type</span>
+            <span class="prop-value">Test Plan</span>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label">Status</span>
+            <span class="prop-value"><span style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;background:var(--neutral-3);color:var(--neutral-8);border-radius:var(--r-pill);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em"><span style="width:6px;height:6px;border-radius:50%;background:var(--neutral-7)"></span>Draft</span></span>
+          </div>
+        </div>
+
+        <div class="properties-section">
+          <div class="prop-section-title">Ownership</div>
+          <div class="prop-row">
+            <span class="prop-label">Created by</span>
+            <span class="prop-value"><span class="avatar-mini">AT</span>Alexandre Thibaud</span>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label">Created on</span>
+            <span class="prop-value">2026-05-12, 17:48</span>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label">Last modified</span>
+            <span class="prop-value">Just now</span>
+          </div>
+        </div>
+
+        <div class="properties-section">
+          <div class="prop-section-title">Hierarchy</div>
+          <div class="prop-row">
+            <span class="prop-label">Area</span>
+            <span class="prop-value prop-value-mono">Demo\Frontend\Payment</span>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label">Iteration</span>
+            <span class="prop-value prop-value-mono">BCEE-QA\Sprint 25</span>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label">Parent</span>
+            <span class="prop-value">None</span>
+          </div>
+        </div>
+
+        <div class="properties-section">
+          <div class="prop-section-title">Statistics</div>
+          <div class="prop-stat">
+            <span>Test cases</span>
+            <span class="prop-stat-value">3</span>
+          </div>
+          <div class="prop-stat">
+            <span>Test sets</span>
+            <span class="prop-stat-value">0</span>
+          </div>
+          <div class="prop-stat">
+            <span>Estimated runtime</span>
+            <span class="prop-stat-value">12 min</span>
+          </div>
+          <div class="prop-stat">
+            <span>Last execution</span>
+            <span class="prop-stat-value">—</span>
+          </div>
+        </div>
+
+        <div class="properties-section">
+          <div class="prop-section-title">Custom fields</div>
+          <div class="prop-row">
+            <span class="prop-label">Priority</span>
+            <span class="prop-value">P1 — High</span>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label">Risk</span>
+            <span class="prop-value">Medium</span>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+
+    <!-- Save bar -->
+    <div class="save-bar">
+      <div class="save-status">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v4l2 2"/></svg>
+        Auto-saved as draft · just now
+      </div>
+      <div class="save-actions">
+        <button class="btn btn-subtle">Discard</button>
+        <button class="btn btn-secondary">Save draft</button>
+        <button class="btn btn-primary">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l3 3 7-7"/></svg>
+          Publish plan
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Make sections collapsible
+document.querySelectorAll('.section-header').forEach(header => {
+  header.addEventListener('click', () => {
+    header.parentElement.classList.toggle('expanded');
+  });
+});
+</script>
+
+</body>
+</html>
