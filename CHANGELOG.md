@@ -7,6 +7,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.25] - 2026-05-20
+
+### Added
+
+#### Sprint 2.19 -- UI Generalization: 6 WIT list + form views
+
+Full demo-able product across all 7 WIT (Work Item Types) with consistent design system usage.
+
+##### Generic application-level components (hub/components/)
+
+- `WitListHeader` -- header bar with title, count badge, optional Import + Create buttons
+- `WitFilterBar` -- search Input + status FilterChips bar, shared by all list views
+- `WitStatusBadge` -- maps globalStatus/state strings to design system Badge variants
+- `wit-list-view.css` -- shared layout for all list views (flex column, overflow body)
+- `wit-form-view.css` -- shared layout for all form views (header, back btn, sections)
+
+##### New list + form view pairs
+
+- `TestCasesListView` / `TestCaseFormView` -- Test Cases (5 sections: General, Steps, Results, Linked Items, Metadata)
+- `TestSetsListView` / `TestSetFormView` -- Test Sets (3 sections: General, Linked Test Cases, Execution Settings)
+- `PreconditionsListView` / `PreconditionFormView` -- Preconditions (3 sections: General, Setup Steps, Used By)
+- `TestExecutionsListView` / `TestExecutionFormView` -- Test Executions (3 sections: Config, Results, Summary)
+- `TestCaseVersionsListView` -- read-only snapshot list with per-test-case ID filter
+- `AuditLogListView` -- read-only audit log with Export CSV action
+
+##### Routing
+
+- `use-argos-routing.ts` expanded to 15 routes (was 7)
+- All new form routes wired: `test-case-form`, `test-set-form`, `precondition-form`, `test-execution-form`
+- New read-only routes: `test-case-versions-list`, `audit-log-list`, `dashboard`
+
+##### Shell integration
+
+- `App.tsx` RouteRenderer: all 15 routes handled (was 7 with 3 ComingSoon stubs)
+- `Sidebar.tsx`: 10 navigation items (was 6) -- added Test Executions, TC Versions, Audit Log, Dashboard
+- Dashboard item decorated with "Soon" badge (Sprint 2.20)
+
+### Tests
+
+- `TestCasesListView.test.tsx` -- 9 component assertions
+- `TestSetsListView.test.tsx` -- 6 component assertions
+- `PreconditionsListView.test.tsx` -- 7 component assertions
+- `TestExecutionsListView.test.tsx` -- 7 component assertions
+- `TestCaseVersionsListView.test.tsx` -- 7 component assertions
+- `AuditLogListView.test.tsx` -- 6 component assertions
+- `T-2.19-test-case-list-view.test.ts` -- 8 file-system regression checks
+- `T-2.19-test-set-list-view.test.ts` -- 7 file-system regression checks
+- `T-2.19-precondition-list-view.test.ts` -- 7 file-system regression checks
+- `T-2.19-test-execution-list-view.test.ts` -- 7 file-system regression checks
+- `T-2.19-test-case-version-list.test.ts` -- 7 file-system regression checks
+- `T-2.19-audit-log-list.test.ts` -- 7 file-system regression checks
+- `T-2.19-design-system-reuse.test.ts` -- checks all 6 list views use WitListHeader + design tokens
+- `T-2.19-routing.test.ts` -- 15 route kinds + App.tsx integration
+
 ## [0.5.23] - 2026-05-20
 
 ### Fixed

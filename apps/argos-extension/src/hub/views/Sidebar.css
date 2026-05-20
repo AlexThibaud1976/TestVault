@@ -70,3 +70,15 @@
 .argos-sidebar-nav-item.active svg {
 	color: var(--argos-blue-primary);
 }
+
+.argos-sidebar-soon-badge {
+	margin-left: auto;
+	font-size: 10px;
+	font-weight: 600;
+	color: var(--neutral-7);
+	background: var(--neutral-3);
+	border-radius: 4px;
+	padding: 1px 5px;
+	line-height: 1.4;
+	flex-shrink: 0;
+}

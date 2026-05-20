@@ -39,9 +39,19 @@ import { type ArgosView, sidebarKeyForView, useArgosRouting } from "./hooks/use-
 import { InstallationContext, useInstallationContext } from "./installation-context.js";
 import { ServicesProvider, useServices } from "./services-context.js";
 import { AppShell } from "./views/AppShell.js";
+import { AuditLogListView } from "./views/AuditLogListView.js";
 import { GetStartedView } from "./views/GetStartedView.js";
 import { LimitedModeBanner } from "./views/LimitedModeBanner.js";
+import { PreconditionFormView } from "./views/PreconditionFormView.js";
+import { PreconditionsListView } from "./views/PreconditionsListView.js";
 import { Sidebar } from "./views/Sidebar.js";
+import { TestCaseFormView } from "./views/TestCaseFormView.js";
+import { TestCaseVersionsListView } from "./views/TestCaseVersionsListView.js";
+import { TestCasesListView } from "./views/TestCasesListView.js";
+import { TestExecutionFormView } from "./views/TestExecutionFormView.js";
+import { TestExecutionsListView } from "./views/TestExecutionsListView.js";
+import { TestSetFormView } from "./views/TestSetFormView.js";
+import { TestSetsListView } from "./views/TestSetsListView.js";
 import { TestPlanFormView } from "./views/test-plans/TestPlanFormView.js";
 import { TestPlansListView } from "./views/test-plans/TestPlansListView.js";
 
@@ -317,23 +327,51 @@ function RouteRenderer({
 				/>
 			);
 		case "test-cases-list":
+			return <TestCasesListView onCreateNew={() => routing.goToTestCaseForm()} />;
+		case "test-case-form":
 			return (
-				<div data-testid="view-cases">
-					<ComingSoonView title="Test Cases" sprint="2.19" />
-				</div>
+				<TestCaseFormView
+					onCancel={routing.goToTestCasesList}
+					onSuccess={routing.goToTestCasesList}
+					caseId={(view as { kind: "test-case-form"; caseId?: number }).caseId}
+				/>
 			);
 		case "test-sets-list":
+			return <TestSetsListView onCreateNew={() => routing.goToTestSetForm()} />;
+		case "test-set-form":
 			return (
-				<div data-testid="view-sets">
-					<ComingSoonView title="Test Sets" sprint="2.19" />
-				</div>
+				<TestSetFormView
+					onCancel={routing.goToTestSetsList}
+					onSuccess={routing.goToTestSetsList}
+					setId={(view as { kind: "test-set-form"; setId?: number }).setId}
+				/>
 			);
 		case "preconditions-list":
+			return <PreconditionsListView onCreateNew={() => routing.goToPreconditionForm()} />;
+		case "precondition-form":
 			return (
-				<div data-testid="view-preconditions">
-					<ComingSoonView title="Preconditions" sprint="2.19" />
-				</div>
+				<PreconditionFormView
+					onCancel={routing.goToPreconditionsList}
+					onSuccess={routing.goToPreconditionsList}
+					preconditionId={
+						(view as { kind: "precondition-form"; preconditionId?: number }).preconditionId
+					}
+				/>
 			);
+		case "test-executions-list":
+			return <TestExecutionsListView onCreateNew={() => routing.goToTestExecutionForm()} />;
+		case "test-execution-form":
+			return (
+				<TestExecutionFormView
+					onCancel={routing.goToTestExecutionsList}
+					onSuccess={routing.goToTestExecutionsList}
+					executionId={(view as { kind: "test-execution-form"; executionId?: number }).executionId}
+				/>
+			);
+		case "test-case-versions-list":
+			return <TestCaseVersionsListView />;
+		case "audit-log-list":
+			return <AuditLogListView />;
 		case "reports":
 			return (
 				<div data-testid="view-reports">
@@ -344,6 +382,12 @@ function RouteRenderer({
 			return (
 				<div data-testid="view-settings">
 					<ComingSoonView title="Settings" sprint="2.20" />
+				</div>
+			);
+		case "dashboard":
+			return (
+				<div data-testid="view-dashboard">
+					<ComingSoonView title="Dashboard" sprint="2.20" />
 				</div>
 			);
 	}

@@ -1,0 +1,35 @@
+.argos-list-header {
+	background: var(--neutral-0);
+	border-bottom: 1px solid var(--neutral-4);
+	padding: var(--s-4) var(--s-6);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-shrink: 0;
+}
+
+.argos-list-header__title-group {
+	display: flex;
+	align-items: baseline;
+	gap: var(--s-3);
+}
+
+.argos-list-header__title {
+	font-size: var(--t-h1);
+	font-weight: 600;
+	color: var(--neutral-9);
+	letter-spacing: -0.02em;
+	margin: 0;
+}
+
+.argos-list-header__count {
+	font-size: var(--t-body);
+	color: var(--neutral-8);
+	font-weight: normal;
+}
+
+.argos-list-header__actions {
+	display: flex;
+	gap: var(--s-2);
+	align-items: center;
+}
