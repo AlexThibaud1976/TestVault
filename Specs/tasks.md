@@ -353,11 +353,25 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
   - 8 regression tests in tools/regression/; 42+ component tests in views/
   - Version bump: 0.5.24 -> 0.5.25
 
+- [ ] TECH-DEBT-070 NEW (Sprint 2.19.1, v0.5.26) : test-case-version-service latent WIQL bug
+  - listSnapshots() uses [TestVault.ParentTestCaseId] in WIQL -- same root cause as TF51005
+  - Not triggered by default UI state (user must enter a TC ID to search)
+  - Fix: apply schemaToAdoFieldRefName() same as test-execution-service hotfix
+  - Regression: T-2.19.1-services-wiql-audit.test.ts tracks the marker until fixed
+
+- [ ] TECH-DEBT-071 NEW (Sprint 2.19.1, v0.5.26) : E2E tests against real ADO instance
+  - Absence of real ADO E2E allowed TF51005 to reach production (BCEE-QA, Sprint 2.19)
+  - Scope: tools/e2e/ Playwright suites against a real ADO project (service account PAT)
+  - Must cover: all 6 WIT list views, all WIQL-based service calls
+  - Gate: run before any Marketplace publish
+
 **Prochaines priorites :**
 - TECH-DEBT-017 Azure Functions deploy
 - TECH-DEBT-018 Commercial layer
 - TECH-DEBT-061 Real iteration/area paths from ADO (Sprint 2.20)
 - TECH-DEBT-068 URL redirect anciens hub-X (Sprint 2.20)
+- TECH-DEBT-070 test-case-version-service WIQL fix (Sprint 2.20)
+- TECH-DEBT-071 E2E tests real ADO before publish (Sprint 2.20)
 - Specs/ARCHITECTURE.md (documenter principes architecturaux emerges)
 - Documentation public README + marketplace listing
 
