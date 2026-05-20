@@ -1,0 +1,140 @@
+{
+	"manifestVersion": 1,
+	"id": "ArgosTesting",
+	"publisher": "AlexThibaud",
+	"version": "0.5.22",
+	"name": "ArgosTesting",
+	"description": "Industrial-grade test management for Azure DevOps — native Custom Work Items, AI-assisted, Cloud-only.",
+	"targets": [
+		{
+			"id": "Microsoft.VisualStudio.Services.Cloud"
+		}
+	],
+	"categories": ["Azure Boards", "Azure Test Plans"],
+	"icons": {
+		"default": "static/marketplace-icon.png"
+	},
+	"scopes": [
+		"vso.work_full",
+		"vso.profile",
+		"vso.code",
+		"vso.extension.data_write",
+		"vso.identity"
+	],
+	"contributions": [
+		{
+			"id": "argos-hub-group",
+			"type": "ms.vss-web.hub-group",
+			"description": "Argos hub group (top-level peer of Boards, Repos, Pipelines, Test Plans).",
+			"targets": ["ms.vss-web.project-hub-groups-collection"],
+			"properties": {
+				"name": "Argos",
+				"order": 450,
+				"icon": "static/argos-hub.png"
+			}
+		},
+		{
+			"id": "argos-hub-plans",
+			"type": "ms.vss-web.hub",
+			"description": "Test Plans management — organize test execution campaigns.",
+			"targets": [".argos-hub-group"],
+			"properties": {
+				"name": "Test Plans",
+				"iconName": "BulletedList",
+				"order": 10,
+				"uri": "dist/hub/hub.html"
+			}
+		},
+		{
+			"id": "argos-hub-cases",
+			"type": "ms.vss-web.hub",
+			"description": "Test Cases — define reusable test scenarios.",
+			"targets": [".argos-hub-group"],
+			"properties": {
+				"name": "Test Cases",
+				"iconName": "TestBeaker",
+				"order": 20,
+				"uri": "dist/hub/hub.html"
+			}
+		},
+		{
+			"id": "argos-hub-sets",
+			"type": "ms.vss-web.hub",
+			"description": "Test Sets — group related test cases for batch execution.",
+			"targets": [".argos-hub-group"],
+			"properties": {
+				"name": "Test Sets",
+				"iconName": "FolderList",
+				"order": 30,
+				"uri": "dist/hub/hub.html"
+			}
+		},
+		{
+			"id": "argos-hub-preconditions",
+			"type": "ms.vss-web.hub",
+			"description": "Preconditions — define prerequisites for test execution.",
+			"targets": [".argos-hub-group"],
+			"properties": {
+				"name": "Preconditions",
+				"iconName": "Warning",
+				"order": 40,
+				"uri": "dist/hub/hub.html"
+			}
+		},
+		{
+			"id": "argos-hub-reports",
+			"type": "ms.vss-web.hub",
+			"description": "Reports — execution results, coverage, flakiness analysis.",
+			"targets": [".argos-hub-group"],
+			"properties": {
+				"name": "Reports",
+				"iconName": "asset://static/icon-reports.png",
+				"order": 50,
+				"uri": "dist/hub/hub.html"
+			}
+		},
+		{
+			"id": "argos-hub-settings",
+			"type": "ms.vss-web.hub",
+			"description": "Settings — AI/LLM configuration, audit log, repository mapping.",
+			"targets": [".argos-hub-group"],
+			"properties": {
+				"name": "Settings",
+				"iconName": "Settings",
+				"order": 60,
+				"uri": "dist/hub/hub.html"
+			}
+		},
+		{
+			"id": "argos-coverage-panel",
+			"type": "ms.vss-work-web.work-item-form-page",
+			"description": "Test Coverage panel shown on User Story, Bug, and Requirement Work Item forms — lists linked Test Cases with their latest execution status per environment.",
+			"targets": ["ms.vss-work-web.work-item-form"],
+			"properties": {
+				"name": "Test Coverage",
+				"uri": "dist/widgets/coverage-panel/index.html",
+				"height": 400
+			}
+		}
+	],
+	"content": {
+		"details": {
+			"path": "overview.md"
+		},
+		"screenshots": [
+			{
+				"path": "static/marketplace-banner.png"
+			}
+		]
+	},
+	"files": [
+		{
+			"path": "dist",
+			"addressable": true
+		},
+		{
+			"path": "static",
+			"addressable": true
+		}
+	]
+}

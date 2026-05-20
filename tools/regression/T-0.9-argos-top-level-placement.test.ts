@@ -12,20 +12,23 @@
  *   2026-05-11 (T-0.9 v3)  - Sprint 4 multi-hubs: 6 sub-hubs all targeting ".argos-hub-group".
  *   2026-05-20 (Sprint 2.18.3) - Single hub (D140/D145). argos-hub targets
  *                            "ms.vss-web.project-hub-groups-collection" DIRECTLY.
- *                            No hub-group intermediary needed. 1 ADO sidebar icon.
+ *                            No hub-group intermediary. 1 ADO sidebar icon.
+ *   2026-05-20 (Sprint 2.18.4) - Restore hub-group pattern. argos-hub-group targets
+ *                            project-hub-groups-collection. argos-hub targets .argos-hub-group.
+ *                            Fixes double sidebar icon bug from Sprint 2.18.3 regression.
  *
- * What this test guards (Sprint 2.18.3):
- *   - argos-hub exists, type ms.vss-web.hub
- *   - argos-hub targets ms.vss-web.project-hub-groups-collection directly
+ * What this test guards (Sprint 2.18.4 hub-group + single hub architecture):
+ *   - argos-hub-group exists (ms.vss-web.hub-group, targets project-hub-groups-collection)
+ *   - argos-hub exists (ms.vss-web.hub, targets .argos-hub-group)
  *   - No contribution targets ms.vss-work-web.work-hub-group (Boards placement guard)
  *   - No contribution targets ms.vss-web.project-hub-group (invalid target guard)
- *   - No argos-hub-group (suppressed, would cause extra sidebar item)
+ *   - No legacy 6 sub-hubs
  *
  * DO NOT delete without explicit spec-kit decision.
  *
  * Reference:
- *   - Specs/tasks.md T-0.9, TECH-DEBT-067
- *   - Decision D140/D145 2026-05-20
+ *   - Specs/tasks.md T-0.9, TECH-DEBT-067/068
+ *   - Decision D140 reverted by Sprint 2.18.4
  */
 
 import { readFileSync } from "node:fs";
@@ -48,8 +51,19 @@ interface Manifest {
 	contributions: Contribution[];
 }
 
-describe("T-0.9-argos-top-level-placement regression (Sprint 2.18.3 single-hub)", () => {
+describe("T-0.9-argos-top-level-placement regression (Sprint 2.18.4 hub-group + single hub)", () => {
 	const manifest: Manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"));
+
+	it("argos-hub-group must exist (type ms.vss-web.hub-group)", () => {
+		const hubGroup = manifest.contributions.find((c) => c.id === "argos-hub-group");
+		expect(hubGroup).toBeDefined();
+		expect(hubGroup?.type).toBe("ms.vss-web.hub-group");
+	});
+
+	it("argos-hub-group must target ms.vss-web.project-hub-groups-collection (top-level)", () => {
+		const hubGroup = manifest.contributions.find((c) => c.id === "argos-hub-group");
+		expect(hubGroup?.targets).toContain("ms.vss-web.project-hub-groups-collection");
+	});
 
 	it("argos-hub must exist as a hub contribution", () => {
 		const hub = manifest.contributions.find((c) => c.id === "argos-hub");
@@ -57,9 +71,10 @@ describe("T-0.9-argos-top-level-placement regression (Sprint 2.18.3 single-hub)"
 		expect(hub?.type).toBe("ms.vss-web.hub");
 	});
 
-	it("argos-hub must target ms.vss-web.project-hub-groups-collection directly", () => {
+	it("argos-hub must target .argos-hub-group (relative reference, not direct collection)", () => {
 		const hub = manifest.contributions.find((c) => c.id === "argos-hub");
-		expect(hub?.targets).toContain("ms.vss-web.project-hub-groups-collection");
+		expect(hub?.targets).toContain(".argos-hub-group");
+		expect(hub?.targets).not.toContain("ms.vss-web.project-hub-groups-collection");
 	});
 
 	it("no contribution must target ms.vss-work-web.work-hub-group (Boards placement guard)", () => {
@@ -76,13 +91,18 @@ describe("T-0.9-argos-top-level-placement regression (Sprint 2.18.3 single-hub)"
 		expect(offenders).toEqual([]);
 	});
 
-	it("must NOT declare argos-hub-group (suppressed Sprint 2.18.3 to avoid double sidebar entry)", () => {
-		const hubGroup = manifest.contributions.find((c) => c.id === "argos-hub-group");
-		expect(hubGroup).toBeUndefined();
-	});
-
-	it("no contribution must target .argos-hub-group relative reference (hub-group gone)", () => {
-		const offenders = manifest.contributions.filter((c) => c.targets?.includes(".argos-hub-group"));
-		expect(offenders).toEqual([]);
+	it("must NOT declare legacy sub-hubs (removed Sprint 2.18.3)", () => {
+		const legacyIds = [
+			"argos-hub-plans",
+			"argos-hub-cases",
+			"argos-hub-sets",
+			"argos-hub-preconditions",
+			"argos-hub-reports",
+			"argos-hub-settings",
+		];
+		for (const id of legacyIds) {
+			const found = manifest.contributions.find((c) => c.id === id);
+			expect(found, `${id} should not exist`).toBeUndefined();
+		}
 	});
 });
