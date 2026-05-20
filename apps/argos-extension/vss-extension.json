@@ -2,7 +2,7 @@
 	"manifestVersion": 1,
 	"id": "ArgosTesting",
 	"publisher": "AlexThibaud",
-	"version": "0.5.21",
+	"version": "0.5.23",
 	"name": "ArgosTesting",
 	"description": "Industrial-grade test management for Azure DevOps — native Custom Work Items, AI-assisted, Cloud-only.",
 	"targets": [
@@ -23,86 +23,18 @@
 	],
 	"contributions": [
 		{
-			"id": "argos-hub-group",
-			"type": "ms.vss-web.hub-group",
-			"description": "Argos hub group (top-level peer of Boards, Repos, Pipelines, Test Plans).",
+			"id": "argos-hub",
+			"type": "ms.vss-web.hub",
+			"description": "Argos Testing - Test management for Azure DevOps",
 			"targets": ["ms.vss-web.project-hub-groups-collection"],
 			"properties": {
 				"name": "Argos",
-				"order": 450,
-				"icon": "static/argos-hub.png"
-			}
-		},
-		{
-			"id": "argos-hub-plans",
-			"type": "ms.vss-web.hub",
-			"description": "Test Plans management — organize test execution campaigns.",
-			"targets": [".argos-hub-group"],
-			"properties": {
-				"name": "Test Plans",
-				"iconName": "BulletedList",
-				"order": 10,
-				"uri": "dist/hub/hub.html"
-			}
-		},
-		{
-			"id": "argos-hub-cases",
-			"type": "ms.vss-web.hub",
-			"description": "Test Cases — define reusable test scenarios.",
-			"targets": [".argos-hub-group"],
-			"properties": {
-				"name": "Test Cases",
-				"iconName": "TestBeaker",
-				"order": 20,
-				"uri": "dist/hub/hub.html"
-			}
-		},
-		{
-			"id": "argos-hub-sets",
-			"type": "ms.vss-web.hub",
-			"description": "Test Sets — group related test cases for batch execution.",
-			"targets": [".argos-hub-group"],
-			"properties": {
-				"name": "Test Sets",
-				"iconName": "FolderList",
-				"order": 30,
-				"uri": "dist/hub/hub.html"
-			}
-		},
-		{
-			"id": "argos-hub-preconditions",
-			"type": "ms.vss-web.hub",
-			"description": "Preconditions — define prerequisites for test execution.",
-			"targets": [".argos-hub-group"],
-			"properties": {
-				"name": "Preconditions",
-				"iconName": "Warning",
-				"order": 40,
-				"uri": "dist/hub/hub.html"
-			}
-		},
-		{
-			"id": "argos-hub-reports",
-			"type": "ms.vss-web.hub",
-			"description": "Reports — execution results, coverage, flakiness analysis.",
-			"targets": [".argos-hub-group"],
-			"properties": {
-				"name": "Reports",
-				"iconName": "asset://static/icon-reports.png",
-				"order": 50,
-				"uri": "dist/hub/hub.html"
-			}
-		},
-		{
-			"id": "argos-hub-settings",
-			"type": "ms.vss-web.hub",
-			"description": "Settings — AI/LLM configuration, audit log, repository mapping.",
-			"targets": [".argos-hub-group"],
-			"properties": {
-				"name": "Settings",
-				"iconName": "Settings",
-				"order": 60,
-				"uri": "dist/hub/hub.html"
+				"order": 100,
+				"uri": "dist/hub/hub.html",
+				"icon": {
+					"light": "static/argos-hub.png",
+					"dark": "static/argos-hub.png"
+				}
 			}
 		},
 		{
