@@ -2,6 +2,7 @@ import type { ITestSetService, TestSetDraft } from "@atconseil/argos-sdk";
 import type { TestVaultTestSet } from "@atconseil/argos-types";
 import { Button, Field, Input, Text, Textarea } from "@fluentui/react-components";
 import { useState } from "react";
+import { useArgosToast } from "./components/Toast.js";
 
 type Mode = "static" | "dynamic";
 
@@ -47,6 +48,7 @@ export function TestSetForm({
 	const [nameError, setNameError] = useState(false);
 	const [saving, setSaving] = useState(false);
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+	const toast = useArgosToast();
 
 	function handleAddTcId() {
 		const id = Number(addIdInput.trim());
@@ -81,7 +83,15 @@ export function TestSetForm({
 			const result = initialValue
 				? await service.update(initialValue.id, draft)
 				: await service.create(draft);
+			const action = initialValue ? "updated" : "created";
+			toast.success(`Test Set #${result.id} ${action}`);
+			if (!initialValue) {
+				setForm({ name: "", description: "", mode: "static", testCaseIds: [], wiqlQuery: "" });
+			}
 			onSaved?.(result);
+		} catch (error) {
+			const msg = error instanceof Error ? error.message : "Unknown error";
+			toast.error(`Failed to save Test Set: ${msg}`);
 		} finally {
 			setSaving(false);
 		}

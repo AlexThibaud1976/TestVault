@@ -33,6 +33,7 @@ import { TestPlanForm } from "./TestPlanForm.js";
 import { TestSetForm } from "./TestSetForm.js";
 import { WebhookAdmin } from "./WebhookAdmin.js";
 import { WorkItemLinkPanel } from "./WorkItemLinkPanel.js";
+import { ToastProvider } from "./components/Toast.js";
 import { InstallationContext, useInstallationContext } from "./installation-context.js";
 import { ServicesProvider, useServices } from "./services-context.js";
 import { GetStartedView } from "./views/GetStartedView.js";
@@ -383,9 +384,11 @@ export function App() {
 
 	return (
 		<FluentProvider theme={webLightTheme}>
-			<ServicesProvider>
-				<AppInner section={section} />
-			</ServicesProvider>
+			<ToastProvider>
+				<ServicesProvider>
+					<AppInner section={section} />
+				</ServicesProvider>
+			</ToastProvider>
 		</FluentProvider>
 	);
 }

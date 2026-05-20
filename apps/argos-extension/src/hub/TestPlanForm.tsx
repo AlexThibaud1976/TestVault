@@ -2,6 +2,7 @@ import type { ITestPlanService, TestPlanDraft } from "@atconseil/argos-sdk";
 import type { TestVaultTestPlan } from "@atconseil/argos-types";
 import { Button, Field, Input } from "@fluentui/react-components";
 import { useState } from "react";
+import { useArgosToast } from "./components/Toast.js";
 
 type FormState = {
 	name: string;
@@ -56,6 +57,7 @@ export function TestPlanForm({
 	const [nameError, setNameError] = useState(false);
 	const [saving, setSaving] = useState(false);
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+	const toast = useArgosToast();
 
 	function handleAddEnv() {
 		const val = addEnvInput.trim();
@@ -121,7 +123,22 @@ export function TestPlanForm({
 			const result = initialValue
 				? await service.update(initialValue.id, draft)
 				: await service.create(draft);
+			const action = initialValue ? "updated" : "created";
+			toast.success(`Test Plan #${result.id} ${action}`);
+			if (!initialValue) {
+				setForm({
+					name: "",
+					owner: "",
+					iterationPath: "",
+					environments: [],
+					testSetIds: [],
+					additionalTestCaseIds: [],
+				});
+			}
 			onSaved?.(result);
+		} catch (error) {
+			const msg = error instanceof Error ? error.message : "Unknown error";
+			toast.error(`Failed to save Test Plan: ${msg}`);
 		} finally {
 			setSaving(false);
 		}

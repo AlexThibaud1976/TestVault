@@ -3,6 +3,7 @@ import type { TestVaultTestCase } from "@atconseil/argos-types";
 import { Button, Field, Input, Select, Text, Textarea } from "@fluentui/react-components";
 import { useState } from "react";
 import { GherkinEditor } from "./GherkinEditor.js";
+import { useArgosToast } from "./components/Toast.js";
 
 type Step = { id: string; action: string; expected: string };
 
@@ -59,6 +60,7 @@ export function TestCaseForm({
 	const [titleError, setTitleError] = useState(false);
 	const [saving, setSaving] = useState(false);
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+	const toast = useArgosToast();
 
 	function updateStep(index: number, field: keyof Step, value: string) {
 		setForm((prev) => {
@@ -126,7 +128,15 @@ export function TestCaseForm({
 			const result = initialValue
 				? await service.update(initialValue.id, draft)
 				: await service.create(draft);
+			const action = initialValue ? "updated" : "created";
+			toast.success(`Test Case #${result.id} ${action}`);
+			if (!initialValue) {
+				setForm({ title: "", areaPath: "", priority: 3, automationStatus: "Manual", steps: [] });
+			}
 			onSaved?.(result);
+		} catch (error) {
+			const msg = error instanceof Error ? error.message : "Unknown error";
+			toast.error(`Failed to save Test Case: ${msg}`);
 		} finally {
 			setSaving(false);
 		}

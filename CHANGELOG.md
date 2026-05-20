@@ -7,6 +7,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.19] - 2026-05-20
+
+### Fixed
+
+#### Sprint 2.17 -- UI refresh + toast notifications after create
+
+After Sprint 2.16 the backend successfully created work items for all 7 WIT
+(verified in ADO portal: items #47-50 created), but the UI provided zero feedback:
+no toast notification, no list refresh, no form reset.
+
+Bug was purely frontend UX -- backend complete and functional.
+
+#### Architecture additions
+
+NEW `apps/argos-extension/src/hub/components/Toast.tsx`:
+- ToastProvider React context wrapping the App
+- useArgosToast() convenience hook (success / error / info)
+- 4s auto-dismiss, click-to-dismiss
+- Simple fixed-position overlay (bottom-right)
+
+NEW `apps/argos-extension/src/hub/hooks/use-argos-create.ts`:
+- Generic hook for all 7 WIT TestVault
+- Pattern: setIsCreating(true) -> try create -> toast.success -> onSuccess -> finally setIsCreating(false)
+- toast.error on catch, re-throws for caller
+- WitKind union type covers all 7 WIT
+
+NEW `apps/argos-extension/src/hub/hooks/use-argos-list.ts`:
+- Generic list query hook with refetch() method
+- Loading + error states, autoFetch option
+
+#### Forms refactored (all 4 with creation UI)
+
+TestPlanForm, TestCaseForm, TestSetForm, PreconditionForm now:
+1. toast.success on create/update success (Test Plan #N created/updated)
+2. toast.error on catch with error message
+3. Form reset after successful create (ready for next item)
+4. All Sprint 2.7-2.16 tests still green
+
+#### Tests
+
+- 4 unit tests useArgosCreate hook (onSuccess, isCreating, error path, all 7 WIT kinds)
+- CFG-2026-05-19-ui-refresh-after-create (11 regression assertions)
+- All 378 Sprint 2.7-2.16 argos-extension tests green
+- All 110 regression-suite tests green
+
+### TECH-DEBT
+
+- TECH-DEBT-057 LIVRE: UI refresh + toast notifications post-create
+- TECH-DEBT-019 (E2E reel): TOTALEMENT VALIDE -- 10 bugs E2E fixes en 11 sprints
+
+### Cumulative session 2026-05-18/20
+
+Total sprints livres: 11 (Sprint 2.7 a 2.17)
+Versions Marketplace: 13 (0.5.7 a 0.5.19)
+
+Total bugs E2E fixes:
+1. VS402848 picklist conflict (2.8)
+2. VS403344 icon invalid (2.9)
+3. VS402805 WIT refName not found (2.10)
+4. TF51535 field "TestVault.X" (2.11)
+5. TF51535 field "Custom.TestVaultX" (2.12)
+6. VS402803 field name "Priority" (2.13)
+7. VS403083 state name "Active" (2.14)
+8. Extension detection refName (2.15)
+9. VS402323 CRUD ops refName (2.16)
+10. UI refresh after create (2.17)
+
+MILESTONE PRODUIT FONCTIONNEL TOTAL ATTEINT.
+
 ## [0.5.18] - 2026-05-18
 
 ### Fixed
