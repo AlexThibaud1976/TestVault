@@ -4,6 +4,7 @@ import type {
 	TestStepResult,
 	TestVaultTestExecution,
 } from "@atconseil/argos-types";
+import { schemaToAdoFieldRefName } from "@atconseil/argos-wit-schema";
 import { AdoForbiddenError } from "./ado-client.js";
 import type { IAdoClient, RawWorkItem, WorkItemFieldPatch } from "./ado-client.js";
 
@@ -227,12 +228,20 @@ export function createTestExecutionService(
 			const page = options.page ?? 1;
 			const pageSize = options.pageSize ?? 20;
 
-			let wiql = `SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'TestVault.TestExecution' AND [TestVault.TestCaseId] = ${options.testCaseId}`;
+			const tcIdField = schemaToAdoFieldRefName("TestVault.TestCaseId");
+			const envField = schemaToAdoFieldRefName("TestVault.Environment");
+			const statusField = schemaToAdoFieldRefName("TestVault.GlobalStatus");
+
+			let wiql =
+				"SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'TestVault.TestExecution'";
+			if (options.testCaseId > 0) {
+				wiql += ` AND [${tcIdField}] = ${options.testCaseId}`;
+			}
 			if (options.environment) {
-				wiql += ` AND [TestVault.Environment] = '${options.environment}'`;
+				wiql += ` AND [${envField}] = '${options.environment}'`;
 			}
 			if (options.status) {
-				wiql += ` AND [TestVault.GlobalStatus] = '${options.status}'`;
+				wiql += ` AND [${statusField}] = '${options.status}'`;
 			}
 			if (options.from) {
 				wiql += ` AND [System.CreatedDate] >= '${options.from}'`;

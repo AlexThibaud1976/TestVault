@@ -388,7 +388,7 @@ function rawCompletedWith(id: number, env: string, status: string, date: string)
 }
 
 describe("listExecutions", () => {
-	it("queries WIQL for TestVault.TestExecution WIs by testCaseId", async () => {
+	it("uses resolved ADO field names in WIQL (not raw schema names)", async () => {
 		const adoClient = makeAdoClient({
 			queryByWiql: vi.fn().mockResolvedValue([101, 102]),
 			fetchWorkItem: vi
@@ -400,8 +400,21 @@ describe("listExecutions", () => {
 		await service.listExecutions({ testCaseId: 5 });
 		const wiql = vi.mocked(adoClient.queryByWiql).mock.lastCall?.[0] ?? "";
 		expect(wiql).toContain("TestVault.TestExecution");
-		expect(wiql).toContain("TestVault.TestCaseId");
+		expect(wiql).toContain("Custom.TestVaultTestCaseId");
+		expect(wiql).not.toContain("[TestVault.TestCaseId]");
 		expect(wiql).toContain("5");
+	});
+
+	it("omits testCaseId filter when testCaseId is 0 (list all)", async () => {
+		const adoClient = makeAdoClient({
+			queryByWiql: vi.fn().mockResolvedValue([]),
+		});
+		const service = createTestExecutionService(adoClient, PROJECT);
+		await service.listExecutions({ testCaseId: 0 });
+		const wiql = vi.mocked(adoClient.queryByWiql).mock.lastCall?.[0] ?? "";
+		expect(wiql).toContain("TestVault.TestExecution");
+		expect(wiql).not.toContain("Custom.TestVaultTestCaseId");
+		expect(wiql).not.toContain("= 0");
 	});
 
 	it("returns items matching the IDs from WIQL", async () => {

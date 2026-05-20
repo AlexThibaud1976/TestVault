@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.26] - 2026-05-20
+
+### Fixed
+
+#### Sprint 2.19.1 -- Hotfix: Test Executions WIQL TF51005 (production bug BCEE-QA)
+
+- `test-execution-service.ts` `listExecutions()`: replaced hardcoded schema field names
+  `[TestVault.TestCaseId]`, `[TestVault.Environment]`, `[TestVault.GlobalStatus]` with
+  resolved ADO field names via `schemaToAdoFieldRefName()` (`Custom.TestVaultX` pattern).
+  Root cause: ADO WIQL rejects schema-level referenceName -- must use `Custom.*` prefix.
+- `listExecutions()`: treat `testCaseId <= 0` as "no filter" -- omit the `AND [field] = 0`
+  clause that triggered TF51005 when the UI passed `testCaseId: 0` to list all executions.
+
+### Tests
+
+- `test-execution-service.test.ts`: updated WIQL assertions from `TestVault.TestCaseId` to
+  `Custom.TestVaultTestCaseId`; added test for `testCaseId=0` "list all" behavior.
+- `T-2.19.1-test-execution-wiql-resolution.test.ts`: 6 file-system checks blocking any
+  reintroduction of raw `[TestVault.X]` field names in `test-execution-service.ts`.
+- `T-2.19.1-services-wiql-audit.test.ts`: cross-service WIQL audit (5 services clean +
+  TECH-DEBT-069 marker for `test-case-version-service`).
+
+### Technical Debt
+
+- TECH-DEBT-070: `test-case-version-service.ts` `listSnapshots()` has the same latent WIQL
+  field name bug (`[TestVault.ParentTestCaseId]`). Not triggered by current UI default state.
+  Tracked for a dedicated sprint.
+- TECH-DEBT-071: E2E tests against a real ADO instance before Marketplace publish.
+
 ## [0.5.25] - 2026-05-20
 
 ### Added
