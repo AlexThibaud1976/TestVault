@@ -2,6 +2,7 @@ import type { IPreconditionService, PreconditionDraft } from "@atconseil/argos-s
 import type { TestVaultPrecondition } from "@atconseil/argos-types";
 import { Button, Field, Input, Textarea } from "@fluentui/react-components";
 import { useState } from "react";
+import { useArgosToast } from "./components/Toast.js";
 
 type FormState = {
 	title: string;
@@ -44,6 +45,7 @@ export function PreconditionForm({
 	const [titleError, setTitleError] = useState(false);
 	const [saving, setSaving] = useState(false);
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+	const toast = useArgosToast();
 
 	function handleAddTag() {
 		const val = addTagInput.trim();
@@ -93,7 +95,15 @@ export function PreconditionForm({
 			const result = initialValue
 				? await service.update(initialValue.id, draft)
 				: await service.create(draft);
+			const action = initialValue ? "updated" : "created";
+			toast.success(`Precondition #${result.id} ${action}`);
+			if (!initialValue) {
+				setForm({ title: "", description: "", tags: [], linkedTestCaseIds: [] });
+			}
 			onSaved?.(result);
+		} catch (error) {
+			const msg = error instanceof Error ? error.message : "Unknown error";
+			toast.error(`Failed to save Precondition: ${msg}`);
 		} finally {
 			setSaving(false);
 		}

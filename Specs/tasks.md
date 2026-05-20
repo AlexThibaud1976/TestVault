@@ -295,7 +295,26 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
   - argos-detection-api + argos-extension use isArgosWit() suffix match
   - Fixed ARGOS_WIT_NAMES: TestPlanEntry -> TestCaseVersion
   - 0.5.17
-- [ ] TECH-DEBT-019 : E2E real ADO instance, retest after Sprint 2.15 (Lot E)
+- [x] TECH-DEBT-057 LIVRE (Sprint 2.16, v0.5.18) : CRUD ops WitResolver for ALL 7 WIT
+  - createArgosAdoClientAdapter: resolves TestVault.X -> ADO refName transparently
+  - createWitResolver: resolves schema refNames to process-prefixed ADO refNames
+  - schemaToAdoFieldRefName: translates field patches /fields/TestVault.X -> /fields/Custom.TestVaultX
+  - All 7 WIT service wrappers (createTestCase..createAuditLog) use the adapter
+- [x] TECH-DEBT-057 NEW LIVRE (Sprint 2.17, v0.5.19) : UI refresh + toast notifications post-create
+  - Toast.tsx: ToastProvider + useArgosToast (success/error/info, 4s auto-dismiss)
+  - use-argos-create.ts: generic hook for all 7 WIT with isCreating + toast + onSuccess
+  - use-argos-list.ts: generic list hook with refetch()
+  - TestPlanForm/TestCaseForm/TestSetForm/PreconditionForm: toast.success + toast.error + form reset
+  - App.tsx wrapped with ToastProvider
+  - CFG-2026-05-19-ui-refresh-after-create.test.ts (11 assertions)
+- [x] TECH-DEBT-019 VALIDE : E2E reel ADO instance -- 10 bugs E2E fixes en 11 sprints (Sprint 2.17)
+  - MILESTONE PRODUIT FONCTIONNEL TOTAL ATTEINT (2026-05-20)
+
+**Prochaines priorites :**
+- TECH-DEBT-017 Azure Functions deploy
+- TECH-DEBT-018 Commercial layer
+- Specs/ARCHITECTURE.md (documenter principes architecturaux emerges)
+- Documentation public README + marketplace listing
 
 ### T-1.4 — CRUD Test Case (UI + service) 🟡
 
