@@ -6,8 +6,8 @@
  *   2. version >= 0.3.0
  *   3. categories includes both "Azure Boards" and "Azure Test Plans"
  *   4. No contribution targets the invalid "ms.vss-web.project-hub-group" (Sprint 3 false premise guard)
- *   5. manifest must declare an argos-hub-group contribution of type ms.vss-web.hub-group
- *   6. argos-hub-group must contain at least one hub (no empty hub-group)
+ *   5. manifest must declare argos-hub-group (hub-group + hub child pattern, Sprint 2.18.4)
+ *   6. argos-hub must target .argos-hub-group relative reference (Sprint 2.18.4)
  *
  * Complementary to T-0.9-argos-top-level-placement (which checks the positive
  * presence of the top-level target). This test enforces zero-tolerance on the
@@ -82,15 +82,17 @@ describe("CFG-2026-05-10-top-level-hub regression", () => {
 		expect(offenders).toEqual([]);
 	});
 
-	it("manifest must declare argos-hub as single top-level hub (Sprint 2.18.3, D140)", () => {
+	it("manifest must declare argos-hub-group (hub-group pattern restored Sprint 2.18.4)", () => {
+		const hubGroup = manifest.contributions.find((c) => c.id === "argos-hub-group");
+		expect(hubGroup).toBeDefined();
+		expect(hubGroup?.type).toBe("ms.vss-web.hub-group");
+		expect(hubGroup?.targets).toContain("ms.vss-web.project-hub-groups-collection");
+	});
+
+	it("argos-hub must target .argos-hub-group relative reference (Sprint 2.18.4)", () => {
 		const hub = manifest.contributions.find((c) => c.id === "argos-hub");
 		expect(hub).toBeDefined();
 		expect(hub?.type).toBe("ms.vss-web.hub");
-		expect(hub?.targets).toContain("ms.vss-web.project-hub-groups-collection");
-	});
-
-	it("manifest must NOT declare argos-hub-group (suppressed Sprint 2.18.3, D145)", () => {
-		const hubGroup = manifest.contributions.find((c) => c.id === "argos-hub-group");
-		expect(hubGroup).toBeUndefined();
+		expect(hub?.targets).toContain(".argos-hub-group");
 	});
 });
