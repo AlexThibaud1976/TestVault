@@ -2,9 +2,9 @@
 	"manifestVersion": 1,
 	"id": "ArgosTesting",
 	"publisher": "AlexThibaud",
-	"version": "0.5.23",
+	"version": "0.5.24",
 	"name": "ArgosTesting",
-	"description": "Industrial-grade test management for Azure DevOps — native Custom Work Items, AI-assisted, Cloud-only.",
+	"description": "Industrial-grade test management for Azure DevOps - native Custom Work Items, AI-assisted, Cloud-only.",
 	"targets": [
 		{
 			"id": "Microsoft.VisualStudio.Services.Cloud"
@@ -23,14 +23,13 @@
 	],
 	"contributions": [
 		{
-			"id": "argos-hub",
-			"type": "ms.vss-web.hub",
-			"description": "Argos Testing - Test management for Azure DevOps",
+			"id": "argos-hub-group",
+			"type": "ms.vss-web.hub-group",
+			"description": "Argos Testing hub group at the project level.",
 			"targets": ["ms.vss-web.project-hub-groups-collection"],
 			"properties": {
 				"name": "Argos",
 				"order": 100,
-				"uri": "dist/hub/hub.html",
 				"icon": {
 					"light": "static/argos-hub.png",
 					"dark": "static/argos-hub.png"
@@ -38,9 +37,20 @@
 			}
 		},
 		{
+			"id": "argos-hub",
+			"type": "ms.vss-web.hub",
+			"description": "Argos Testing - Test management for Azure DevOps",
+			"targets": [".argos-hub-group"],
+			"properties": {
+				"name": "Argos",
+				"order": 100,
+				"uri": "dist/hub/hub.html"
+			}
+		},
+		{
 			"id": "argos-coverage-panel",
 			"type": "ms.vss-work-web.work-item-form-page",
-			"description": "Test Coverage panel shown on User Story, Bug, and Requirement Work Item forms — lists linked Test Cases with their latest execution status per environment.",
+			"description": "Test Coverage panel shown on User Story, Bug, and Requirement Work Item forms - lists linked Test Cases with their latest execution status per environment.",
 			"targets": ["ms.vss-work-web.work-item-form"],
 			"properties": {
 				"name": "Test Coverage",
