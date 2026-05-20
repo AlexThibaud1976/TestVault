@@ -1,0 +1,79 @@
+.ds-section {
+	background: var(--neutral-0);
+	border: 1px solid var(--neutral-4);
+	border-radius: var(--r-3);
+	margin-bottom: var(--s-4);
+	overflow: hidden;
+	transition: box-shadow 0.15s ease;
+}
+
+.ds-section:hover {
+	box-shadow: var(--shadow-2);
+}
+
+.ds-section-header {
+	display: flex;
+	align-items: center;
+	gap: var(--s-3);
+	padding: 18px var(--s-6);
+	cursor: pointer;
+	user-select: none;
+	transition: background 0.12s ease;
+	width: 100%;
+	background: transparent;
+	border: none;
+	text-align: left;
+	font-family: var(--font-family);
+}
+
+.ds-section-header:hover {
+	background: var(--neutral-1);
+}
+
+.ds-section-icon {
+	width: 32px;
+	height: 32px;
+	border-radius: var(--r-2);
+	background: var(--argos-blue-bg);
+	color: var(--argos-blue-primary);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.ds-section-title-block {
+	flex: 1;
+	text-align: left;
+}
+
+.ds-section-title {
+	font-size: var(--t-h3);
+	font-weight: 600;
+	color: var(--neutral-9);
+}
+
+.ds-section-subtitle {
+	font-size: var(--t-small);
+	color: var(--neutral-8);
+	margin-top: 2px;
+}
+
+.ds-section-status {
+	flex-shrink: 0;
+}
+
+.ds-section-chevron {
+	color: var(--neutral-7);
+	transition: transform 0.2s ease;
+	flex-shrink: 0;
+}
+
+.ds-section-chevron.open {
+	transform: rotate(180deg);
+}
+
+.ds-section-body {
+	padding: var(--s-5) var(--s-6) var(--s-6);
+	border-top: 1px solid var(--neutral-3);
+}

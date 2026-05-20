@@ -1,0 +1,90 @@
+.ds-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--s-2);
+	border: 1px solid transparent;
+	border-radius: var(--r-1);
+	font-family: var(--font-family);
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.12s, border-color 0.12s;
+	white-space: nowrap;
+	text-decoration: none;
+}
+
+.ds-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.ds-btn-medium {
+	padding: var(--s-2) var(--s-4);
+	font-size: var(--t-body);
+	height: 32px;
+}
+
+.ds-btn-small {
+	padding: var(--s-1) var(--s-3);
+	font-size: var(--t-small);
+	height: 26px;
+}
+
+.ds-btn-large {
+	padding: var(--s-3) var(--s-5);
+	font-size: var(--t-h3);
+	height: 40px;
+}
+
+.ds-btn-primary {
+	background: var(--argos-blue-primary);
+	color: var(--neutral-0);
+	border-color: var(--argos-blue-primary);
+}
+
+.ds-btn-primary:hover:not(:disabled) {
+	background: var(--argos-blue-hover);
+	border-color: var(--argos-blue-hover);
+}
+
+.ds-btn-secondary {
+	background: var(--neutral-0);
+	color: var(--neutral-9);
+	border-color: var(--neutral-5);
+}
+
+.ds-btn-secondary:hover:not(:disabled) {
+	background: var(--neutral-2);
+	border-color: var(--neutral-7);
+}
+
+.ds-btn-subtle {
+	background: transparent;
+	color: var(--neutral-9);
+	border-color: transparent;
+}
+
+.ds-btn-subtle:hover:not(:disabled) {
+	background: var(--neutral-2);
+}
+
+.ds-btn-danger {
+	background: var(--error-fg);
+	color: var(--neutral-0);
+	border-color: var(--error-fg);
+}
+
+.ds-btn-danger:hover:not(:disabled) {
+	background: #872428;
+	border-color: #872428;
+}
+
+.ds-btn-icon {
+	display: inline-flex;
+	align-items: center;
+	flex-shrink: 0;
+}
+
+.ds-btn-label {
+	display: inline-flex;
+	align-items: center;
+}

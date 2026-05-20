@@ -7,6 +7,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.20] - 2026-05-20
+
+### Added
+
+#### Sprint 2.18 -- Design system + Test Plan UI
+
+**Design system components** (`apps/argos-extension/src/hub/design-system/`):
+- `Button` — primary / secondary / subtle / danger variants, small / medium / large sizes, icon slot
+- `Badge` — success / warning / error / info / neutral variants, dot indicator
+- `FilterChip` — active/inactive state, click handler
+- `Input` — inputSize prop (avoids HTML `size` conflict), search variant
+- `Select` — native select wrapper with options prop
+- `Table` — generic `Column<T>[]` + `rows` + emptyState
+- `EmptyState` — icon + title + description + action slot
+- `SectionCollapsible` — collapsible form section with badge status indicator
+
+**Test Plan UI** (`apps/argos-extension/src/hub/views/test-plans/`):
+- `TestPlansListView` — full CRUD list with search, status FilterChip, row count, empty state, New button
+- `TestPlanFormView` — create form: name (required), owner, tags (chip input), description textarea, iteration path select, coming-soon linked cases
+- Bug A fix: iterationPath omitted from draft when "— None —" selected (avoids TF401347)
+- `_mock-data.ts` — Sprint 2.18 POC iteration paths; Sprint 2.19 will replace with real ADO API calls (TECH-DEBT-061)
+
+**Routing** (`apps/argos-extension/src/hub/hooks/use-argos-routing.ts`):
+- `ArgosView` discriminated union (7 view kinds: test-plans-list, test-plans-form, test-cases-list, test-sets-list, preconditions-list, reports, settings)
+- `useArgosRouting` — `navigate`, `goToTestPlansList`, `goToTestPlanForm(planId?)`, `goToTab(key)`
+- `sidebarKeyForView` — maps any ArgosView to sidebar active key
+
+**App.tsx routing refactor**:
+- `AppInner` now takes `initialView: ArgosView` (not `section: string`)
+- `RouteRenderer` — centralized discriminated-union view switcher
+- All views have `data-testid` wrappers for existing test compatibility
+
+**Preview infrastructure**:
+- `preview.html` + `preview.tsx` — standalone Chrome preview with mock services (no ADO SDK)
+- `scripts/build-preview.mjs` — esbuild build + optional `--watch` mode
+- `package.json` scripts: `preview`, `preview:watch`
+
+#### Tests
+
+- `Button.test.tsx` — 9 tests (variants, sizes, onClick, disabled, icon)
+- `Badge.test.tsx` — 5 tests (all variants via it.each, dot, children)
+- `FilterChip.test.tsx` — 6 tests (renders, active, inactive, click, static)
+- `use-argos-routing.test.ts` — 17 tests (useArgosRouting + sidebarKeyForView)
+- `TestPlansListView.test.tsx` — 11 integration tests (loading, error, empty, rows, search, create)
+- `TestPlanFormView.test.tsx` — 19 integration tests (sections, validation, submit, Bug A fix, tags, toasts)
+- `CFG-2026-05-20-design-system-test-plan-ui.test.ts` — 38 regression assertions
+- Total argos-extension: 454 tests green (61 test files)
+
+### TECH-DEBT
+
+- TECH-DEBT-058 LIVRE: Design system component library
+- TECH-DEBT-059 LIVRE: Test Plan list + form UI
+- TECH-DEBT-060 NEW: Preview infrastructure (build-preview.mjs, preview.tsx)
+- TECH-DEBT-061 NEW: Replace mock iteration paths with real ADO API calls in Sprint 2.19
+
 ## [0.5.19] - 2026-05-20
 
 ### Fixed

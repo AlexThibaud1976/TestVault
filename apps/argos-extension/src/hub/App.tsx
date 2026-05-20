@@ -34,10 +34,16 @@ import { TestSetForm } from "./TestSetForm.js";
 import { WebhookAdmin } from "./WebhookAdmin.js";
 import { WorkItemLinkPanel } from "./WorkItemLinkPanel.js";
 import { ToastProvider } from "./components/Toast.js";
+import "./design-system/tokens.css";
+import { type ArgosView, sidebarKeyForView, useArgosRouting } from "./hooks/use-argos-routing.js";
 import { InstallationContext, useInstallationContext } from "./installation-context.js";
 import { ServicesProvider, useServices } from "./services-context.js";
+import { AppShell } from "./views/AppShell.js";
 import { GetStartedView } from "./views/GetStartedView.js";
 import { LimitedModeBanner } from "./views/LimitedModeBanner.js";
+import { Sidebar } from "./views/Sidebar.js";
+import { TestPlanFormView } from "./views/test-plans/TestPlanFormView.js";
+import { TestPlansListView } from "./views/test-plans/TestPlansListView.js";
 
 type Section = "plans" | "cases" | "sets" | "preconditions" | "reports" | "settings";
 
@@ -56,6 +62,23 @@ const DEFAULT_SECTION: Section = "plans";
 function resolveSection(contributionId: string | undefined): Section {
 	if (!contributionId) return DEFAULT_SECTION;
 	return CONTRIBUTION_ID_TO_SECTION[contributionId] ?? DEFAULT_SECTION;
+}
+
+function sectionToInitialView(section: Section): ArgosView {
+	switch (section) {
+		case "plans":
+			return { kind: "test-plans-list" };
+		case "cases":
+			return { kind: "test-cases-list" };
+		case "sets":
+			return { kind: "test-sets-list" };
+		case "preconditions":
+			return { kind: "preconditions-list" };
+		case "reports":
+			return { kind: "reports" };
+		case "settings":
+			return { kind: "settings" };
+	}
 }
 
 const PLACEHOLDER_MATRIX_INPUT: MatrixInput = {
@@ -278,28 +301,89 @@ export function SettingsView() {
 	);
 }
 
-function HubContent({ section }: { section: Section }) {
-	switch (section) {
-		case "plans":
-			return <PlansView />;
-		case "cases":
-			return <CasesView />;
-		case "sets":
-			return <SetsView />;
-		case "preconditions":
-			return <PreconditionsView />;
+function ComingSoonView({ title, sprint }: { title: string; sprint: string }) {
+	return (
+		<div
+			style={{
+				padding: "var(--s-9)",
+				textAlign: "center",
+				color: "var(--neutral-7)",
+			}}
+		>
+			<div
+				style={{
+					fontSize: "var(--t-h2)",
+					fontWeight: 600,
+					color: "var(--neutral-9)",
+					marginBottom: "var(--s-3)",
+				}}
+			>
+				{title}
+			</div>
+			<div style={{ fontSize: "var(--t-body)" }}>
+				Coming in Sprint {sprint}. Test Plans is the design system POC — other WIT follow the same
+				patterns.
+			</div>
+		</div>
+	);
+}
+
+function RouteRenderer({
+	view,
+	routing,
+}: {
+	view: ArgosView;
+	routing: ReturnType<typeof useArgosRouting>;
+}) {
+	switch (view.kind) {
+		case "test-plans-list":
+			return <TestPlansListView onCreateNew={() => routing.goToTestPlanForm()} />;
+		case "test-plans-form":
+			return (
+				<TestPlanFormView
+					onCancel={routing.goToTestPlansList}
+					onSuccess={routing.goToTestPlansList}
+				/>
+			);
+		case "test-cases-list":
+			return (
+				<div data-testid="view-cases">
+					<ComingSoonView title="Test Cases" sprint="2.19" />
+				</div>
+			);
+		case "test-sets-list":
+			return (
+				<div data-testid="view-sets">
+					<ComingSoonView title="Test Sets" sprint="2.19" />
+				</div>
+			);
+		case "preconditions-list":
+			return (
+				<div data-testid="view-preconditions">
+					<ComingSoonView title="Preconditions" sprint="2.19" />
+				</div>
+			);
 		case "reports":
-			return <ReportsView />;
+			return (
+				<div data-testid="view-reports">
+					<ComingSoonView title="Reports" sprint="2.20" />
+				</div>
+			);
 		case "settings":
-			return <SettingsView />;
+			return (
+				<div data-testid="view-settings">
+					<ComingSoonView title="Settings" sprint="2.20" />
+				</div>
+			);
 	}
 }
 
-export function AppInner({ section }: { section: Section }) {
+export function AppInner({ initialView }: { initialView: ArgosView }) {
 	const { connectivityService, extensionDataClient, detectInstalled, baseUrl, project } =
 		useServices();
 	const [isInstalled, setIsInstalled] = useState<boolean | null>(null);
 	const [userSkipped, setUserSkipped] = useState(false);
+	const routing = useArgosRouting(initialView);
 
 	useEffect(() => {
 		extensionDataClient
@@ -353,23 +437,25 @@ export function AppInner({ section }: { section: Section }) {
 				<LimitedModeBanner onInstallNow={() => setUserSkipped(false)} />
 			)}
 			<InstallationContext.Provider value={{ canCreate: isInstalled }}>
-				<div style={{ padding: "24px", fontFamily: "Segoe UI, sans-serif" }}>
-					<HubContent section={section} />
-				</div>
+				<AppShell
+					sidebar={
+						<Sidebar activeKey={sidebarKeyForView(routing.view)} onNavigate={routing.goToTab} />
+					}
+				>
+					<RouteRenderer view={routing.view} routing={routing} />
+				</AppShell>
 			</InstallationContext.Provider>
 		</>
 	);
 }
 
 export function App() {
-	const [section, setSection] = useState<Section>(DEFAULT_SECTION);
-	const [isReady, setIsReady] = useState(false);
+	const [initialView, setInitialView] = useState<ArgosView | null>(null);
 
 	useEffect(() => {
 		SDK.init()
 			.then(() => {
-				setSection(resolveSection(SDK.getContributionId()));
-				setIsReady(true);
+				setInitialView(sectionToInitialView(resolveSection(SDK.getContributionId())));
 				SDK.notifyLoadSucceeded();
 			})
 			.catch((err) => {
@@ -378,7 +464,7 @@ export function App() {
 			});
 	}, []);
 
-	if (!isReady) {
+	if (initialView === null) {
 		return <div data-testid="hub-loading">Loading...</div>;
 	}
 
@@ -386,7 +472,7 @@ export function App() {
 		<FluentProvider theme={webLightTheme}>
 			<ToastProvider>
 				<ServicesProvider>
-					<AppInner section={section} />
+					<AppInner initialView={initialView} />
 				</ServicesProvider>
 			</ToastProvider>
 		</FluentProvider>
