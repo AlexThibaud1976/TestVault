@@ -1,6 +1,6 @@
 {
 	"name": "@atconseil/argos-sdk",
-	"version": "0.5.21",
+	"version": "0.5.22",
 	"private": false,
 	"type": "module",
 	"exports": {
