@@ -2,6 +2,25 @@ import "./Sidebar.css";
 
 const NAV_ITEMS = [
 	{
+		key: "dashboard",
+		label: "Dashboard",
+		soon: true,
+		icon: (
+			<svg
+				viewBox="0 0 16 16"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="1.5"
+				aria-hidden="true"
+			>
+				<rect x="2" y="2" width="5" height="5" rx="0.5" />
+				<rect x="9" y="2" width="5" height="5" rx="0.5" />
+				<rect x="2" y="9" width="5" height="5" rx="0.5" />
+				<rect x="9" y="9" width="5" height="5" rx="0.5" />
+			</svg>
+		),
+	},
+	{
 		key: "test-plans",
 		label: "Test Plans",
 		icon: (
@@ -63,6 +82,55 @@ const NAV_ITEMS = [
 				<path d="M8 2 L14 13 L2 13 Z" />
 				<line x1="8" y1="6" x2="8" y2="10" />
 				<circle cx="8" cy="11.5" r="0.5" fill="currentColor" />
+			</svg>
+		),
+	},
+	{
+		key: "test-executions",
+		label: "Test Executions",
+		icon: (
+			<svg
+				viewBox="0 0 16 16"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="1.5"
+				aria-hidden="true"
+			>
+				<circle cx="8" cy="8" r="6" />
+				<path d="M6 5.5l5 2.5-5 2.5V5.5z" fill="currentColor" stroke="none" />
+			</svg>
+		),
+	},
+	{
+		key: "test-case-versions",
+		label: "TC Versions",
+		icon: (
+			<svg
+				viewBox="0 0 16 16"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="1.5"
+				aria-hidden="true"
+			>
+				<path d="M8 2v4l2 2" />
+				<circle cx="8" cy="9" r="5" />
+				<path d="M5 2.5C6.1 2 7.1 2 8 2" />
+			</svg>
+		),
+	},
+	{
+		key: "audit-log",
+		label: "Audit Log",
+		icon: (
+			<svg
+				viewBox="0 0 16 16"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="1.5"
+				aria-hidden="true"
+			>
+				<rect x="3" y="2" width="10" height="12" rx="1" />
+				<path d="M5 6h6M5 9h6M5 12h4" />
 			</svg>
 		),
 	},
@@ -138,6 +206,7 @@ export function Sidebar({ activeKey, onNavigate }: SidebarProps) {
 					>
 						{item.icon}
 						<span>{item.label}</span>
+						{item.soon && <span className="argos-sidebar-soon-badge">Soon</span>}
 					</button>
 				))}
 			</nav>

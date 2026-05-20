@@ -1,0 +1,291 @@
+.wit-form-view {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	background: var(--neutral-1);
+}
+
+.wit-form-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: var(--s-3) var(--s-6);
+	background: var(--neutral-0);
+	border-bottom: 1px solid var(--neutral-4);
+	flex-shrink: 0;
+	gap: var(--s-4);
+}
+
+.wit-form-header-left {
+	display: flex;
+	align-items: center;
+	gap: var(--s-3);
+}
+
+.wit-form-back-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border: none;
+	border-radius: var(--r-1);
+	background: transparent;
+	color: var(--neutral-8);
+	cursor: pointer;
+	flex-shrink: 0;
+}
+
+.wit-form-back-btn:hover:not(:disabled) {
+	background: var(--neutral-2);
+	color: var(--neutral-9);
+}
+
+.wit-form-back-btn:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.wit-form-title {
+	margin: 0;
+	font-size: var(--t-h3);
+	font-weight: 600;
+	color: var(--neutral-9);
+}
+
+.wit-form-header-actions {
+	display: flex;
+	align-items: center;
+	gap: var(--s-2);
+	flex-shrink: 0;
+}
+
+.wit-form-body {
+	flex: 1;
+	overflow-y: auto;
+	padding: var(--s-5) var(--s-6);
+	display: flex;
+	flex-direction: column;
+	gap: var(--s-4);
+}
+
+.wit-form-field {
+	display: flex;
+	flex-direction: column;
+	gap: var(--s-1);
+}
+
+.wit-form-field + .wit-form-field {
+	margin-top: var(--s-4);
+}
+
+.wit-field-label {
+	font-size: var(--t-body);
+	font-weight: 600;
+	color: var(--neutral-9);
+	display: flex;
+	align-items: center;
+	gap: var(--s-1);
+}
+
+.wit-field-required {
+	color: var(--error-fg);
+	font-weight: 700;
+}
+
+.wit-field-optional {
+	font-size: var(--t-small);
+	font-weight: 400;
+	color: var(--neutral-7);
+}
+
+.wit-field-hint {
+	font-size: var(--t-small);
+	color: var(--neutral-7);
+	font-style: italic;
+}
+
+.wit-textarea {
+	width: 100%;
+	padding: var(--s-2) var(--s-3);
+	border: 1px solid var(--neutral-5);
+	border-radius: var(--r-1);
+	font-family: var(--font-family);
+	font-size: var(--t-body);
+	color: var(--neutral-9);
+	background: var(--neutral-0);
+	resize: vertical;
+	outline: none;
+	transition: border-color 0.12s;
+	box-sizing: border-box;
+}
+
+.wit-textarea:focus {
+	border-color: var(--argos-blue-primary);
+	box-shadow: 0 0 0 2px var(--argos-blue-bg);
+}
+
+.wit-textarea::placeholder {
+	color: var(--neutral-6);
+}
+
+.wit-tag-input-row {
+	display: flex;
+	gap: var(--s-2);
+	align-items: center;
+}
+
+.wit-tag-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--s-1);
+	margin-top: var(--s-2);
+}
+
+.wit-tag-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--s-1);
+	padding: 2px var(--s-2);
+	border-radius: var(--r-pill);
+	background: var(--argos-blue-bg);
+	border: 1px solid var(--argos-blue-border);
+	color: var(--argos-blue-primary);
+	font-size: var(--t-small);
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.wit-tag-chip:hover {
+	background: var(--argos-blue-border);
+}
+
+.wit-tag-remove {
+	font-size: var(--t-h3);
+	line-height: 1;
+	opacity: 0.7;
+}
+
+.wit-coming-soon-placeholder {
+	display: flex;
+	align-items: center;
+	gap: var(--s-2);
+	padding: var(--s-3) var(--s-4);
+	background: var(--neutral-2);
+	border: 1px dashed var(--neutral-5);
+	border-radius: var(--r-2);
+	font-size: var(--t-small);
+	color: var(--neutral-7);
+	font-style: italic;
+}
+
+.wit-steps-list {
+	display: flex;
+	flex-direction: column;
+	gap: var(--s-2);
+}
+
+.wit-step-row {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--s-2);
+}
+
+.wit-step-index {
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--neutral-3);
+	border-radius: var(--r-pill);
+	font-size: var(--t-small);
+	font-weight: 600;
+	color: var(--neutral-8);
+	flex-shrink: 0;
+	margin-top: 6px;
+}
+
+.wit-step-fields {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: var(--s-1);
+}
+
+.wit-summary-stats {
+	display: flex;
+	gap: var(--s-4);
+	flex-wrap: wrap;
+}
+
+.wit-summary-stat {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: var(--s-3) var(--s-4);
+	background: var(--neutral-1);
+	border: 1px solid var(--neutral-4);
+	border-radius: var(--r-2);
+	min-width: 80px;
+}
+
+.wit-summary-stat__value {
+	font-size: var(--t-h2);
+	font-weight: 700;
+	color: var(--neutral-9);
+}
+
+.wit-summary-stat__label {
+	font-size: var(--t-small);
+	color: var(--neutral-7);
+	margin-top: var(--s-1);
+}
+
+.wit-tc-checkbox-list {
+	display: flex;
+	flex-direction: column;
+	gap: var(--s-1);
+	max-height: 200px;
+	overflow-y: auto;
+	border: 1px solid var(--neutral-4);
+	border-radius: var(--r-1);
+	padding: var(--s-2);
+}
+
+.wit-tc-checkbox-row {
+	display: flex;
+	align-items: center;
+	gap: var(--s-2);
+	padding: var(--s-1) var(--s-2);
+	border-radius: var(--r-1);
+	cursor: pointer;
+	font-size: var(--t-body);
+	color: var(--neutral-9);
+}
+
+.wit-tc-checkbox-row:hover {
+	background: var(--neutral-2);
+}
+
+.wit-result-row {
+	display: flex;
+	flex-direction: column;
+	gap: var(--s-2);
+	padding: var(--s-3) var(--s-4);
+	background: var(--neutral-1);
+	border: 1px solid var(--neutral-4);
+	border-radius: var(--r-2);
+}
+
+.wit-result-row-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.wit-result-row-title {
+	font-weight: 600;
+	font-size: var(--t-body);
+	color: var(--neutral-9);
+}

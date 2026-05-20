@@ -1,0 +1,21 @@
+.argos-filter-bar {
+	background: var(--neutral-0);
+	border-bottom: 1px solid var(--neutral-4);
+	padding: var(--s-3) var(--s-6);
+	display: flex;
+	gap: var(--s-2);
+	align-items: center;
+	flex-shrink: 0;
+	flex-wrap: wrap;
+}
+
+.argos-filter-bar__search {
+	flex: 1;
+	max-width: 320px;
+}
+
+.argos-filter-bar__chips {
+	display: flex;
+	gap: var(--s-1);
+	flex-wrap: wrap;
+}

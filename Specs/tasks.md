@@ -338,12 +338,26 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
   - Breaking URLs accepted (MVP): /apps/hub/...argos-hub-X -> 404 jusqu'a TECH-DEBT-068
   - 449 argos-extension + 150 regression tests green
 - [ ] TECH-DEBT-068 NEW : URL redirect anciens argos-hub-X vers argos-hub (Sprint 2.19)
+- [x] TECH-DEBT-069 LIVRE (Sprint 2.19, v0.5.25) : UI Generalization -- 6 WIT list+form views
+  - Generic components: WitListHeader, WitFilterBar, WitStatusBadge (hub/components/)
+  - Shared CSS: wit-list-view.css, wit-form-view.css (hub/views/)
+  - TestCasesListView + TestCaseFormView (5 sections, TestCaseDraft)
+  - TestSetsListView + TestSetFormView (3 sections, TestSetDraft)
+  - PreconditionsListView + PreconditionFormView (3 sections, PreconditionDraft)
+  - TestExecutionsListView + TestExecutionFormView (3 sections, ExecutionDraft)
+  - TestCaseVersionsListView (read-only, per-ID filter, listSnapshots)
+  - AuditLogListView (read-only, Export CSV action)
+  - use-argos-routing.ts: 15 routes (was 7)
+  - App.tsx RouteRenderer: all 15 routes wired (was 7 + 3 ComingSoon stubs)
+  - Sidebar.tsx: 10 items with Dashboard "Soon" badge
+  - 8 regression tests in tools/regression/; 42+ component tests in views/
+  - Version bump: 0.5.24 -> 0.5.25
 
 **Prochaines priorites :**
 - TECH-DEBT-017 Azure Functions deploy
 - TECH-DEBT-018 Commercial layer
-- TECH-DEBT-061 Real iteration/area paths from ADO (Sprint 2.19)
-- TECH-DEBT-068 URL redirect anciens hub-X (Sprint 2.19)
+- TECH-DEBT-061 Real iteration/area paths from ADO (Sprint 2.20)
+- TECH-DEBT-068 URL redirect anciens hub-X (Sprint 2.20)
 - Specs/ARCHITECTURE.md (documenter principes architecturaux emerges)
 - Documentation public README + marketplace listing
 
