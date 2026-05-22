@@ -44,6 +44,7 @@ import { GetStartedView } from "./views/GetStartedView.js";
 import { LimitedModeBanner } from "./views/LimitedModeBanner.js";
 import { PreconditionFormView } from "./views/PreconditionFormView.js";
 import { PreconditionsListView } from "./views/PreconditionsListView.js";
+import { SettingsView as SettingsViewPage } from "./views/SettingsView.js";
 import { Sidebar } from "./views/Sidebar.js";
 import { TestCaseFormView } from "./views/TestCaseFormView.js";
 import { TestCaseVersionsListView } from "./views/TestCaseVersionsListView.js";
@@ -385,11 +386,7 @@ function RouteRenderer({
 				</div>
 			);
 		case "settings":
-			return (
-				<div data-testid="view-settings">
-					<ComingSoonView title="Settings" sprint="2.20" />
-				</div>
-			);
+			return <SettingsViewPage />;
 		case "dashboard":
 			return (
 				<div data-testid="view-dashboard">

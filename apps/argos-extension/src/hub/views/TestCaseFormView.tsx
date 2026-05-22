@@ -1,5 +1,6 @@
 import type { TestCaseDraft } from "@atconseil/argos-sdk";
 import { useCallback, useState } from "react";
+import { AiGenerateModal } from "../components/AiGenerateModal.js";
 import { Badge, Button, Input, SectionCollapsible, Select } from "../design-system/index.js";
 import { useArgosCreate } from "../hooks/use-argos-create.js";
 import { useServices } from "../services-context.js";
@@ -26,6 +27,7 @@ interface TestCaseFormViewProps {
 
 export function TestCaseFormView({ onCancel, onSuccess, caseId: _caseId }: TestCaseFormViewProps) {
 	const { testCaseService } = useServices();
+	const [aiModalOpen, setAiModalOpen] = useState(false);
 
 	const [title, setTitle] = useState("");
 	const [description, setDescription] = useState("");
@@ -236,6 +238,16 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId: _caseId }: TestC
 					}
 					defaultOpen
 				>
+					<div style={{ marginBottom: "8px" }}>
+						<Button
+							variant="secondary"
+							size="small"
+							onClick={() => setAiModalOpen(true)}
+							data-testid="ai-generate-button"
+						>
+							AI Generate
+						</Button>
+					</div>
 					<div className="wit-steps-list">
 						{steps.map((step, idx) => (
 							<div key={step.id} className="wit-step-row">
@@ -356,6 +368,15 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId: _caseId }: TestC
 					</div>
 				</SectionCollapsible>
 			</div>
+
+			{aiModalOpen && (
+				<AiGenerateModal
+					onClose={() => setAiModalOpen(false)}
+					onCreated={() => {
+						setAiModalOpen(false);
+					}}
+				/>
+			)}
 		</div>
 	);
 }

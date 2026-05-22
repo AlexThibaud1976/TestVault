@@ -7,6 +7,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.28] - 2026-05-22
+
+### Added
+
+#### Sprint 2.21 Part 1 -- AI-assisted test case generation from User Story
+
+##### LLM provider architecture (new `llm/` directory)
+
+- `llm/llm-provider.ts`: `ILlmProvider` interface + `LlmProviderConfig`, `TestCaseSuggestion`,
+  `GenerationContext` types. Multi-provider adapter pattern (azure-openai default; extensible to
+  Anthropic, OpenAI, Mistral in future sprints).
+- `llm/azure-openai-provider.ts`: `AzureOpenAIProvider` -- direct `fetch` to Azure OpenAI
+  `chat/completions` API (api-version 2024-02-01). Checks apiKey + endpoint + deploymentName.
+  30s timeout. Structured output via `response_format: json_object`.
+- `llm/llm-provider-factory.ts`: `LlmProviderFactory.create(config)` -- switch on provider type,
+  throws on unknown.
+- `llm/prompt-templates.ts`: `TEST_CASE_GENERATION_SYSTEM_PROMPT` + `buildUserPrompt(context)`.
+- `llm/test-case-schema.ts`: `parseLlmResponse(content)` -- validates JSON structure and field
+  types; rejects malformed responses.
+
+##### Services
+
+- `services/llm-config-service.ts`: `ILlmConfigService` + `createLlmConfigService(dataClient)`.
+  Stores one active `LlmProviderConfig` per user via `IExtensionDataClient` (ADO Extension Data
+  Service, user-scoped, encrypted). Never uses localStorage or sessionStorage.
+- `services/ai-generation-service.ts`: `IAiGenerationService` + `createAiGenerationService()`.
+  Orchestrates LLM calls via factory. Direct browser-to-LLM (TECH-DEBT-017 deferred).
+- `services/ado-work-items-service.ts`: `IAdoWorkItemsService` + `createAdoWorkItemsService(...)`.
+  WIQL query (POST `_apis/wit/wiql`) + batch field fetch (GET `_apis/wit/workitems`). Returns
+  User Story / Bug / Requirement with title, description, acceptanceCriteria. Max 50 results.
+- All 3 services wired into `Services` interface and `buildServices()`.
+
+##### React hooks (AI)
+
+- `hooks/use-llm-config.ts`: `useLlmConfig()` -- load/save/clear config + `testConnection()`.
+- `hooks/use-ai-generation.ts`: `useAiGeneration()` -- loading + error state + reset.
+- `hooks/use-ado-work-items.ts`: `useAdoWorkItems(query, types)` -- debounced (300ms) search.
+
+##### Components
+
+- `components/AiGenerateModal.tsx`: 2-step modal. Step 1: select source work item + count.
+  Step 2: review N AI suggestions (selectable, editable). "Create N selected" creates test cases
+  in Argos and links them to source via `TestVault.TestedBy` relation.
+- `components/WorkItemPicker.tsx`: search input + type filter chips (User Story/Bug/Requirement)
+  and result list with radio-select.
+- `components/AiSuggestionCard.tsx`: per-suggestion card with checkbox, priority badge,
+  coverage type label, step count, tags, Edit (inline) and Preview (steps expand) actions.
+- `components/LlmConfigStatus.tsx`: status badge -- "Not configured" vs "Configured: provider
+  (deployment)".
+
+##### Views
+
+- `views/SettingsView.tsx`: full settings page -- "AI Configuration" section (provider, endpoint,
+  deployment, API key, Test/Save/Clear) + existing settings panels (LlmProviderSettings,
+  EnvironmentSettings, AuditLogSettings, RepoMappingSettings, QuotaSettings).
+- `views/TestCaseFormView.tsx`: "AI Generate" button in Test Steps section opens
+  `AiGenerateModal`.
+- `App.tsx`: `case "settings"` now renders `views/SettingsView.tsx` (was `ComingSoonView`).
+
+##### Security
+
+- API key encrypted via ADO Extension Data Service (user scope).
+- Never stored in localStorage, sessionStorage, or DOM.
+- Never logged to console.
+- Direct browser-to-LLM calls. Argos never proxies or caches user data (privacy-by-design).
+
+##### Tests
+
+- `tools/regression/T-2.21-llm-provider-pattern.test.ts`: 13 assertions on llm/ architecture.
+- `tools/regression/T-2.21-azure-openai-adapter.test.ts`: 12 assertions on AzureOpenAIProvider.
+- `tools/regression/T-2.21-ai-generation-flow.test.ts`: 21 assertions on components, hooks,
+  services wiring.
+- `tools/regression/T-2.21-llm-config-encryption.test.ts`: 13 security regression assertions
+  (no localStorage, no cleartext keys, no console.log).
+
 ## [0.5.27] - 2026-05-22
 
 ### Added

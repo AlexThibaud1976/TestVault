@@ -23,6 +23,9 @@ import type { IRepoMappingService } from "../hub/repo-mapping-service.js";
 import type { Services } from "../hub/services.js";
 import type { IAdoClassificationService } from "../hub/services/ado-classification-service.js";
 import type { IAdoIterationsService } from "../hub/services/ado-iterations-service.js";
+import type { IAdoWorkItemsService } from "../hub/services/ado-work-items-service.js";
+import type { IAiGenerationService } from "../hub/services/ai-generation-service.js";
+import type { ILlmConfigService } from "../hub/services/llm-config-service.js";
 
 export function createMockServices(overrides?: Partial<Services>): Services {
 	return {
@@ -47,6 +50,9 @@ export function createMockServices(overrides?: Partial<Services>): Services {
 		extensionDataClient: createMockExtensionDataClient(),
 		adoClassificationService: createMockAdoClassificationService(),
 		adoIterationsService: createMockAdoIterationsService(),
+		llmConfigService: createMockLlmConfigService(),
+		adoWorkItemsService: createMockAdoWorkItemsService(),
+		aiGenerationService: createMockAiGenerationService(),
 		detectInstalled: vi.fn().mockResolvedValue(true),
 		baseUrl: "https://dev.azure.com/MockOrg",
 		project: "MockProject",
@@ -282,6 +288,35 @@ export function createMockAdoIterationsService(
 ): IAdoIterationsService {
 	return {
 		getIterations: vi.fn().mockResolvedValue([]),
+		...overrides,
+	};
+}
+
+export function createMockAiGenerationService(
+	overrides?: Partial<IAiGenerationService>
+): IAiGenerationService {
+	return {
+		generate: vi.fn().mockResolvedValue([]),
+		...overrides,
+	};
+}
+
+export function createMockAdoWorkItemsService(
+	overrides?: Partial<IAdoWorkItemsService>
+): IAdoWorkItemsService {
+	return {
+		search: vi.fn().mockResolvedValue([]),
+		...overrides,
+	};
+}
+
+export function createMockLlmConfigService(
+	overrides?: Partial<ILlmConfigService>
+): ILlmConfigService {
+	return {
+		getConfig: vi.fn().mockResolvedValue(null),
+		setConfig: vi.fn().mockResolvedValue(undefined),
+		clearConfig: vi.fn().mockResolvedValue(undefined),
 		...overrides,
 	};
 }
