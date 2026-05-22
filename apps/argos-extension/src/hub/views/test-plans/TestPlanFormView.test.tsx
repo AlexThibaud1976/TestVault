@@ -63,9 +63,10 @@ describe("TestPlanFormView (Sprint 2.18)", () => {
 		expect(screen.getByLabelText(/description/i)).toBeDefined();
 	});
 
-	it("renders Iteration path select", () => {
+	it("renders Iteration path select", async () => {
 		renderForm();
-		expect(screen.getByLabelText(/iteration path/i)).toBeDefined();
+		// IterationPicker loads async; wait for select to be ready after loading
+		await waitFor(() => expect(screen.getByLabelText(/iteration path/i)).toBeDefined());
 	});
 
 	it("Create button is disabled when plan name is empty", () => {

@@ -1,53 +1,76 @@
-import type { TestPlanDraft } from "@atconseil/argos-sdk";
-import { useCallback, useState } from "react";
-import { Badge, Button, Input, SectionCollapsible, Select } from "../../design-system/index.js";
-import { useArgosCreate } from "../../hooks/use-argos-create.js";
+import { useEffect, useState } from "react";
+import { AreaPathPicker } from "../../components/AreaPathPicker.js";
+import { IterationPicker } from "../../components/IterationPicker.js";
+import { useArgosToast } from "../../components/Toast.js";
+import { Badge, Button, Input, SectionCollapsible } from "../../design-system/index.js";
+import { useTestPlanDetail } from "../../hooks/use-test-plan-detail.js";
 import { useServices } from "../../services-context.js";
-import { MOCK_ITERATIONS } from "../_mock-data.js";
 import "./TestPlanFormView.css";
 
 interface TestPlanFormViewProps {
+	planId?: number;
 	onCancel: () => void;
 	onSuccess: (planId: number) => void;
 }
 
-export function TestPlanFormView({ onCancel, onSuccess }: TestPlanFormViewProps) {
-	const { testPlanService } = useServices();
+export function TestPlanFormView({ planId, onCancel, onSuccess }: TestPlanFormViewProps) {
+	const { testPlanService, project } = useServices();
+	const toast = useArgosToast();
+	const isEditMode = planId !== undefined;
+
+	const { plan: existingPlan, isLoading: isLoadingPlan } = useTestPlanDetail(planId);
 
 	const [name, setName] = useState("");
 	const [owner, setOwner] = useState("");
 	const [description, setDescription] = useState("");
+	const [areaPath, setAreaPath] = useState("");
 	const [iterationPath, setIterationPath] = useState("");
 	const [tagInput, setTagInput] = useState("");
 	const [tags, setTags] = useState<string[]>([]);
+	const [isSaving, setIsSaving] = useState(false);
+	const [saveError, setSaveError] = useState<Error | null>(null);
 
-	const createFn = useCallback(
-		(draft: TestPlanDraft) => testPlanService.create(draft),
-		[testPlanService]
-	);
-
-	const { mutate, isCreating } = useArgosCreate<TestPlanDraft>({
-		kind: "TestPlan",
-		createFn,
-		onSuccess: (result) => onSuccess(result.id),
-	});
+	// Pre-fill form when existing plan loads in edit mode
+	useEffect(() => {
+		if (!existingPlan) return;
+		setName(existingPlan.name);
+		setOwner(existingPlan.owner ?? "");
+		setDescription(existingPlan.description ?? "");
+		setIterationPath(existingPlan.iterationPath ?? "");
+		setTags(existingPlan.environments ?? []);
+	}, [existingPlan]);
 
 	const isValid = name.trim().length > 0;
 
 	async function handleSubmit() {
 		if (!isValid) return;
-		const draft: TestPlanDraft = {
-			name: name.trim(),
-			owner: owner.trim(),
-		};
-		if (description.trim()) draft.description = description.trim();
-		// Bug A fix: only include iterationPath if non-empty (avoids TF401347)
-		if (iterationPath.trim()) draft.iterationPath = iterationPath.trim();
-		if (tags.length > 0) {
-			// tags stored as environments for now; linked cases in Sprint 2.19+
-			draft.environments = tags;
+		setSaveError(null);
+		setIsSaving(true);
+		try {
+			const draft = {
+				name: name.trim(),
+				owner: owner.trim(),
+				...(description.trim() ? { description: description.trim() } : {}),
+				// iterationPath uses real ADO Iteration classification nodes picker
+				...(iterationPath.trim() ? { iterationPath: iterationPath.trim() } : {}),
+				...(tags.length > 0 ? { environments: tags } : {}),
+			};
+			if (isEditMode) {
+				const updated = await testPlanService.update(planId, draft);
+				toast.success(`Test Plan #${updated.id} updated`);
+				onSuccess(updated.id);
+			} else {
+				const created = await testPlanService.create(draft);
+				toast.success(`Test Plan #${created.id} created`);
+				onSuccess(created.id);
+			}
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : "Unknown error";
+			toast.error(`Failed to save Test Plan: ${msg}`);
+			setSaveError(err instanceof Error ? err : new Error(String(err)));
+		} finally {
+			setIsSaving(false);
 		}
-		await mutate(draft).catch(() => {});
 	}
 
 	function addTag() {
@@ -62,6 +85,14 @@ export function TestPlanFormView({ onCancel, onSuccess }: TestPlanFormViewProps)
 
 	const section1Complete = name.trim().length > 0;
 
+	if (isEditMode && isLoadingPlan) {
+		return (
+			<div className="test-plan-form-view">
+				<div className="form-loading">Loading Test Plan...</div>
+			</div>
+		);
+	}
+
 	return (
 		<div className="test-plan-form-view">
 			<header className="form-header">
@@ -70,7 +101,7 @@ export function TestPlanFormView({ onCancel, onSuccess }: TestPlanFormViewProps)
 						type="button"
 						className="form-back-btn"
 						onClick={onCancel}
-						disabled={isCreating}
+						disabled={isSaving}
 						aria-label="Back to list"
 					>
 						<svg
@@ -85,17 +116,29 @@ export function TestPlanFormView({ onCancel, onSuccess }: TestPlanFormViewProps)
 							<path d="M10 3L5 8l5 5" />
 						</svg>
 					</button>
-					<h1 className="form-title">New Test Plan</h1>
+					<h1 className="form-title">{isEditMode ? "Edit Test Plan" : "New Test Plan"}</h1>
 				</div>
 				<div className="form-header-actions">
-					<Button variant="subtle" onClick={onCancel} disabled={isCreating}>
+					<Button variant="subtle" onClick={onCancel} disabled={isSaving}>
 						Cancel
 					</Button>
-					<Button variant="primary" onClick={handleSubmit} disabled={!isValid || isCreating}>
-						{isCreating ? "Creating…" : "Create Test Plan"}
+					<Button variant="primary" onClick={handleSubmit} disabled={!isValid || isSaving}>
+						{isSaving
+							? isEditMode
+								? "Saving…"
+								: "Creating…"
+							: isEditMode
+								? "Save changes"
+								: "Create Test Plan"}
 					</Button>
 				</div>
 			</header>
+
+			{saveError && (
+				<div className="form-error" role="alert">
+					{saveError.message}
+				</div>
+			)}
 
 			<div className="form-body">
 				<SectionCollapsible
@@ -123,9 +166,9 @@ export function TestPlanFormView({ onCancel, onSuccess }: TestPlanFormViewProps)
 							type="text"
 							value={name}
 							onChange={(e) => setName(e.target.value)}
-							placeholder="e.g. Sprint 25 — Regression suite"
+							placeholder="e.g. Sprint 25 -- Regression suite"
 							inputSize="large"
-							autoFocus
+							autoFocus={!isEditMode}
 						/>
 					</div>
 
@@ -176,7 +219,7 @@ export function TestPlanFormView({ onCancel, onSuccess }: TestPlanFormViewProps)
 									>
 										{t}
 										<span className="tag-remove" aria-hidden="true">
-											×
+											x
 										</span>
 									</button>
 								))}
@@ -193,7 +236,7 @@ export function TestPlanFormView({ onCancel, onSuccess }: TestPlanFormViewProps)
 							className="ds-textarea"
 							value={description}
 							onChange={(e) => setDescription(e.target.value)}
-							placeholder="Describe the scope and goals of this test plan…"
+							placeholder="Describe the scope and goals of this test plan..."
 							rows={3}
 						/>
 					</div>
@@ -201,7 +244,7 @@ export function TestPlanFormView({ onCancel, onSuccess }: TestPlanFormViewProps)
 
 				<SectionCollapsible
 					title="Test scope"
-					subtitle="Iteration and environments for this plan"
+					subtitle="Area path, iteration and environments for this plan"
 					statusBadge={
 						<Badge kind="neutral" dot>
 							Optional
@@ -210,23 +253,32 @@ export function TestPlanFormView({ onCancel, onSuccess }: TestPlanFormViewProps)
 					defaultOpen
 				>
 					<div className="form-field">
+						<label className="field-label" htmlFor="tp-area">
+							Area path <span className="field-optional">Optional</span>
+						</label>
+						<AreaPathPicker
+							id="tp-area"
+							value={areaPath}
+							onChange={setAreaPath}
+							projectId={project}
+						/>
+					</div>
+
+					<div className="form-field">
 						<label className="field-label" htmlFor="tp-iteration">
 							Iteration path <span className="field-optional">Optional</span>
 						</label>
-						<Select
+						<IterationPicker
 							id="tp-iteration"
 							value={iterationPath}
-							onChange={(e) => setIterationPath(e.target.value)}
-							options={[{ value: "", label: "— None —" }, ...MOCK_ITERATIONS]}
+							onChange={setIterationPath}
+							projectId={project}
 						/>
-						<span className="field-hint">
-							Sprint 2.19 will load real iteration paths from ADO (TECH-DEBT-061).
-						</span>
 					</div>
 
 					<div className="form-field">
 						<p className="field-label">
-							Linked test cases <span className="field-optional">Sprint 2.19+</span>
+							Linked test cases <span className="field-optional">Sprint 2.21+</span>
 						</p>
 						<div className="coming-soon-placeholder">
 							<svg
@@ -241,7 +293,7 @@ export function TestPlanFormView({ onCancel, onSuccess }: TestPlanFormViewProps)
 								<circle cx="10" cy="10" r="8" />
 								<path d="M10 6v4l2.5 2.5" />
 							</svg>
-							Drag-to-reorder linked test cases — coming in Sprint 2.19.
+							Drag-to-reorder linked test cases -- coming in Sprint 2.21.
 						</div>
 					</div>
 				</SectionCollapsible>
@@ -259,7 +311,7 @@ export function TestPlanFormView({ onCancel, onSuccess }: TestPlanFormViewProps)
 						<circle cx="8" cy="8" r="6" />
 						<path d="M8 5v3l1.5 1.5" />
 					</svg>
-					Schedule, Notifications and Permissions sections — coming in Sprint 2.19.
+					Schedule, Notifications and Permissions sections -- coming in Sprint 2.21.
 				</div>
 			</div>
 		</div>

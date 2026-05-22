@@ -7,6 +7,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.27] - 2026-05-22
+
+### Added
+
+#### Sprint 2.20 -- Real ADO integration + Edit mode Test Plan
+
+##### ADO API integration (area paths + iterations)
+
+- `services/ado-classification-service.ts`: `IAdoClassificationService` + factory
+  `createAdoClassificationService`. Fetches area paths from
+  `GET _apis/wit/classificationNodes/Areas?$depth=5`. 1h in-memory cache.
+- `services/ado-iterations-service.ts`: `IAdoIterationsService` + factory
+  `createAdoIterationsService`. Fetches iteration tree from
+  `GET _apis/wit/classificationNodes/Iterations?$depth=10`. 1h in-memory cache.
+  Both use the WIT classification nodes endpoint (no teamId required).
+- Both services wired into `Services` interface and `buildServices()`.
+
+##### React hooks
+
+- `hooks/use-ado-classification-nodes.ts`: `useAdoAreaPaths(projectId)` -- loading + error states.
+- `hooks/use-ado-iterations.ts`: `useAdoIterations(projectId)` -- loading + error states.
+- `hooks/use-test-plan-detail.ts`: `useTestPlanDetail(planId?)` -- loads existing plan for
+  edit mode pre-fill. No cache (always fresh).
+
+##### Reusable pickers
+
+- `components/AreaPathPicker.tsx`: wraps `Select` + `useAdoAreaPaths`. Shows loading/error states.
+- `components/IterationPicker.tsx`: wraps `Select` + `useAdoIterations`. Shows loading/error states.
+
+##### TestPlanFormView -- edit mode + real data
+
+- Accepts `planId?: number` prop. Create mode when absent, edit mode when present.
+- Pre-fills form from `useTestPlanDetail` when editing.
+- Title: "Edit Test Plan" / "New Test Plan". Button: "Save changes" / "Create Test Plan".
+- Calls `testPlanService.update()` in edit mode, `testPlanService.create()` in create mode.
+- Toast feedback on success and error.
+- Replaced `MOCK_ITERATIONS` + `Select` with real `IterationPicker`.
+- Added `AreaPathPicker` for area path selection.
+
+##### TestPlansListView -- click-to-edit
+
+- Added `onEditPlan: (planId: number) => void` prop.
+- ID and Name cells are clickable buttons that navigate to edit form.
+
+##### App.tsx wiring
+
+- `TestPlansListView` receives `onEditPlan` -> `routing.goToTestPlanForm(planId)`.
+- `TestPlanFormView` receives `planId` from route state.
+
+### Removed
+
+- `MOCK_AREA_PATHS` and `MOCK_ITERATIONS` from `views/_mock-data.ts` (TECH-DEBT-061 closed).
+
+### Tests
+
+- `T-2.20-area-path-integration.test.ts`: 10 checks on classification service + hook.
+- `T-2.20-iterations-integration.test.ts`: 10 checks on iterations service + hook.
+- `T-2.20-real-data-no-mocks.test.ts`: 5 regression checks preventing MOCK reintroduction.
+- `T-2.20-test-plan-edit-mode.test.ts`: 11 checks on edit mode infrastructure.
+- Updated `TestPlanFormView.test.tsx`: iteration path test uses `waitFor` for async loading.
+- Updated `TestPlansListView.test.tsx`: `onEditPlan` prop added to render helper.
+- Updated `mock-services.ts`: `createMockAdoClassificationService` +
+  `createMockAdoIterationsService` added.
+
 ## [0.5.26] - 2026-05-20
 
 ### Fixed

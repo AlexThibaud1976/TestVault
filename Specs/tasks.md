@@ -365,13 +365,23 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
   - Must cover: all 6 WIT list views, all WIQL-based service calls
   - Gate: run before any Marketplace publish
 
+**Sprint 2.20 livre (v0.5.27, 2026-05-22) :**
+
+- [x] TECH-DEBT-061 CLOSED -- Real area paths + iterations from ADO (AdoClassificationService,
+  AdoIterationsService, useAdoAreaPaths, useAdoIterations, AreaPathPicker, IterationPicker)
+- [x] TestPlanFormView edit mode (planId prop, pre-fill, save vs create, click-to-edit in list)
+- [ ] TECH-DEBT-068 URL redirect anciens hub-X -- still pending
+- [ ] TECH-DEBT-070 test-case-version-service WIQL fix -- still pending (Sprint 2.21+)
+- [ ] TECH-DEBT-071 E2E tests real ADO before publish -- still pending
+
 **Prochaines priorites :**
+
+- Sprint 2.21 : AI candidates + Gherkin native (USP)
 - TECH-DEBT-017 Azure Functions deploy
 - TECH-DEBT-018 Commercial layer
-- TECH-DEBT-061 Real iteration/area paths from ADO (Sprint 2.20)
-- TECH-DEBT-068 URL redirect anciens hub-X (Sprint 2.20)
-- TECH-DEBT-070 test-case-version-service WIQL fix (Sprint 2.20)
-- TECH-DEBT-071 E2E tests real ADO before publish (Sprint 2.20)
+- TECH-DEBT-068 URL redirect anciens hub-X
+- TECH-DEBT-070 test-case-version-service WIQL fix
+- TECH-DEBT-071 E2E tests real ADO before publish
 - Specs/ARCHITECTURE.md (documenter principes architecturaux emerges)
 - Documentation public README + marketplace listing
 

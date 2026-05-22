@@ -21,6 +21,8 @@ import type { ILlmProviderService } from "../hub/llm-provider-service.js";
 import type { IConnectivityService } from "../hub/offline-service.js";
 import type { IRepoMappingService } from "../hub/repo-mapping-service.js";
 import type { Services } from "../hub/services.js";
+import type { IAdoClassificationService } from "../hub/services/ado-classification-service.js";
+import type { IAdoIterationsService } from "../hub/services/ado-iterations-service.js";
 
 export function createMockServices(overrides?: Partial<Services>): Services {
 	return {
@@ -43,6 +45,8 @@ export function createMockServices(overrides?: Partial<Services>): Services {
 		quotaSettingsService: createMockQuotaSettingsService(),
 		flakinessReportService: createMockFlakinessReportService(),
 		extensionDataClient: createMockExtensionDataClient(),
+		adoClassificationService: createMockAdoClassificationService(),
+		adoIterationsService: createMockAdoIterationsService(),
 		detectInstalled: vi.fn().mockResolvedValue(true),
 		baseUrl: "https://dev.azure.com/MockOrg",
 		project: "MockProject",
@@ -262,6 +266,24 @@ export function createMockFlakinessReportService(
 		markKnownFlaky: vi.fn().mockResolvedValue(undefined),
 		...overrides,
 	} as unknown as IFlakinessReportService;
+}
+
+export function createMockAdoClassificationService(
+	overrides?: Partial<IAdoClassificationService>
+): IAdoClassificationService {
+	return {
+		getAreaPaths: vi.fn().mockResolvedValue([]),
+		...overrides,
+	};
+}
+
+export function createMockAdoIterationsService(
+	overrides?: Partial<IAdoIterationsService>
+): IAdoIterationsService {
+	return {
+		getIterations: vi.fn().mockResolvedValue([]),
+		...overrides,
+	};
 }
 
 export function createMockExtensionDataClient(
