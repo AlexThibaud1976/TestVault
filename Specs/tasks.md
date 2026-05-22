@@ -388,6 +388,18 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] App.tsx case "settings" now renders real SettingsView (was ComingSoonView)
 - [x] 4 regression tests T-2.21-* (provider pattern, azure adapter, flow, encryption)
 
+**Sprint 2.21.1 livre (v0.5.28.1, 2026-05-22) :**
+
+- [x] Azure AI Foundry v1 endpoint support (AzureAIFoundryProvider)
+- [x] normalizeFoundryEndpoint() -- handles trailing slash, missing /openai/v1, project-scoped paths
+- [x] LlmProviderFactory.listAvailableProviders() -- metadata-driven UI (labels, hints per provider)
+- [x] LlmProviderType extended with "azure-ai-foundry"
+- [x] LlmConfigService backward-compat: configs without provider field default to "azure-openai"
+- [x] SettingsView: provider dropdown 2 options, contextual labels/hints adapt on provider switch
+- [x] LlmConfigStatus: shows provider display name (not raw id)
+- [x] 4 regression tests T-2.21.1-* (foundry-provider, endpoint-format, factory, no-regression)
+- [x] allowlist.ts + .cjs updated for gpt-4.1 deprecation guard
+
 **Prochaines priorites :**
 
 - Sprint 2.21 Part 2 : Gherkin editor native (USP)

@@ -13,7 +13,12 @@ export function createLlmConfigService(dataClient: IExtensionDataClient): ILlmCo
 	return {
 		async getConfig(): Promise<LlmProviderConfig | null> {
 			const value = await dataClient.getValue<LlmProviderConfig>(LLM_CONFIG_KEY);
-			return value ?? null;
+			if (!value) return null;
+			// Backward compat: configs saved before Sprint 2.21.1 have no provider field
+			if (!value.provider) {
+				return { ...value, provider: "azure-openai" };
+			}
+			return value;
 		},
 
 		async setConfig(config: LlmProviderConfig): Promise<void> {

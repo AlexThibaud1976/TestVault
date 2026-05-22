@@ -1,3 +1,4 @@
+import { LlmProviderFactory } from "../llm/llm-provider-factory.js";
 import type { LlmProviderConfig } from "../llm/llm-provider.js";
 
 interface LlmConfigStatusProps {
@@ -25,8 +26,12 @@ export function LlmConfigStatus({ config, isLoading }: LlmConfigStatusProps) {
 	}
 
 	const isConfigured = !!config && config.apiKey.trim().length > 0;
+	const providerDisplayName = isConfigured
+		? (LlmProviderFactory.listAvailableProviders().find((p) => p.id === config.provider)
+				?.displayName ?? config.provider)
+		: "";
 	const label = isConfigured
-		? `${config.provider}${config.deploymentName ? ` (${config.deploymentName})` : ""}`
+		? `${providerDisplayName}${config.deploymentName ? ` (${config.deploymentName})` : ""}`
 		: "Not configured";
 
 	return (

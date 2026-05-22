@@ -1,4 +1,9 @@
-export type LlmProviderType = "azure-openai" | "anthropic" | "openai" | "mistral";
+export type LlmProviderType =
+	| "azure-openai"
+	| "azure-ai-foundry"
+	| "anthropic"
+	| "openai"
+	| "mistral";
 
 export interface LlmProviderConfig {
 	provider: LlmProviderType;

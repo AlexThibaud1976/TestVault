@@ -7,11 +7,15 @@ import { QuotaSettings } from "../QuotaSettings.js";
 import { RepoMappingSettings } from "../RepoMappingSettings.js";
 import { Button, Input, Select } from "../design-system/index.js";
 import { useLlmConfig } from "../hooks/use-llm-config.js";
+import { LlmProviderFactory } from "../llm/llm-provider-factory.js";
 import type { LlmProviderConfig, LlmProviderType } from "../llm/llm-provider.js";
 import { useServices } from "../services-context.js";
 import "./wit-form-view.css";
 
-const PROVIDER_OPTIONS = [{ value: "azure-openai", label: "Azure OpenAI" }];
+const PROVIDER_OPTIONS = LlmProviderFactory.listAvailableProviders().map((p) => ({
+	value: p.id,
+	label: p.displayName,
+}));
 
 function AiConfigSection() {
 	const { config, isLoading, isSaving, isTesting, testResult, save, clear, testConnection } =
@@ -20,6 +24,11 @@ function AiConfigSection() {
 	const [provider, setProvider] = useState<LlmProviderType>("azure-openai");
 	const [endpoint, setEndpoint] = useState("");
 	const [deploymentName, setDeploymentName] = useState("");
+
+	const providerMeta = LlmProviderFactory.listAvailableProviders().find((p) => p.id === provider);
+	const endpointPlaceholder = providerMeta?.endpointFormatHint ?? "https://...";
+	const deploymentLabel = providerMeta?.deploymentNameLabel ?? "Deployment / Model Name";
+	const deploymentPlaceholder = providerMeta?.deploymentNameHint ?? "";
 	const [apiKey, setApiKey] = useState("");
 	const [showKey, setShowKey] = useState(false);
 	const [isDirty, setIsDirty] = useState(false);
@@ -83,7 +92,7 @@ function AiConfigSection() {
 			<Text size={200} block style={{ color: "#666", marginBottom: "16px" }}>
 				Argos uses AI to generate test cases. Configure your LLM provider below. Your API key is
 				encrypted and stored only in your ADO account. Argos never has access to your key. Your
-				queries are sent directly to Azure OpenAI — Argos never sees your data.
+				queries are sent directly to your AI provider — Argos never sees your data.
 			</Text>
 
 			<div style={{ marginBottom: "12px" }}>
@@ -120,7 +129,7 @@ function AiConfigSection() {
 
 			<div className="wit-form-field">
 				<label className="wit-field-label" htmlFor="ai-endpoint">
-					Azure OpenAI Endpoint
+					Endpoint
 				</label>
 				<Input
 					id="ai-endpoint"
@@ -130,13 +139,19 @@ function AiConfigSection() {
 						setEndpoint(e.target.value);
 						markDirty();
 					}}
-					placeholder="https://your-instance.openai.azure.com"
+					placeholder={endpointPlaceholder}
 				/>
+				{provider === "azure-ai-foundry" && (
+					<div style={{ marginTop: "4px", fontSize: "11px", color: "#555" }}>
+						Format: https://[name].services.ai.azure.com/openai/v1 — /openai/v1 is appended
+						automatically if missing.
+					</div>
+				)}
 			</div>
 
 			<div className="wit-form-field">
 				<label className="wit-field-label" htmlFor="ai-deployment">
-					Deployment Name
+					{deploymentLabel}
 				</label>
 				<Input
 					id="ai-deployment"
@@ -146,7 +161,7 @@ function AiConfigSection() {
 						setDeploymentName(e.target.value);
 						markDirty();
 					}}
-					placeholder="gpt-4o-mini"
+					placeholder={deploymentPlaceholder}
 				/>
 			</div>
 
