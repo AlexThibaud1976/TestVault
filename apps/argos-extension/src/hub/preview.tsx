@@ -139,7 +139,10 @@ function PreviewApp() {
 									onSuccess={() => setView("list")}
 								/>
 							) : (
-								<TestPlansListView onCreateNew={() => setView("form")} />
+								<TestPlansListView
+									onCreateNew={() => setView("form")}
+									onEditPlan={() => setView("form")}
+								/>
 							)
 						) : (
 							<div

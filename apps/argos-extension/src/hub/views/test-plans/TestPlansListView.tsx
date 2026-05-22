@@ -56,9 +56,10 @@ function formatRelative(iso: string): string {
 
 interface TestPlansListViewProps {
 	onCreateNew: () => void;
+	onEditPlan: (planId: number) => void;
 }
 
-export function TestPlansListView({ onCreateNew }: TestPlansListViewProps) {
+export function TestPlansListView({ onCreateNew, onEditPlan }: TestPlansListViewProps) {
 	const { testPlanService } = useServices();
 	const fetchFn = useCallback(() => testPlanService.list(), [testPlanService]);
 	const { items, isLoading, error } = useArgosList({ fetchFn });
@@ -84,21 +85,45 @@ export function TestPlansListView({ onCreateNew }: TestPlansListViewProps) {
 			header: "ID",
 			width: "80px",
 			render: (r) => (
-				<span
+				<button
+					type="button"
 					style={{
 						fontFamily: "var(--font-mono)",
 						fontSize: "var(--t-small)",
-						color: "var(--neutral-8)",
+						color: "var(--argos-blue-primary, #0078d4)",
+						background: "none",
+						border: "none",
+						cursor: "pointer",
+						padding: 0,
+						textDecoration: "underline",
 					}}
+					onClick={() => onEditPlan(r.id)}
+					aria-label={`Edit test plan ${r.id}`}
 				>
 					#{r.id}
-				</span>
+				</button>
 			),
 		},
 		{
 			key: "name",
 			header: "Name",
-			render: (r) => <strong>{r.name}</strong>,
+			render: (r) => (
+				<button
+					type="button"
+					style={{
+						background: "none",
+						border: "none",
+						cursor: "pointer",
+						padding: 0,
+						fontWeight: 600,
+						color: "inherit",
+						textAlign: "left",
+					}}
+					onClick={() => onEditPlan(r.id)}
+				>
+					{r.name}
+				</button>
+			),
 		},
 		{
 			key: "state",

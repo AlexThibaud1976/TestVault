@@ -46,6 +46,14 @@ import type { IConnectivityService } from "./offline-service.js";
 import { createBrowserConnectivityService } from "./offline-service.js";
 import type { IRepoMappingService } from "./repo-mapping-service.js";
 import { createRepoMappingService } from "./repo-mapping-service.js";
+import {
+	type IAdoClassificationService,
+	createAdoClassificationService,
+} from "./services/ado-classification-service.js";
+import {
+	type IAdoIterationsService,
+	createAdoIterationsService,
+} from "./services/ado-iterations-service.js";
 export type { AdoContext } from "./ado-context.js";
 import type { AdoContext } from "./ado-context.js";
 
@@ -69,6 +77,8 @@ export interface Services {
 	quotaSettingsService: IQuotaSettingsService;
 	flakinessReportService: IFlakinessReportService;
 	extensionDataClient: IExtensionDataClient;
+	adoClassificationService: IAdoClassificationService;
+	adoIterationsService: IAdoIterationsService;
 	detectInstalled: () => Promise<boolean>;
 	baseUrl: string;
 	project: string;
@@ -276,6 +286,16 @@ export function buildServices(ctx: AdoContext): Services {
 		quotaSettingsService: quotaSettingsServiceStub,
 		flakinessReportService: flakinessReportServiceStub,
 		extensionDataClient: dataClient,
+		adoClassificationService: createAdoClassificationService(
+			ctx.baseUrl,
+			ctx.project,
+			ctx.accessTokenFactory
+		),
+		adoIterationsService: createAdoIterationsService(
+			ctx.baseUrl,
+			ctx.project,
+			ctx.accessTokenFactory
+		),
 		detectInstalled: () => checkArgosInstalled(ctx.baseUrl, ctx.project, ctx.accessTokenFactory),
 		baseUrl: ctx.baseUrl,
 		project: ctx.project,

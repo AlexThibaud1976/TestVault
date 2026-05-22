@@ -318,10 +318,16 @@ function RouteRenderer({
 }) {
 	switch (view.kind) {
 		case "test-plans-list":
-			return <TestPlansListView onCreateNew={() => routing.goToTestPlanForm()} />;
+			return (
+				<TestPlansListView
+					onCreateNew={() => routing.goToTestPlanForm()}
+					onEditPlan={(planId) => routing.goToTestPlanForm(planId)}
+				/>
+			);
 		case "test-plans-form":
 			return (
 				<TestPlanFormView
+					planId={(view as { kind: "test-plans-form"; planId?: number }).planId}
 					onCancel={routing.goToTestPlansList}
 					onSuccess={routing.goToTestPlansList}
 				/>

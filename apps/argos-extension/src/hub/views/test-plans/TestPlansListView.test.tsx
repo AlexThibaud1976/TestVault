@@ -42,14 +42,15 @@ const PLAN_B = {
 function renderView(overrides?: Parameters<typeof createMockServices>[0]) {
 	const services = createMockServices(overrides);
 	const onCreateNew = vi.fn();
+	const onEditPlan = vi.fn();
 	render(
 		<ServicesContext.Provider value={services}>
 			<ToastProvider>
-				<TestPlansListView onCreateNew={onCreateNew} />
+				<TestPlansListView onCreateNew={onCreateNew} onEditPlan={onEditPlan} />
 			</ToastProvider>
 		</ServicesContext.Provider>
 	);
-	return { services, onCreateNew };
+	return { services, onCreateNew, onEditPlan };
 }
 
 describe("TestPlansListView (Sprint 2.18)", () => {
