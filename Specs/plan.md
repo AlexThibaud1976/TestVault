@@ -634,7 +634,23 @@ paths:
 
 ---
 
-## 7. Architecture Azure Functions
+## 7. Backend (Azure Functions) - DEFERRED indefiniment
+
+**STATUT : DEFERRED (decision strategique 2026-05-22)**
+
+Cette section etait prevue pour la Phase 6. Suite a la decision
+strategique vendredi 2026-05-22, Argos reste 100% client-side
+(cf. constitution §6.0).
+
+**Donc :**
+- Pas de deploiement Azure Functions
+- Pas d'endpoint serveur Argos
+- Pas de crypto BYOK side-server (T-6.2)
+- Pas de routing serveur LLM (T-6.3)
+
+**Conservation pour reference future :** si la demande emerge pour
+un mode "Argos hosted" en Phase 6+, le design ci-dessous reste valide.
+Pour l'instant : NOT IN SCOPE.
 
 ### 7.1 Topologie de déploiement
 
@@ -833,7 +849,30 @@ async function ingestionWorker(message: IngestionMessage, ctx: InvocationContext
 
 ---
 
-## 8. Stratégie de chiffrement BYOK
+## 8. Module crypto BYOK - SIMPLIFIE
+
+**STATUT : SIMPLIFIE - encryption native ADO (decision 2026-05-22)**
+
+Cette section etait prevue pour Phase 6 avec un module crypto custom
+(AES-256-GCM + HKDF par org). Suite a la decision strategique, le
+mecanisme est simplifie :
+
+**Approche actuelle (Sprint 2.21+) :**
+- Les cles API LLM sont stockees via **ADO Extension Data Service**
+- Microsoft gere l'encryption at rest (chiffrement natif ADO)
+- Argos ne voit JAMAIS la cle en clair (recuperee a la volee pour
+  chaque call LLM)
+- Pas de masterkey, pas de HKDF, pas de gestion crypto custom
+
+**Beneficies :**
+- Securite garantie par Microsoft (ISO 27001, SOC 2, etc.)
+- Pas de surface d'attaque crypto custom
+- Pas de gestion de cles (rotation, backup)
+- Conforme RGPD via ADO data residency
+
+**Note future :** si backend Argos en Phase 6+, le design crypto
+custom redeviendrait pertinent pour transmettre les cles
+client -> serveur. Pas dans le scope actuel.
 
 ### 8.1 Modèle de chiffrement
 

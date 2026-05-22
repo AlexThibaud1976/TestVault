@@ -339,18 +339,111 @@ Conséquence : les équipes ADO sérieuses sur la qualité **migrent vers Jira a
 
 > Features Cloud-uniquement nécessitant un backend Azure Functions.
 
-#### US-5.1 : Générer un squelette de Test Cases depuis une User Story (BYOK)
+#### US-5.1 : Générer un squelette de Test Cases depuis une exigence (BYOK)
 
-**En tant que** Mathieu, **je veux** qu'Argos me propose un set de Test Cases candidats à partir d'une User Story **afin de** gagner du temps sur le drafting.
+**En tant que** Mathieu, **je veux** qu'Argos me propose un set de Test Cases
+candidats à partir d'une User Story (ou Bug, ou Requirement) **afin de**
+gagner du temps sur le drafting.
 
 **Critères d'acceptation :**
 
-- **Given** je suis User TestVault sur ADO Cloud, l'AI est activée par l'Admin et la clé LLM BYOK est configurée, **When** je clique "Suggest Tests" sur une User Story dans la coverage panel, **Then** Argos appelle le LLM configuré (via Azure Functions ATConseil) avec le system prompt de l'Admin et le contenu de la User Story (titre, description, criteria d'acceptance).
-- **Given** la génération aboutit, **Then** une preview interactive s'ouvre avec 3-7 Test Cases candidats (titre, steps, expected results) que je peux éditer, accepter individuellement ou en bloc, ou rejeter.
-- **Given** j'accepte des Test Cases candidats, **Then** ils sont créés liés à la User Story (lien `Tested By`) et le quota AI mensuel de l'utilisateur est décrémenté.
-- **Given** la clé LLM est invalide ou le quota est dépassé, **Then** un message clair s'affiche, l'opération est annulée, et un événement est journalisé.
+- **Given** je suis User TestVault sur ADO Cloud, l'AI est activée par
+  l'Admin et la clé LLM BYOK est configurée, **When** je clique
+  "Suggest Tests" **dans le Coverage Panel d'une User Story / Bug / Requirement**,
+  **Then** Argos appelle directement le LLM configuré (client-side,
+  cf. constitution §6.0) avec le system prompt et le contenu du Work Item
+  source (titre, description, criteria d'acceptance).
+
+- **Given** la génération aboutit, **Then** une preview interactive s'ouvre
+  avec 3-7 Test Cases candidats (titre, steps, expected results) que je peux
+  éditer, accepter individuellement ou en bloc, ou rejeter.
+
+- **Given** j'accepte des Test Cases candidats, **Then** ils sont créés liés
+  à la User Story (lien `Tested By`) avec :
+  - **Area Path pré-rempli** depuis le WI source, **modifiable** par
+    dropdown dans la modal de preview avant validation
+  - **Iteration Path pré-rempli** depuis le WI source si présent,
+    modifiable, optionnel
+
+- **Given** la clé LLM est invalide ou inatteignable, **Then** un message
+  clair s'affiche, l'opération est annulée, et un événement est journalisé
+  dans `TestVault.AuditLog`.
+
+**Emplacement du bouton :**
+- Coverage Panel sur User Story / Bug / Requirement (CONFIRMÉ T-6.6).
+- **PAS** dans `TestCaseFormView` (voir US-5.1.1 pour le bouton de cet écran).
 
 **Priorité :** 🟡 Moyenne (premium feature)
+
+**Note architecture :** depuis Sprint 2.21 part 1, l'appel LLM est
+**direct client → provider** (BYOK via ADO Extension Data Service).
+Pas de proxy Azure Functions. Voir constitution §6.0.
+
+#### US-5.1.1 : Compléter les steps d'un Test Case en cours d'édition via AI (BYOK)
+
+**En tant que** Mathieu (Dev SDET), **je veux** qu'Argos me propose des steps
+pour le Test Case que je suis en train de créer ou d'éditer **afin de** gagner
+du temps sur le drafting sans avoir à créer un nouveau WIT à chaque fois.
+
+**Différence avec US-5.1** : US-5.1 crée des Test Cases entiers (WIT) depuis
+une exigence. US-5.1.1 **ne crée aucun WIT** — elle remplit uniquement la
+section "Steps" du Test Case en cours d'édition dans `TestCaseFormView`.
+
+**Critères d'acceptation :**
+
+- **Given** je suis User TestVault sur ADO Cloud, l'AI est activée par
+  l'Admin, la clé BYOK est configurée, et je suis dans `TestCaseFormView`
+  (création ou édition d'un Test Case), **When** j'ai saisi *soit* un titre
+  *soit* établi au moins un lien vers une exigence (User Story / Bug /
+  Requirement), **Then** le bouton "✨ AI Suggest Steps" est actif.
+
+- **Given** je n'ai ni titre ni lien exigence, **Then** le bouton "AI Suggest
+  Steps" est **désactivé** avec un tooltip explicatif : *"Saisis un titre ou
+  lie une exigence pour activer la suggestion AI"*.
+
+- **Given** je clique "AI Suggest Steps", **Then** Argos appelle directement
+  le LLM configuré (client-side, BYOK) avec un prompt système spécialisé
+  "génération de steps", en envoyant comme contexte :
+  - Titre du Test Case (si saisi)
+  - Description (si saisie)
+  - Tags (si saisis)
+  - Priority (si saisi)
+  - Area Path (en hint domaine, si saisi)
+  - Pour chaque exigence liée : titre + description + criteria d'acceptance
+
+- **Given** la génération aboutit, **Then** une preview s'ouvre montrant
+  N steps proposés (paramètre user, 1-15, défaut 5) avec leur
+  `{action, expected}` chacun éditable inline.
+
+- **Given** le formulaire ne contient **aucun step** déjà saisi, **Then** je
+  peux accepter directement les steps proposés, qui remplissent la section
+  Steps du formulaire.
+
+- **Given** le formulaire contient **déjà des steps**, **When** je valide
+  la preview, **Then** une modal m'interroge :
+  - **Remplacer** : les steps existants sont écrasés par les nouveaux
+  - **Compléter** : les nouveaux steps sont appendés à la fin des existants
+  - **Annuler** : retour à la preview, rien n'est modifié
+
+- **Given** je clique "Remplacer" ou "Compléter", **Then** la section Steps
+  du formulaire est mise à jour en mémoire (le Test Case **n'est pas encore
+  sauvegardé** dans ADO — je dois cliquer "Create Test Case" / "Save" pour
+  persister).
+
+- **Given** la clé LLM est invalide ou le provider est down, **Then** un
+  message d'erreur user-friendly s'affiche, **les steps existants ne sont
+  pas modifiés**, et un événement est journalisé dans `TestVault.AuditLog`.
+
+- **Given** la réponse LLM est tronquée (finish_reason="length"), **Then**
+  un avertissement s'affiche : *"Réponse tronquée par max_tokens. Augmente
+  le réglage dans Settings ou demande moins de steps."*
+
+**Priorité :** 🔴 Haute (résout le bug Sprint 2.21 part 1 sur
+`TestCaseFormView` qui crée des WIT à tort).
+
+**Note architecture** : appel LLM **direct client → provider** (BYOK).
+Pas de création de WIT par cette feature. Le quota tokens est partagé
+avec US-5.1 (même clé BYOK, même provider).
 
 #### US-5.2 : Détecter les Test Cases flaky (BYOK)
 
@@ -384,40 +477,115 @@ Conséquence : les équipes ADO sérieuses sur la qualité **migrent vers Jira a
 
 #### US-6.2 : Configurer un fournisseur LLM (BYOK)
 
-**En tant que** Aïcha (Admin), **je veux** ajouter ma clé API Azure OpenAI **afin d'** activer les features AI pour mon équipe.
+**En tant que** Aïcha (Admin), **je veux** ajouter ma clé API LLM
+**afin d'** activer les features AI pour mon équipe.
+
+**Providers supportes (Sprint 2.21 a 2.21.1) :**
+- Azure OpenAI Service (classique)
+- Azure AI Foundry
+
+**Providers prevus (Phase 3+) :**
+- Anthropic Claude
+- OpenAI direct
+- Mistral AI
+- Google Gemini (optional)
 
 **Critères d'acceptation :**
 
-- **Given** je suis Admin TestVault sur ADO Cloud, **When** je vais dans Settings > AI Providers, **Then** je peux ajouter un provider parmi : Anthropic, OpenAI, Azure OpenAI. Pour Azure OpenAI je saisis : endpoint, deployment name, API version, clé. La clé est testée immédiatement (call de validation light) et chiffrée au repos.
-- **Given** la clé est invalide, **Then** un message d'erreur précis s'affiche (401, 404, network) et la clé n'est pas enregistrée.
-- **Given** la clé est valide, **Then** elle est enregistrée chiffrée et l'événement est journalisé dans `TestVaultAuditLog` avec la clé tronquée (4 derniers caractères).
-- **Given** plusieurs providers sont configurés, **Then** je peux assigner un provider par feature AI (TC generation, flakiness detection) et configurer un fallback.
+- **Given** je suis Admin TestVault sur ADO Cloud, **When** je vais
+  dans Settings > AI Configuration, **Then** je peux selectionner un
+  provider parmi : Azure OpenAI Service, Azure AI Foundry.
+  (Anthropic, OpenAI, Mistral viendront en Phase 3+).
+
+- **Given** je selectionne un provider, **Then** les labels et hints
+  des champs s'adaptent au provider (ex : "Deployment Name" pour
+  Azure OpenAI vs "Model Name" pour Foundry).
+
+- **Given** je saisis endpoint + cle + deployment/model name,
+  **Then** je peux tester la connexion ("Test" button) qui fait un
+  call de validation light.
+
+- **Given** la clé est invalide, **Then** un message d'erreur précis
+  s'affiche (401, 404, network, timeout) et la clé n'est pas
+  enregistrée.
+
+- **Given** la clé est valide, **Then** elle est encryptee via ADO
+  Extension Data Service et l'événement est journalisé dans
+  `TestVault.AuditLog` avec la clé tronquée (4 derniers caractères).
+
+- **NEW Sprint 2.21 part 2** : **Given** je clique sur "Advanced
+  Settings", **Then** je peux configurer le `max_tokens` (1000-16000,
+  defaut 4000) via slider, avec equivalence visuelle
+  "~X test cases per generation" affichee en temps reel.
+
+- **NEW Sprint 2.21 part 2** : **Given** je configure max_tokens
+  eleve (>8000), **Then** Argos utilise un timeout dynamique adapte
+  (max 5 min) pour eviter les fetch timeout sur generations longues.
 
 **Priorité :** 🔴 Haute
+
+**Note architecture :** la cle API est stockee via ADO Extension
+Data Service (encryption native Microsoft). Argos n'a JAMAIS acces
+en clair a la cle. Les requetes LLM vont directement du client
+vers le provider, sans backend Argos intermediaire.
 
 #### US-6.3 : Définir des quotas AI par utilisateur
 
-**En tant que** Aïcha, **je veux** limiter la consommation AI par utilisateur **afin de** maîtriser les coûts BYOK auprès de mon fournisseur LLM.
+**STATUT : DEFERRED indefiniment (decision strategique 2026-05-22)**
 
-**Critères d'acceptation :**
+**Raison du deferal :** Argos reste 100% client-side (cf. constitution §6.0).
+Chaque user fournit sa propre cle LLM (BYOK), donc paye ses propres calls
+au provider. Pas de tracking quota centralise necessaire.
 
-- **Given** je suis Admin TestVault, **When** je vais dans Settings > AI Quotas, **Then** je définis : quota mensuel par user (en nombre d'appels OU en tokens estimés), seuil d'alerte (défaut 80%), et action au dépassement (block hard / soft warning).
-- **Given** un user atteint 80% de son quota, **Then** une notification UI lui apparaît à sa prochaine action AI.
-- **Given** un user atteint 100% en mode block, **Then** les features AI sont désactivées pour lui jusqu'au reset mensuel ; un user en mode warning continue mais avec bandeau persistant.
+**Si reactivation future** (Phase 6+ avec backend optionnel) :
 
-**Priorité :** 🟡 Moyenne
+> En tant que Aïcha, je veux limiter la consommation AI par utilisateur
+> afin de maîtriser les coûts (mode "Argos hosted" optionnel).
+
+Implementation necessiterait :
+- Backend Argos (TECH-DEBT-017 DEFERRED)
+- Module crypto BYOK (T-6.2 DEFERRED)
+- Quota tracking serveur
+- Mode tier "Argos hosted" (vs BYOK simple)
+
+**Priorité :** ❄️ DEFERRED (pas dans MVP, pas dans Phase 2-3-4-5)
 
 #### US-6.4 : Consulter l'audit trail des opérations Admin
 
-**En tant que** Aïcha (ou auditeur externe), **je veux** consulter l'historique de toutes les opérations sensibles **afin de** garantir la traçabilité réglementaire.
+**STATUT : SIMPLIFIE - audit WIT-based (decision 2026-05-22)**
+
+**En tant que** Aïcha (ou auditeur externe), **je veux** consulter
+l'historique des opérations Admin **afin de** garantir la traçabilité.
+
+**Architecture :** audit trail via WIT `TestVault.AuditLog`
+(pas de backend dedie, cohérent avec architecture client-side §6.0).
 
 **Critères d'acceptation :**
 
-- **Given** je suis Admin TestVault, **When** je vais dans Settings > Audit Log, **Then** je vois la liste des `TestVaultAuditLog` filtrable par : auteur, date range, type d'opération, area path concerné. Pagination par 50.
-- **Given** j'exporte le log, **Then** je peux télécharger un CSV ou JSON avec la totalité des entrées sur la période sélectionnée.
-- **Given** la rétention configurée est de 24 mois, **Then** les entrées plus anciennes sont purgées (et la purge elle-même est loggée).
+- **Given** une operation Admin sensible est effectuee (config LLM,
+  install process, retention update), **When** elle se termine,
+  **Then** un Work Item `TestVault.AuditLog` est cree avec :
+  - Author (User ID + Display Name)
+  - Timestamp UTC
+  - Operation type
+  - oldValueAnonymized / newValueAnonymized (cle API masquee)
+  - Context metadata
 
-**Priorité :** 🔴 Haute
+- **Given** je suis Admin TestVault, **When** je vais dans
+  Settings > Audit Log, **Then** je vois la liste des AuditLog
+  WI filtrable par : auteur, date range, type d'opération.
+
+- **Given** j'exporte le log, **Then** je peux télécharger un CSV
+  ou JSON avec la totalité des entrées sur la période sélectionnée.
+
+- **Retention** : controle via ADO retention policies sur le WIT
+  (defaut 24 mois). Au dela : WI peuvent etre archives ou supprimes.
+
+**Priorité :** 🟡 Moyenne (post-launch)
+
+**Note :** version simplifiee vs ancienne version (qui prevoyait
+service AuditLogService backend). Decision : reste client-side,
+le WI cree suffit pour traçabilité.
 
 #### US-6.5 : Désactiver globalement l'AI au niveau organisation
 
@@ -435,29 +603,64 @@ Conséquence : les équipes ADO sérieuses sur la qualité **migrent vers Jira a
 
 ## 4. Features Détaillées
 
-### F1 — Génération AI de Test Cases (BYOK)
+### F1 — Génération AI de Test Cases depuis une exigence (BYOK)
 
-**Description :** Argos appelle un LLM (configuré BYOK) pour générer des skeletons de Test Cases à partir du contenu d'une User Story ADO. La génération passe par les Azure Functions ATConseil (proxy d'orchestration) pour ne jamais exposer la clé API au navigateur.
+**Description :** Argos appelle directement un LLM (configuré BYOK)
+**depuis le navigateur** pour générer des skeletons de Test Cases à partir
+du contenu d'une User Story / Bug / Requirement ADO. La clé API est lue à
+la volée depuis ADO Extension Data Service ; elle n'est jamais persistée
+en clair côté client.
 
-**Entrées :** Work Item ADO source (User Story, Feature, Bug). System prompt configuré par l'Admin. Modèle configuré (claude-opus-4-7, gpt-5.2, etc.). Paramètres : temperature (défaut 0.3), max_tokens (défaut 4000), nombre de TC souhaités (1-10, défaut 5).
+**Architecture (depuis Sprint 2.21 part 1, conforme constitution §6.0) :**
 
-**Sorties :** Liste de Test Cases candidats avec titre, description, steps (`{action, expected}[]`), tags suggérés. Chaque TC est en preview éditable avant création.
+```
+[TestCaseFormView ou CoveragePanel]
+        ↓ click "Suggest Tests"
+[AiSuggestTestsModal] ──── lit clé ────► [ADO Extension Data Service]
+        ↓ POST /chat/completions (direct)
+[Provider LLM : Azure OpenAI / Foundry / Anthropic / etc.]
+        ↓ réponse JSON candidates
+[Preview UI] ──► [User accepte] ──► [ADO WIT Create + lien Tested By]
+```
+
+**Pas de backend Argos intermédiaire.** Voir constitution §6.0.
+
+**Entrées :** Work Item ADO source (User Story, Feature, Bug, Requirement).
+System prompt configuré par l'Admin. Modèle configuré (gpt-4o, claude-opus-4-7, etc.).
+Paramètres : temperature (défaut 0.3), max_tokens (configurable 1000-16000, défaut 4000),
+nombre de TC souhaités (1-10, défaut 5).
+
+**Sorties :** Liste de Test Cases candidats avec titre, description,
+steps (`{action, expected}[]`), tags suggérés, Area Path pré-rempli (modifiable),
+Iteration Path pré-rempli si applicable. Chaque TC est en preview éditable
+avant création.
 
 **Règles métier :**
 
 - L'utilisateur doit être User TestVault au minimum.
 - L'AI doit être activée globalement par l'Admin (cf. US-6.5).
-- Le quota mensuel de l'utilisateur ne doit pas être épuisé.
-- Le user prompt construit envoyé au LLM contient : titre + description du Work Item, criteria d'acceptance s'ils existent. Aucune autre donnée du projet n'est envoyée (pas d'exfiltration latérale).
-- La réponse du LLM doit être un JSON parsable correspondant à un schéma défini ; sinon retry avec un prompt de correction (max 1 retry).
-- Aucune persistance Kisskool : le prompt complet et la réponse ne sortent pas du contexte d'exécution Azure Functions, sauf cache TTL ≤ 1h pour déduplication.
+- L'AI key BYOK doit être configurée par l'Admin (cf. US-6.2).
+- Le user prompt construit envoyé au LLM contient : titre + description
+  du Work Item, criteria d'acceptance s'ils existent. Aucune autre donnée
+  du projet n'est envoyée (pas d'exfiltration latérale).
+- La réponse du LLM doit être un JSON parsable correspondant à un schéma
+  défini ; sinon retry avec un prompt de correction (max 1 retry).
+- **Aucune persistance côté Argos** : prompts et réponses restent dans
+  le contexte du navigateur, jamais transmis à un serveur ATConseil.
 
 **Cas limites :**
 
-- LLM provider down → message clair, fallback provider tenté si configuré, sinon abandon avec compteur de quota non décrémenté.
-- Réponse malformée même après retry → erreur user-friendly + log technique pour debug.
-- Work Item source vide ou trop court (< 50 caractères) → l'opération est refusée avec message.
-- Quota atteint en cours d'opération → l'opération en cours se termine, les suivantes sont bloquées.
+- LLM provider down → message clair, fallback provider tenté si configuré,
+  sinon abandon avec compteur de tokens non décrémenté.
+- Réponse malformée même après retry → erreur user-friendly + log dans
+  console pour debug (jamais de log de la clé API).
+- Work Item source vide ou trop court (< 50 caractères) → l'opération
+  est refusée avec message.
+- **NEW Sprint 2.21 part 2** : finish_reason="length" → toast "Réponse
+  tronquée par max_tokens, augmente le réglage dans Settings".
+
+**Note** : la génération de steps uniquement (sans création de WIT) est
+couverte par la feature F1.1 (cf. US-5.1.1).
 
 ---
 
