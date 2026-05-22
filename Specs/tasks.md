@@ -374,9 +374,23 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [ ] TECH-DEBT-070 test-case-version-service WIQL fix -- still pending (Sprint 2.21+)
 - [ ] TECH-DEBT-071 E2E tests real ADO before publish -- still pending
 
+**Sprint 2.21 Part 1 livre (v0.5.28, 2026-05-22) :**
+
+- [x] USP "AI-First" -- AI-assisted test case generation from User Story (F04 DONE)
+- [x] Multi-provider LLM architecture (ILlmProvider, AzureOpenAIProvider, LlmProviderFactory)
+- [x] LlmConfigService -- encrypted storage via ADO Extension Data Service (no localStorage)
+- [x] AiGenerationService -- direct browser-to-LLM calls (TECH-DEBT-017 deferred, documented)
+- [x] AdoWorkItemsService -- WIQL query User Story/Bug/Requirement + batch field fetch
+- [x] AiGenerateModal -- 2-step modal (select source -> review suggestions -> create+link)
+- [x] WorkItemPicker + AiSuggestionCard + LlmConfigStatus components
+- [x] SettingsView -- "AI Configuration" section (endpoint, deployment, key, Test/Save/Clear)
+- [x] TestCaseFormView -- "AI Generate" button opens modal
+- [x] App.tsx case "settings" now renders real SettingsView (was ComingSoonView)
+- [x] 4 regression tests T-2.21-* (provider pattern, azure adapter, flow, encryption)
+
 **Prochaines priorites :**
 
-- Sprint 2.21 : AI candidates + Gherkin native (USP)
+- Sprint 2.21 Part 2 : Gherkin editor native (USP)
 - TECH-DEBT-017 Azure Functions deploy
 - TECH-DEBT-018 Commercial layer
 - TECH-DEBT-068 URL redirect anciens hub-X

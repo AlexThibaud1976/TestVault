@@ -54,6 +54,15 @@ import {
 	type IAdoIterationsService,
 	createAdoIterationsService,
 } from "./services/ado-iterations-service.js";
+import {
+	type IAdoWorkItemsService,
+	createAdoWorkItemsService,
+} from "./services/ado-work-items-service.js";
+import {
+	type IAiGenerationService,
+	createAiGenerationService,
+} from "./services/ai-generation-service.js";
+import { type ILlmConfigService, createLlmConfigService } from "./services/llm-config-service.js";
 export type { AdoContext } from "./ado-context.js";
 import type { AdoContext } from "./ado-context.js";
 
@@ -79,6 +88,9 @@ export interface Services {
 	extensionDataClient: IExtensionDataClient;
 	adoClassificationService: IAdoClassificationService;
 	adoIterationsService: IAdoIterationsService;
+	llmConfigService: ILlmConfigService;
+	adoWorkItemsService: IAdoWorkItemsService;
+	aiGenerationService: IAiGenerationService;
 	detectInstalled: () => Promise<boolean>;
 	baseUrl: string;
 	project: string;
@@ -296,6 +308,13 @@ export function buildServices(ctx: AdoContext): Services {
 			ctx.project,
 			ctx.accessTokenFactory
 		),
+		llmConfigService: createLlmConfigService(dataClient),
+		adoWorkItemsService: createAdoWorkItemsService(
+			ctx.baseUrl,
+			ctx.project,
+			ctx.accessTokenFactory
+		),
+		aiGenerationService: createAiGenerationService(),
 		detectInstalled: () => checkArgosInstalled(ctx.baseUrl, ctx.project, ctx.accessTokenFactory),
 		baseUrl: ctx.baseUrl,
 		project: ctx.project,

@@ -1,0 +1,256 @@
+import { Text } from "@fluentui/react-components";
+import { useState } from "react";
+import { AuditLogSettings } from "../AuditLogSettings.js";
+import { EnvironmentSettings } from "../EnvironmentSettings.js";
+import { LlmProviderSettings } from "../LlmProviderSettings.js";
+import { QuotaSettings } from "../QuotaSettings.js";
+import { RepoMappingSettings } from "../RepoMappingSettings.js";
+import { Button, Input, Select } from "../design-system/index.js";
+import { useLlmConfig } from "../hooks/use-llm-config.js";
+import type { LlmProviderConfig, LlmProviderType } from "../llm/llm-provider.js";
+import { useServices } from "../services-context.js";
+import "./wit-form-view.css";
+
+const PROVIDER_OPTIONS = [{ value: "azure-openai", label: "Azure OpenAI" }];
+
+function AiConfigSection() {
+	const { config, isLoading, isSaving, isTesting, testResult, save, clear, testConnection } =
+		useLlmConfig();
+
+	const [provider, setProvider] = useState<LlmProviderType>("azure-openai");
+	const [endpoint, setEndpoint] = useState("");
+	const [deploymentName, setDeploymentName] = useState("");
+	const [apiKey, setApiKey] = useState("");
+	const [showKey, setShowKey] = useState(false);
+	const [isDirty, setIsDirty] = useState(false);
+
+	// Pre-fill form from saved config (run once when config loads)
+	const [prefilled, setPrefilled] = useState(false);
+	if (!isLoading && config && !prefilled) {
+		setProvider(config.provider);
+		setEndpoint(config.endpoint ?? "");
+		setDeploymentName(config.deploymentName ?? "");
+		setApiKey(config.apiKey);
+		setPrefilled(true);
+	}
+
+	function markDirty() {
+		setIsDirty(true);
+	}
+
+	async function handleSave() {
+		const cfg: LlmProviderConfig = {
+			provider,
+			apiKey,
+			endpoint: endpoint.trim() || undefined,
+			deploymentName: deploymentName.trim() || undefined,
+		};
+		await save(cfg);
+		setIsDirty(false);
+	}
+
+	async function handleTest() {
+		const cfg: LlmProviderConfig = {
+			provider,
+			apiKey,
+			endpoint: endpoint.trim() || undefined,
+			deploymentName: deploymentName.trim() || undefined,
+		};
+		await testConnection(cfg);
+	}
+
+	async function handleClear() {
+		await clear();
+		setProvider("azure-openai");
+		setEndpoint("");
+		setDeploymentName("");
+		setApiKey("");
+		setIsDirty(false);
+		setPrefilled(false);
+	}
+
+	const isConfigured = !!config && config.apiKey.length > 0;
+
+	if (isLoading) {
+		return <div data-testid="ai-config-loading">Loading AI configuration...</div>;
+	}
+
+	return (
+		<div data-testid="ai-config-section" style={{ marginBottom: "32px", maxWidth: "600px" }}>
+			<Text size={500} weight="semibold" block style={{ marginBottom: "4px" }}>
+				AI Configuration
+			</Text>
+			<Text size={200} block style={{ color: "#666", marginBottom: "16px" }}>
+				Argos uses AI to generate test cases. Configure your LLM provider below. Your API key is
+				encrypted and stored only in your ADO account. Argos never has access to your key. Your
+				queries are sent directly to Azure OpenAI — Argos never sees your data.
+			</Text>
+
+			<div style={{ marginBottom: "12px" }}>
+				<span
+					data-testid="ai-config-status"
+					style={{
+						display: "inline-block",
+						padding: "2px 10px",
+						borderRadius: "12px",
+						fontSize: "12px",
+						fontWeight: 600,
+						background: isConfigured ? "#e6f4ea" : "#fce8e6",
+						color: isConfigured ? "#1e7e34" : "#c62828",
+					}}
+				>
+					{isConfigured ? `Configured: ${config.provider}` : "Not configured"}
+				</span>
+			</div>
+
+			<div className="wit-form-field">
+				<label className="wit-field-label" htmlFor="ai-provider">
+					Provider
+				</label>
+				<Select
+					id="ai-provider"
+					value={provider}
+					onChange={(e) => {
+						setProvider(e.target.value as LlmProviderType);
+						markDirty();
+					}}
+					options={PROVIDER_OPTIONS}
+				/>
+			</div>
+
+			<div className="wit-form-field">
+				<label className="wit-field-label" htmlFor="ai-endpoint">
+					Azure OpenAI Endpoint
+				</label>
+				<Input
+					id="ai-endpoint"
+					type="text"
+					value={endpoint}
+					onChange={(e) => {
+						setEndpoint(e.target.value);
+						markDirty();
+					}}
+					placeholder="https://your-instance.openai.azure.com"
+				/>
+			</div>
+
+			<div className="wit-form-field">
+				<label className="wit-field-label" htmlFor="ai-deployment">
+					Deployment Name
+				</label>
+				<Input
+					id="ai-deployment"
+					type="text"
+					value={deploymentName}
+					onChange={(e) => {
+						setDeploymentName(e.target.value);
+						markDirty();
+					}}
+					placeholder="gpt-4o-mini"
+				/>
+			</div>
+
+			<div className="wit-form-field">
+				<label className="wit-field-label" htmlFor="ai-apikey">
+					API Key
+				</label>
+				<div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+					<Input
+						id="ai-apikey"
+						type={showKey ? "text" : "password"}
+						value={apiKey}
+						onChange={(e) => {
+							setApiKey(e.target.value);
+							markDirty();
+						}}
+						placeholder="Your Azure OpenAI API key"
+					/>
+					<Button
+						variant="secondary"
+						size="small"
+						onClick={() => setShowKey((v) => !v)}
+						aria-label={showKey ? "Hide API key" : "Show API key"}
+					>
+						{showKey ? "Hide" : "Show"}
+					</Button>
+					<Button
+						variant="secondary"
+						size="small"
+						onClick={handleTest}
+						disabled={isTesting || !apiKey.trim()}
+						data-testid="test-connection-button"
+					>
+						{isTesting ? "Testing..." : "Test"}
+					</Button>
+				</div>
+				{testResult && (
+					<div
+						data-testid="test-result"
+						style={{
+							marginTop: "6px",
+							color: testResult.valid ? "#1e7e34" : "#c62828",
+							fontSize: "12px",
+						}}
+					>
+						{testResult.valid ? "Connection successful" : `Error: ${testResult.error}`}
+					</div>
+				)}
+			</div>
+
+			<div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+				<Button
+					variant="primary"
+					onClick={handleSave}
+					disabled={isSaving || !isDirty}
+					data-testid="save-config-button"
+				>
+					{isSaving ? "Saving..." : "Save Configuration"}
+				</Button>
+				{isConfigured && (
+					<Button
+						variant="subtle"
+						onClick={handleClear}
+						disabled={isSaving}
+						data-testid="clear-config-button"
+					>
+						Clear Configuration
+					</Button>
+				)}
+			</div>
+		</div>
+	);
+}
+
+export function SettingsView() {
+	const {
+		llmProviderService,
+		environmentConfigService,
+		auditLogService,
+		repoMappingService,
+		quotaSettingsService,
+	} = useServices();
+
+	return (
+		<div data-testid="view-settings" style={{ padding: "24px", maxWidth: "800px" }}>
+			<Text as="h2" size={500} weight="semibold" block style={{ marginBottom: "24px" }}>
+				Settings
+			</Text>
+
+			<AiConfigSection />
+
+			<LlmProviderSettings service={llmProviderService} isAdmin={true} />
+			<div style={{ marginTop: "16px" }}>
+				<EnvironmentSettings service={environmentConfigService} isAdmin={true} />
+			</div>
+			<div style={{ marginTop: "16px" }}>
+				<AuditLogSettings service={auditLogService} isAdmin={true} />
+			</div>
+			<div style={{ marginTop: "16px" }}>
+				<RepoMappingSettings service={repoMappingService} isAdmin={true} />
+			</div>
+			<div style={{ marginTop: "16px" }}>
+				<QuotaSettings service={quotaSettingsService} isAdmin={true} />
+			</div>
+		</div>
+	);
+}
