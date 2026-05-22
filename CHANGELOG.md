@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.28.1] - 2026-05-22
+
+### Added
+
+#### Sprint 2.21.1 -- Azure AI Foundry v1 endpoint support
+
+- `llm/azure-ai-foundry-provider.ts`: `AzureAIFoundryProvider` implementing `ILlmProvider`.
+  OpenAI v1-compatible format (`/chat/completions`, no `?api-version`, `model` in body).
+  `api-key` header. 30s timeout. Backward-compatible with Sprint 2.21 part 1.
+  Exports `normalizeFoundryEndpoint(endpoint)` -- handles trailing slash, missing `/openai/v1`,
+  and project-scoped paths (`/api/projects/{name}/openai/v1`).
+- `llm/llm-provider-factory.ts`: `LlmProviderFactory.listAvailableProviders()` -- returns metadata
+  for both providers (id, displayName, endpointFormatHint, deploymentNameLabel, deploymentNameHint).
+  Factory routes `azure-ai-foundry` to `AzureAIFoundryProvider`.
+- `llm/llm-provider.ts`: `LlmProviderType` extended with `"azure-ai-foundry"`.
+- `services/llm-config-service.ts`: backward-compat migration -- configs saved without `provider`
+  field (Sprint 2.21 era) default to `"azure-openai"` on read.
+- Settings UI: provider dropdown now shows 2 options. Endpoint label, placeholder and deployment
+  label adapt dynamically based on selected provider. Foundry help text (endpoint hint).
+- `LlmConfigStatus`: displays provider display name (e.g. "Azure AI Foundry") instead of raw id.
+- 4 new regression tests: `T-2.21.1-foundry-provider`, `T-2.21.1-foundry-endpoint-format`,
+  `T-2.21.1-multi-provider-factory`, `T-2.21.1-no-regression-azure-openai`.
+- `allowlist.ts` / `allowlist.cjs`: sprint task files added to gpt-4.1 deprecation scan exemptions.
+- Settings AI Configuration description: "Azure OpenAI" references generalized to "your AI provider".
+
 ## [0.5.28] - 2026-05-22
 
 ### Added

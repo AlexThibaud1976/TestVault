@@ -1,6 +1,6 @@
 {
 	"name": "@atconseil/argos-types",
-	"version": "0.5.28",
+	"version": "0.5.28.1",
 	"private": false,
 	"type": "module",
 	"exports": {
