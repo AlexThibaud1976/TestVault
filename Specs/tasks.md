@@ -398,7 +398,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] SettingsView: provider dropdown 2 options, contextual labels/hints adapt on provider switch
 - [x] LlmConfigStatus: shows provider display name (not raw id)
 - [x] 4 regression tests T-2.21.1-* (foundry-provider, endpoint-format, factory, no-regression)
-- [x] allowlist.ts + .cjs updated for gpt-4.1 deprecation guard
+- [x] allowlist.ts + .cjs updated for LLM model deprecation scan exemptions
 
 **Prochaines priorites :**
 
