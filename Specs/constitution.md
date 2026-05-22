@@ -206,6 +206,44 @@ Toutes les features AI dépendent d'un fournisseur LLM. **TestVault ne fournit p
 
 TestVault hérite du modèle de permissions ADO natif et le complète d'opérations sensibles réservées aux administrateurs. Aucun modèle parallèle n'est introduit (zéro double-administration).
 
+## 6.0 Architecture decision : Client-side only (acte 2026-05-22)
+
+Argos est concu comme une extension ADO **100% client-side**, sans backend
+serveur Argos heberge.
+
+### Implications
+
+- **API keys LLM** : stockees via ADO Extension Data Service
+  (encryption gerée par Microsoft, BYOK pattern)
+- **Pas de proxy serveur** : les requetes LLM vont DIRECTEMENT
+  du client vers le provider (Azure OpenAI, Foundry, Anthropic, etc.)
+- **Pas de telemetry serveur** : aucune donnee transite par un
+  serveur Argos
+- **Pas de quota tracking centralise** : chaque user paie ses
+  propres calls LLM via sa cle BYOK
+- **Audit trail** : conserve via WIT TestVault.AuditLog (cf. §6.3)
+  mais sans backend dedie
+
+### Trade-offs acceptes
+
+- **Plus** : Zero serveur cost, privacy-by-design, simplicite ops,
+  scalability inherente
+- **Moins** : Pas de tier "Argos hosted" (user doit fournir cle),
+  pas de quota global, audit moins puissant
+
+### Evolution future
+
+Un backend Argos pourrait etre ajoute en Phase 6+ (TECH-DEBT-017
+DEFERRED) si la demande emerge pour :
+- Tier "Argos hosted" / "Argos free credit"
+- Audit centralise multi-tenants
+- Routing intelligent multi-providers
+
+Pour l'instant : NOT IN SCOPE.
+
+Reference : decision strategique Alexandre Thibaud vendredi 2026-05-22
+apres test E2E Sprint 2.21.1.
+
 ### 6.1 Mapping des rôles
 
 | Rôle TestVault | Hérité de | Capacités |

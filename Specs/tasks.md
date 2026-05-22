@@ -890,12 +890,41 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 ---
 
-## Phase 6 — Cloud-Plus AI & administration
+## Phase 6 - Administration & Backend (DEFERRED)
 
-> **Objectif :** features AI BYOK opérationnelles, configuration LLM Admin, audit trail complet, quotas.
-> **Done quand :** Aïcha peut configurer son Anthropic key, Mathieu peut générer des TC depuis une User Story et voir un rapport flakiness.
+**STATUT GLOBAL : DEFERRED indefiniment (decision strategique 2026-05-22)**
+
+Suite a la decision strategique "Argos reste 100% client-side"
+(cf. constitution §6.0), les taches T-6.1 a T-6.4 sont DEFERRED
+indefiniment.
+
+**Pourquoi ?**
+- Pas de backend = pas besoin d'Azure Functions (T-6.1)
+- ADO Extension Data Service gere l'encryption (T-6.2 simplifie)
+- UI LLM Provider deja livre dans Sprint 2.21 part 1+2 (T-6.3 done)
+- Audit trail via WIT TestVault.AuditLog (T-6.4 simplifie)
+
+**Statut individuel :**
+- T-6.1 (Azure Functions) : ❄️ DEFERRED
+- T-6.2 (Module crypto BYOK) : ❄️ SIMPLIFIE (ADO native)
+- T-6.3 (UI LLM Provider) : ✅ DONE (Sprint 2.21 part 1+2)
+- T-6.4 (Audit trail) : 🟡 SIMPLIFIE (WIT-based, livraison Phase 3+)
+
+**Phase 6 originale est remplacee par :**
+- Sprint 2.21 part 1 (Azure OpenAI client-side)
+- Sprint 2.21.1 (Azure AI Foundry client-side)
+- Sprint 2.21 part 2 (Drawer + Gherkin + max_tokens config)
+- Sprint 2.22 (Bugfix + AI Suggest Steps) ← NOUVEAU, voir PARTIE E
+- Sprint 3.x (Anthropic client-side)
+- Sprint 3.x (Mistral client-side)
+- Sprint 4.x (LLM veille architecture)
+
+**Reactivation possible :** si demande emerge pour mode "Argos hosted"
+en Phase 6+ post-launch.
 
 ### T-6.1 — Architecture Azure Functions (déploiement initial) 🔴
+
+**❄️ DEFERRED**
 
 📚 `plan.md` §7
 
@@ -910,6 +939,8 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 ### T-6.2 — Module crypto BYOK 🔴
 
+**❄️ SIMPLIFIE (ADO native)**
+
 📚 `plan.md` §8
 
 - [x] Implémentation AES-256-GCM + dérivation HKDF par org
@@ -921,6 +952,8 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Couverture 100% du module crypto (audit-critical)
 
 ### T-6.3 — Configuration LLM Provider (UI Admin) 🔴
+
+**✅ DONE (Sprint 2.21 part 1+2)**
 
 📚 `spec.md` US-6.2, F5
 
@@ -935,6 +968,8 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Toute opération est journalisée dans `TestVault.AuditLog`
 
 ### T-6.4 — Audit trail complet 🔴
+
+**🟡 SIMPLIFIE (WIT-based, livraison Phase 3+)**
 
 📚 `spec.md` US-6.4, `constitution.md` §6.3
 
@@ -1026,6 +1061,242 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 **Done quand :**
 - [x] Configuration provider, génération TC, audit log visible, désactivation globale verts
+
+---
+
+### Sprint 2.21 part 2 - Drawer revision + Gherkin + Advanced settings 🔴
+
+📚 prompt `CLAUDE_TASK_sprint-2-21-part-2.md` + ADDENDUM
+
+**Objectif :** Trois ameliorations :
+1. Edit AI suggestions via Drawer (vs basic inline)
+2. Gherkin native (Given/When/Then editor)
+3. NEW: max_tokens configurable + dynamic timeout
+
+**Estimation :** 7-9h (ambitieux) ou splitter en 2.21 part 2 + 2.21 part 3
+
+**CHECKPOINTS :**
+- A : Drawer pattern (3h) - extensible Sprint 2.25+
+- B : Gherkin native (2-3h) - USP "BDD Native"
+- C : Advanced settings (3h) - NEW max_tokens + timeout
+
+**Done quand :**
+- [ ] AI suggestions editable via Drawer (vs inline)
+- [ ] Gherkin editor in TestCaseFormView
+- [ ] Settings UI : section "Advanced" avec MaxTokensSlider
+- [ ] max_tokens configurable 1000-16000 (defaut 4000)
+- [ ] Equivalence "tokens -> test cases" visible
+- [ ] Timeout dynamique adapte (max 5 min)
+- [ ] Detection truncation (finish_reason="length")
+- [ ] Backward compatibility (configs sans maxTokens defaultent a 4000)
+- [ ] Tests regression passent
+- [ ] Bump 0.5.28.1 -> 0.5.29
+
+**Refs :**
+- Decouverte limite max_tokens=4000 lors test E2E vendredi 2026-05-22
+- Decision Alex : configurable + pedagogique (Sprint 2.21 part 2)
+
+---
+
+### Sprint 2.22 - Bugfix TestCaseFormView + AI bouton repositioning 🔴
+
+📚 spec.md US-1.1, US-5.1 (PATCH B.1), US-5.1.1 (PATCH D.1), F1 (PATCH B.2)
+📚 constitution.md §6.0
+📚 Refs : test E2E Sprint 2.21 part 1 vendredi 2026-05-22 — 2 regressions decouvertes
+
+**Objectif :** 3 livrables couplés
+1. Bugfix régression Sprint 2.19/2.20 : Area Path + Iteration Path absents
+   de `TestCaseFormView` (vs US-1.1)
+2. Bugfix régression Sprint 2.21 part 1 : bouton AI mal placé / mauvaise
+   sémantique dans `TestCaseFormView`
+3. Nouvelle feature US-5.1.1 "AI Suggest Steps" + déplacement bouton
+   "Suggest Tests" vers Coverage Panel
+
+**Estimation :** 6-8h
+
+**Préconditions :**
+- PATCHES PARTIE A + B + D appliqués dans Specs/
+- Branche `sprint/2.22-tcform-bugfix-ai-steps` créée depuis `main`
+
+#### T-2.22.1 — Ajouter Area Path et Iteration Path à TestCaseFormView 🔴
+
+📚 spec.md US-1.1
+
+- [ ] Test-first : `TestCaseFormView.test.tsx` — assertion "form renders
+      Area Path dropdown and Iteration Path dropdown"
+- [ ] Test-first : assertion "save fails with clear error if Area Path empty"
+- [ ] Composant : sélecteur Area Path (dropdown peuplé via API ADO
+      Classification Nodes, endpoint `_apis/wit/classificationNodes/Areas`)
+- [ ] Composant : sélecteur Iteration Path (dropdown, optionnel)
+- [ ] Default Area Path : vide → user choisit (Q1)
+- [ ] Default Iteration Path : vide (optionnel)
+- [ ] Validation client : Area Path obligatoire avant save, message clair
+- [ ] Couverture test ≥ 80% (UI cible constitution §10.1)
+
+**Done quand :**
+- [ ] TestCaseFormView affiche les 2 dropdowns
+- [ ] Save sans Area Path → erreur user-friendly
+- [ ] Save avec Area Path → succès, WIT créé avec Area Path correct
+- [ ] Tests unitaires verts
+
+#### T-2.22.2 — Refactor bouton AI dans TestCaseFormView : sémantique "Steps only" 🔴
+
+📚 spec.md US-5.1.1
+
+- [ ] Test-first : `AiSuggestStepsModal.test.tsx` — flow complet
+- [ ] Renommer label bouton : "AI Generate" → "✨ AI Suggest Steps"
+- [ ] Nouveau composant `AiSuggestStepsModal` (ne pas réutiliser l'ancien
+      `AiGenerateModal` qui reste pour le Coverage Panel — voir T-2.22.3)
+- [ ] Nouveau system prompt "steps generator" (extrait, focalisé sur
+      `{action, expected}[]` only, pas de title/description/tags génération)
+- [ ] Contexte source : title + description + tags + priority + area path
+      + linked WIs (Q5)
+- [ ] Activation bouton : (title saisi **OU** au moins 1 lien exigence)
+      → lecture souple (Q7)
+- [ ] Désactivé + tooltip explicatif sinon
+- [ ] Modal preview : N steps éditables inline (N configurable 1-15, défaut 5)
+- [ ] Si steps existants → modal "Remplacer / Compléter / Annuler" (Q6)
+- [ ] Pas de création de WIT (juste modification du state local du form)
+- [ ] Gestion erreurs : LLM down, clé invalide, finish_reason="length"
+- [ ] Tests unitaires + tests integration (msw mock LLM)
+
+**Done quand :**
+- [ ] Bouton AI Suggest Steps dans `TestCaseFormView` fonctionne
+- [ ] **Aucun WIT créé** par cette action
+- [ ] Erreur "Area Path manquant" n'apparaît plus (le bouton ne crée plus de WIT)
+- [ ] Modal Remplacer/Compléter/Annuler fonctionne
+- [ ] Tests verts, couverture ≥ 90% core / 80% UI
+
+#### T-2.22.3 — Bouton "Suggest Tests" dans Coverage Panel 🔴
+
+📚 spec.md US-5.1 (PATCH B.1), F1 (PATCH B.2), T-6.6 (legacy)
+
+- [ ] Test-first : `CoveragePanel.test.tsx` — assertion "Suggest Tests
+      button visible on User Story / Bug / Requirement"
+- [ ] Composant `CoveragePanel` (existant Phase 0 T-3.1) : ajouter
+      bouton "✨ Suggest Tests" en header de panel
+- [ ] Click → modal `AiSuggestTestsModal` (migrer ici l'ancien
+      `AiGenerateModal` qui était dans `TestCaseFormView`)
+- [ ] Source : Work Item courant (US/Bug/Requirement) sur lequel le
+      panel s'affiche — pas de picker, c'est implicite
+- [ ] Modal preview : TC candidates éditables + Area Path / Iteration Path
+      pré-remplis depuis le WI source, modifiables par dropdown (Q2)
+- [ ] À acceptation : création WIT(s) `TestVault.TestCase` + lien
+      `Tested By` vers WI source
+- [ ] Gestion erreurs identique à T-2.22.2
+- [ ] Tests unitaires + integration
+
+**Done quand :**
+- [ ] Bouton "Suggest Tests" visible et fonctionnel sur Coverage Panel
+- [ ] Création TC depuis US fonctionne, lien Tested By créé
+- [ ] Area Path héritée affichée et modifiable
+- [ ] Tests verts
+
+#### T-2.22.4 — Mise à jour documentation utilisateur 🟡
+
+📚 Règle Alex : "la documentation doit être mise à jour à chaque changement"
+
+- [ ] `docs/user-guide.md` : section "AI Features" réécrite
+  - "Generate Test Cases from a Requirement" → depuis Coverage Panel
+  - "Suggest Steps for current Test Case" → depuis TestCaseFormView
+  - Screenshots à jour (au moins 4 nouveaux)
+- [ ] `docs/operator-guide.md` : troubleshooting section
+  - "AI button greyed out in Test Case form" → explication tooltip
+    (titre ou lien exigence requis)
+  - "Where did the AI button go?" → expliquer le split en 2 boutons
+- [ ] `README.md` racine : mise à jour features list
+- [ ] `CHANGELOG.md` entry Sprint 2.22 avec **BREAKING CHANGE** note
+      (sémantique du bouton TestCaseFormView changée)
+
+**Done quand :**
+- [ ] User guide reflète exactement le nouveau comportement
+- [ ] CHANGELOG documente le changement + breaking change
+- [ ] README à jour
+
+#### T-2.22.5 — Vérification dépendances + API externes 🟡
+
+📚 constitution.md §10.3, Règle Alex : "API externes vérifiées, dépendances auditées"
+
+- [ ] `npm audit --production` : 0 vulnerability HIGH / CRITICAL
+- [ ] `npm outdated` : revue manuelle, mise à jour des deps mineures sûres
+- [ ] Ping API ADO `_apis/wit/classificationNodes/Areas` : 200 OK + schéma attendu
+- [ ] Ping Azure OpenAI `/openai/deployments/{id}/chat/completions` (smoke test)
+- [ ] Ping Azure AI Foundry `/openai/v1/chat/completions` (smoke test)
+- [ ] Vérifier dans `ARGOS_LLM_PROVIDERS_REFERENCE.md` qu'aucun modèle par défaut
+      Argos n'est marqué deprecated
+- [ ] Note dans CHANGELOG si modèle deprecated détecté
+
+**Done quand :**
+- [ ] npm audit clean
+- [ ] API externes vérifiées OK
+- [ ] Aucun modèle deprecated dans les défauts Argos
+
+#### T-2.22.6 — Validation E2E sur BCEE-QA / DEMO 🔴
+
+📚 constitution.md §10.4
+
+- [ ] Installer la nouvelle version dans BCEE-QA
+- [ ] **Scenario 1** : créer un TC depuis liste → vérifier que Area Path
+      dropdown apparaît, save fonctionne avec Area Path, échoue sans
+- [ ] **Scenario 2** : sur un TC en édition, cliquer "AI Suggest Steps"
+      → vérifier qu'aucun WIT n'est créé, que les steps remplissent le form
+- [ ] **Scenario 3** : sur une User Story, ouvrir Coverage Panel, cliquer
+      "Suggest Tests" → vérifier création de TC avec lien Tested By
+- [ ] **Scenario 4** : modal Remplacer/Compléter sur steps existants
+- [ ] Captures d'écran de chaque scenario, archivées dans
+      `docs/screenshots/sprint-2.22/`
+
+**Done quand :**
+- [ ] Les 4 scenarios passent verts sur BCEE-QA
+- [ ] Captures archivées
+- [ ] Aucune régression vs Sprint 2.21.1 (vérif manuelle des autres features)
+
+---
+
+### T-2.21-postmortem - Tests de régression Sprint 2.21 part 1 🟡
+
+📚 constitution.md §10.4, validation utilisateur Q9 (2026-05-22 soir)
+
+**Contexte :** Sprint 2.21 part 1 a livré 2 régressions invisibles :
+1. Bouton "AI Generate" mal placé dans `TestCaseFormView` (devrait être
+   dans Coverage Panel selon T-6.6 / US-5.1)
+2. Area Path / Iteration Path absents de `TestCaseFormView`
+   (vs US-1.1 qui les liste comme obligatoires/optionnels)
+
+**Cause racine :** aucun test E2E n'asserait ni l'emplacement du bouton
+ni la présence des champs Area Path / Iteration Path. Les 372+ tests unit
+mockaient l'environnement ADO et ne pouvaient pas détecter ces régressions.
+
+**Conformément à constitution §10.4 (chaque bug confirmé en prod ajoute
+un test à la suite régression AVANT le fix — TDD strict §10.1) :**
+
+- [ ] `tests/e2e/regression/bug-051-tcform-missing-areapath.spec.ts` :
+  - Ouvrir TestCaseFormView (création nouveau TC depuis liste)
+  - Asserter présence du dropdown Area Path
+  - Asserter présence du dropdown Iteration Path
+  - Tenter save sans Area Path → asserter erreur visible
+  - Save avec Area Path → asserter WIT créé avec Area Path correct
+
+- [ ] `tests/e2e/regression/bug-052-aibutton-wrong-placement.spec.ts` :
+  - Ouvrir Coverage Panel d'une User Story
+  - Asserter présence du bouton "Suggest Tests"
+  - Cliquer → asserter modal `AiSuggestTestsModal` ouvre
+  - Ouvrir TestCaseFormView
+  - Asserter présence du bouton "AI Suggest Steps" (sémantique steps-only)
+  - Asserter que clic ne crée **AUCUN** WIT (vérif via API ADO)
+
+- [ ] Mise à jour `TECH-DEBT-019` (E2E réel) : ajout référence à ces 2 tests
+- [ ] CHANGELOG : mention de la prise en charge des régressions
+- [ ] CI bloquante : ces 2 tests doivent passer pour merger sur `main`
+
+**Done quand :**
+- [ ] 2 tests E2E ajoutés dans `tests/e2e/regression/`
+- [ ] CI fail si l'un des 2 tests échoue
+- [ ] TECH-DEBT-019 documenté à jour
+
+**Numérotation bug :** ajuster `bug-051` / `bug-052` selon la numérotation
+actuelle des bugs Argos. Si le dernier bug enregistré est `bug-NNN`, prendre
+`bug-NNN+1` et `bug-NNN+2`.
 
 ---
 
