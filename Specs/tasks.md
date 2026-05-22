@@ -1,4 +1,4 @@
-# Tasks — TestVault (Argos) v1.0
+﻿# Tasks — TestVault (Argos) v1.0
 
 > Version 0.1.1 — 10 mai 2026 (resync Sprint 2)
 > Découpage actionnable des phases d'implémentation
@@ -1100,7 +1100,7 @@ en Phase 6+ post-launch.
 
 ### Sprint 2.22 - Bugfix TestCaseFormView + AI bouton repositioning 🔴
 
-📚 spec.md US-1.1, US-5.1 (PATCH B.1), US-5.1.1 (PATCH D.1), F1 (PATCH B.2)
+📚 spec.md US-1.1, US-5.1, US-5.1.1, F1
 📚 constitution.md §6.0
 📚 Refs : test E2E Sprint 2.21 part 1 vendredi 2026-05-22 — 2 regressions decouvertes
 
@@ -1169,7 +1169,7 @@ en Phase 6+ post-launch.
 
 #### T-2.22.3 — Bouton "Suggest Tests" dans Coverage Panel 🔴
 
-📚 spec.md US-5.1 (PATCH B.1), F1 (PATCH B.2), T-6.6 (legacy)
+📚 spec.md US-5.1, F1, T-6.6 (legacy)
 
 - [ ] Test-first : `CoveragePanel.test.tsx` — assertion "Suggest Tests
       button visible on User Story / Bug / Requirement"
