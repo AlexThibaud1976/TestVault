@@ -87,6 +87,9 @@ export const SHARED_DOC_ALLOWLIST: ReadonlySet<string> = new Set([
 	// gpt-4.1-mini (TECH-DEBT-072 to clarify BYOK strategy in a future sprint)
 	"Specs/CLAUDE_TASK_sprint-2-21-part-2.md",
 	"claude_prompts/CLAUDE_TASK_sprint-2-21-part-2.md",
+	// Specs/tasks.md mentions gpt-4.1 in TECH-DEBT-072 (added Sprint 2.21 part 2)
+	// which exists precisely to track the cleanup work for that pattern.
+	"Specs/tasks.md",
 ]);
 
 /**
