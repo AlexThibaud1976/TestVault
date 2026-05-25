@@ -5,10 +5,15 @@ import { EnvironmentSettings } from "../EnvironmentSettings.js";
 import { LlmProviderSettings } from "../LlmProviderSettings.js";
 import { QuotaSettings } from "../QuotaSettings.js";
 import { RepoMappingSettings } from "../RepoMappingSettings.js";
-import { Button, Input, Select } from "../design-system/index.js";
+import { MaxTokensSlider } from "../components/MaxTokensSlider.js";
+import { Button, Input, SectionCollapsible, Select } from "../design-system/index.js";
 import { useLlmConfig } from "../hooks/use-llm-config.js";
 import { LlmProviderFactory } from "../llm/llm-provider-factory.js";
-import type { LlmProviderConfig, LlmProviderType } from "../llm/llm-provider.js";
+import {
+	type LlmProviderConfig,
+	type LlmProviderType,
+	MAX_TOKENS_DEFAULT,
+} from "../llm/llm-provider.js";
 import { useServices } from "../services-context.js";
 import "./wit-form-view.css";
 
@@ -24,6 +29,7 @@ function AiConfigSection() {
 	const [provider, setProvider] = useState<LlmProviderType>("azure-openai");
 	const [endpoint, setEndpoint] = useState("");
 	const [deploymentName, setDeploymentName] = useState("");
+	const [maxTokens, setMaxTokens] = useState<number>(MAX_TOKENS_DEFAULT);
 
 	const providerMeta = LlmProviderFactory.listAvailableProviders().find((p) => p.id === provider);
 	const endpointPlaceholder = providerMeta?.endpointFormatHint ?? "https://...";
@@ -40,6 +46,7 @@ function AiConfigSection() {
 		setEndpoint(config.endpoint ?? "");
 		setDeploymentName(config.deploymentName ?? "");
 		setApiKey(config.apiKey);
+		setMaxTokens(config.maxTokens ?? MAX_TOKENS_DEFAULT);
 		setPrefilled(true);
 	}
 
@@ -53,6 +60,7 @@ function AiConfigSection() {
 			apiKey,
 			endpoint: endpoint.trim() || undefined,
 			deploymentName: deploymentName.trim() || undefined,
+			maxTokens,
 		};
 		await save(cfg);
 		setIsDirty(false);
@@ -64,6 +72,7 @@ function AiConfigSection() {
 			apiKey,
 			endpoint: endpoint.trim() || undefined,
 			deploymentName: deploymentName.trim() || undefined,
+			maxTokens,
 		};
 		await testConnection(cfg);
 	}
@@ -74,6 +83,7 @@ function AiConfigSection() {
 		setEndpoint("");
 		setDeploymentName("");
 		setApiKey("");
+		setMaxTokens(MAX_TOKENS_DEFAULT);
 		setIsDirty(false);
 		setPrefilled(false);
 	}
@@ -163,6 +173,12 @@ function AiConfigSection() {
 					}}
 					placeholder={deploymentPlaceholder}
 				/>
+				<div
+					data-testid="deployment-byok-hint"
+					style={{ marginTop: "4px", fontSize: "11px", color: "#555" }}
+				>
+					Example only -- replace with your deployed model name (BYOK).
+				</div>
 			</div>
 
 			<div className="wit-form-field">
@@ -210,6 +226,31 @@ function AiConfigSection() {
 						{testResult.valid ? "Connection successful" : `Error: ${testResult.error}`}
 					</div>
 				)}
+			</div>
+
+			<div
+				style={{ marginTop: "20px", marginBottom: "12px" }}
+				data-testid="ai-config-advanced-wrapper"
+			>
+				<SectionCollapsible
+					title="Advanced Settings"
+					subtitle="Tune max_tokens to balance generation depth, speed and cost"
+					defaultOpen={false}
+				>
+					<div className="wit-form-field">
+						<label className="wit-field-label" htmlFor="ai-max-tokens">
+							Max Tokens
+						</label>
+						<MaxTokensSlider
+							id="ai-max-tokens"
+							value={maxTokens}
+							onChange={(next) => {
+								setMaxTokens(next);
+								markDirty();
+							}}
+						/>
+					</div>
+				</SectionCollapsible>
 			</div>
 
 			<div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
