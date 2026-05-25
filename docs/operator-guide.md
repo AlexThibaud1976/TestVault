@@ -173,6 +173,27 @@ Argos splits AI assistance into two surfaces depending on intent:
 
 Before Sprint 2.22 the same button existed in the Test Case form for both intents and would silently create Test Case Work Items on click -- which failed because the form did not yet collect an Area Path. The button has been split (US-5.1 vs US-5.1.1) and the broken create flow removed. See `docs/user-guide.md` (AI assistance) for the full BREAKING CHANGE note.
 
+### "Response truncated (max_tokens reached)" error on AI generation
+
+Sprint 2.21 part 2 introduces a configurable `max_tokens` budget on the LLM call. When the model hits the budget mid-response, Argos surfaces this clear error instead of leaking the previous opaque "AI response could not be parsed" wording.
+
+Resolution:
+
+- Open **Settings → AI Configuration → Advanced Settings** and **raise the Max Tokens slider** (the live "~N test cases" estimate next to the slider helps pick a value).
+- Or request **fewer test cases per call** when triggering Suggest Tests from the Coverage Panel.
+
+### "LLM call timed out after Xs" error
+
+The AbortController deadline adapts to the chosen `max_tokens`: from 30 seconds for very small budgets up to a hard cap of 5 minutes. A timeout means the provider did not respond within that window.
+
+Resolution:
+
+- **Lower Max Tokens** in **Advanced Settings** so the model has less to emit.
+- Check network connectivity to the LLM endpoint (firewall, VPN, provider outage).
+- For Azure AI Foundry: verify the endpoint URL is normalized correctly (Argos appends `/openai/v1` automatically; check that the hostname is reachable).
+
+Note: with `max_tokens=16000` and a slow model, a single call can take ~3 minutes; this is expected behaviour, not a timeout.
+
 ---
 
 ## SBOM and security

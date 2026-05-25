@@ -1,6 +1,6 @@
 {
 	"name": "@atconseil/argos-azure-pipelines-task",
-	"version": "0.5.29",
+	"version": "0.5.30",
 	"description": "Argos Azure Pipelines task - upload CI test results to Argos test management in Azure DevOps",
 	"private": true,
 	"type": "module",

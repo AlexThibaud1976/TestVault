@@ -83,6 +83,13 @@ export const SHARED_DOC_ALLOWLIST: ReadonlySet<string> = new Set([
 	// Sprint 2.22 brief: lists Argos default models including gpt-4.1 as
 	// the example of a model to check for deprecation
 	"claude_prompts/CLAUDE_TASK_sprint-2-22-code.md",
+	// Sprint 2.21 part 2 brief: documents the placeholder decision around
+	// gpt-4.1-mini (TECH-DEBT-072 to clarify BYOK strategy in a future sprint)
+	"Specs/CLAUDE_TASK_sprint-2-21-part-2.md",
+	"claude_prompts/CLAUDE_TASK_sprint-2-21-part-2.md",
+	// Specs/tasks.md mentions gpt-4.1 in TECH-DEBT-072 (added Sprint 2.21 part 2)
+	// which exists precisely to track the cleanup work for that pattern.
+	"Specs/tasks.md",
 ]);
 
 /**

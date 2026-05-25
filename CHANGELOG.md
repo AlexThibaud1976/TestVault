@@ -7,6 +7,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.30] - 2026-05-25
+
+### Sprint 2.21 part 2 -- Advanced AI Settings (max_tokens configurable)
+
+#### Added
+
+- **AI Settings → Advanced Settings** section (collapsed by default) with a
+  **Max Tokens** slider (range 1 000 to 16 000 in steps of 1 000, default
+  4 000). The live "~N test cases" estimate next to the slider lets users
+  pick a sensible budget without reading external docs.
+- `LlmProviderConfig.maxTokens?: number` (optional). Persisted as part of
+  the AI configuration in the ADO Extension Data Service.
+- **Dynamic AbortController deadline** via `calculateTimeoutMs(maxTokens)`:
+  scales from 30 seconds (low budgets) up to a hard cap of 5 minutes (high
+  budgets), so the deadline does not cut slow generations mid-flight.
+- **Explicit truncation detection**: providers detect
+  `choices[0].finish_reason='length'` before parsing JSON and throw a typed
+  `LlmTruncationError`. The UI surfaces it as
+  *"Response truncated (max_tokens reached). Increase Max Tokens in
+  Settings or request fewer test cases."*
+- **Typed timeout error** (`LlmTimeoutError`): when the AbortController
+  deadline fires, the user sees *"LLM call timed out after Xs. Reduce Max
+  Tokens in Settings or check network connectivity."* instead of a raw
+  AbortError.
+- **BYOK clarification** under the Deployment / Model Name field:
+  *"Example only -- replace with your deployed model name (BYOK)."*
+- `MAX_TOKENS_DEFAULT/MIN/MAX/STEP` and `TOKENS_PER_TEST_CASE` exported
+  from `llm-provider.ts` as the public surface read by the slider UI and
+  the providers.
+
+#### Fixed
+
+- **BCEE-QA bug 2026-05-22**: generating 10 Test Cases with
+  `max_tokens=4000` hard-coded silently failed when the LLM hit the budget
+  -- the truncated JSON envelope produced a confusing "Parse error". The
+  budget is now configurable and truncation surfaces a clear, actionable
+  message.
+
+#### Backward Compatibility
+
+- Sprint 2.21 part 1 (`azure-openai`) and Sprint 2.21.1 (`azure-ai-foundry`)
+  configurations persisted **before** this sprint do not contain a
+  `maxTokens` field. They continue to work transparently with the default
+  of 4 000 -- no migration required, no user action needed.
+
+#### Notes
+
+- Default model strategy clarification (current placeholders mention
+  `gpt-4o-mini`, code/tests still reference `gpt-4.1-mini` in some places)
+  is **deferred to TECH-DEBT-072**. This sprint only adds the BYOK caption
+  under the deployment field, not the broader code/doc reformulation.
+
 ## [0.5.29] - 2026-05-25
 
 ### Sprint 2.22 -- Bugfix TestCaseFormView + AI button repositioning

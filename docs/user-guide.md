@@ -177,6 +177,30 @@ If the form already contains steps, Argos asks whether to **Replace existing**, 
 
 Every AI call is journalled in `TestVault.AuditLog`. The API key is **never** logged: only the last four characters appear in audit entries.
 
+### Advanced AI Settings — `max_tokens`
+
+Open **Settings → AI Configuration → Advanced Settings** (collapsed by default). The **Max Tokens** slider controls the upper bound of tokens the LLM may emit per call. Higher values let the model generate more (or longer) test cases per call, at the cost of speed and tokens billed by your provider.
+
+| Max Tokens | Approximate output | Typical latency on Azure OpenAI gpt-4o-mini |
+| --- | --- | --- |
+| 1 000 | ~1 test case | a few seconds |
+| 2 000 | ~2–3 test cases | a few seconds |
+| **4 000 (default)** | **~5–7 test cases** | **~5–15 seconds** |
+| 8 000 | ~10–12 test cases | ~30 seconds |
+| 16 000 | ~20+ test cases | up to ~3 minutes |
+
+The slider also shows the live "~N test cases" estimate next to the current value so you can pick a budget without leaving the page.
+
+**Default behaviour**: configurations saved before Sprint 2.21 part 2 (i.e. without a `maxTokens` field) keep working with the default of 4 000. No migration is needed.
+
+**Truncation handling**: if the LLM hits the token budget mid-response, Argos detects it (`finish_reason='length'`) and shows a clear error inviting you to raise the slider or request fewer test cases. The cryptic "Parse error" that older builds leaked in this case (BCEE-QA bug 2026-05-22) is gone.
+
+**Timeout handling**: the AbortController deadline adapts to the chosen `max_tokens` (from 30 seconds for very small budgets up to a hard cap of 5 minutes). If the LLM does not respond within the deadline, you get a clear "LLM call timed out after Xs" error suggesting either lowering the slider or checking network connectivity.
+
+### BYOK note on the deployment / model name field
+
+Argos does **not** ship a default model. The placeholder shown next to the **Deployment / Model Name** field is an example only — replace it with your own deployed model. The caption "Example only -- replace with your deployed model name (BYOK)" was added in Sprint 2.21 part 2 to make this unambiguous.
+
 ---
 
 ## Phase 4 — Import / Export / CLI

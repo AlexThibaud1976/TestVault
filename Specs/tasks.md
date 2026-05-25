@@ -365,6 +365,31 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
   - Must cover: all 6 WIT list views, all WIQL-based service calls
   - Gate: run before any Marketplace publish
 
+- [ ] TECH-DEBT-072 NEW (Sprint 2.21 part 2, 2026-05-25) : Default model strategy clarification (BYOK)
+  - **Priorite** : Moyenne
+  - **Decouverte** : Session chat 2026-05-25 (coherence specs LLM post-Sprint 2.21 part 2)
+  - **Contexte** : Argos suit une strategie BYOK pure -- le client apporte SA cle ET SON modele.
+    Aucun modele n'est "preconise" par Argos. Actuellement le placeholder UI pour le champ
+    Deployment / Model Name vient de LlmProviderFactory.listAvailableProviders() et mentionne
+    gpt-4o-mini (Foundry) ou un texte generique (azure-openai). Le test regression
+    LLM-2026-05-09-gpt41-deprecation interdit toute mention de gpt-4.1 hors allowlist.
+    Sprint 2.21 part 2 a ajoute une caption "Example only -- replace with your deployed model
+    name (BYOK)" sous le champ pour respecter la strategie BYOK, mais le code et la doc
+    restent a clarifier sur ce sujet.
+  - **Action** :
+    - Clarifier dans ARGOS_LLM_PROVIDERS_REFERENCE.md la distinction "modeles utilises pour
+      tests internes" vs "modeles recommandes a l'utilisateur" (probablement : Argos ne
+      recommande aucun modele, juste documente ce qui est compatible).
+    - Reformuler le test regression LLM-2026-05-09-gpt41-deprecation : autoriser le code
+      provider et les tests internes a mentionner gpt-4.1-mini (allowlist deja partielle),
+      mais maintenir l'interdiction dans la doc utilisateur et les messages d'erreur affiches.
+    - Verifier que azure-ai-foundry-provider.ts et azure-openai-provider.ts n'ont aucune
+      valeur "default model" qui pourrait etre percue comme preconisation Argos.
+  - **Estimation** : 1-2h
+  - **Sprint cible** : a planifier (probablement Sprint 2.21 part 4 ou avant Sprint 4.x)
+  - **Refs** : Session chat 2026-05-25 (Q-bonus 1/2/3 actees par Alexandre Thibaud),
+    Sprint 2.21 part 2 commit 044ae04 (caption "Example only" deja en place)
+
 **Sprint 2.20 livre (v0.5.27, 2026-05-22) :**
 
 - [x] TECH-DEBT-061 CLOSED -- Real area paths + iterations from ADO (AdoClassificationService,
