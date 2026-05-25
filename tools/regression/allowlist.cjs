@@ -53,7 +53,7 @@ const SHARED_DOC_ALLOWLIST = new Set([
 	"tools/claude-prompts/CLAUDE_TASK_sprint-2-5d.md",
 	"tools/claude-prompts/CLAUDE_TASK_sprint-2-5e.md",
 	"tools/claude-prompts/CLAUDE_TASK_sprint-2-5f-fix.md",
-	"Specs/COMMERCIAL.md",
+	"Specs/archives/COMMERCIAL.md",
 	"tools/claude-prompts/CLAUDE_TASK_sprint-2-6.md",
 	"tools/claude-prompts/CLAUDE_TASK_sprint-2-7.md",
 	// Sprint 2.21 / 2.21.1 task files (contain gpt-4.1-mini as historical doc from Alex setup session)
@@ -63,7 +63,7 @@ const SHARED_DOC_ALLOWLIST = new Set([
 	"claude_prompts/CLAUDE_TASK_sprint-2-20.md",
 	// Sprint 2.22 brief: lists Argos default models including gpt-4.1 as
 	// the example of a model to check for deprecation
-	"Specs/CLAUDE_TASK_sprint-2-22-code.md",
+	"claude_prompts/CLAUDE_TASK_sprint-2-22-code.md",
 ]);
 
 module.exports = { SHARED_DOC_ALLOWLIST };
