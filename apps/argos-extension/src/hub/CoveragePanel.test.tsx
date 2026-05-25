@@ -6,8 +6,20 @@ import type {
 } from "@atconseil/argos-sdk";
 import type { TestVaultTestExecution } from "@atconseil/argos-types";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+	createMockAdoClassificationService,
+	createMockAdoIterationsService,
+	createMockAiGenerationService,
+	createMockLlmConfigService,
+	createMockServices,
+	createMockTestCaseService,
+	createMockWorkItemLinkService as createMockWILService,
+} from "../test-utils/mock-services.js";
 import { CoveragePanel } from "./CoveragePanel.js";
+import { ToastProvider } from "./components/Toast.js";
+import { ServicesContext } from "./services-context.js";
 
 afterEach(cleanup);
 
@@ -154,5 +166,108 @@ describe("CoveragePanel", () => {
 		expect(vi.mocked(execService.listExecutions)).toHaveBeenCalledWith(
 			expect.objectContaining({ testCaseId: 43 })
 		);
+	});
+});
+
+// =============================================================================
+// T-2.22.3 -- "Suggest Tests" button (Sprint 2.21 part 1 regression: misplaced AI button)
+// Spec: spec.md US-5.1, T-6.6 (legacy)
+// =============================================================================
+
+const AREA_PATHS = [
+	{ id: 1, name: "MockProject", path: "MockProject", hasChildren: true },
+	{ id: 2, name: "Auth", path: "MockProject\\Auth", hasChildren: false },
+];
+const ITERATIONS = [{ id: 10, name: "MockProject", path: "MockProject", hasChildren: true }];
+const LLM_CONFIG = {
+	provider: "azure-openai" as const,
+	apiKey: "test-key-1234",
+	endpoint: "https://example.openai.azure.com",
+	deploymentName: "gpt-4o",
+};
+
+interface RenderAiOptions {
+	workItemType: string;
+	listLinks?: () => Promise<WorkItemLink[]>;
+}
+
+function renderWithServices(opts: RenderAiOptions) {
+	const linkServiceMock = createMockWILService({
+		listLinks: vi.fn(opts.listLinks ?? (() => Promise.resolve([]))),
+	});
+	const execServiceMock = makeExecService({
+		listExecutions: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 }),
+	});
+	const services = createMockServices({
+		workItemLinkService: linkServiceMock,
+		testExecutionService: execServiceMock,
+		adoClassificationService: createMockAdoClassificationService({
+			getAreaPaths: vi.fn().mockResolvedValue(AREA_PATHS),
+		}),
+		adoIterationsService: createMockAdoIterationsService({
+			getIterations: vi.fn().mockResolvedValue(ITERATIONS),
+		}),
+		testCaseService: createMockTestCaseService(),
+		aiGenerationService: createMockAiGenerationService({
+			generate: vi.fn().mockResolvedValue([]),
+		}),
+		llmConfigService: createMockLlmConfigService({
+			getConfig: vi.fn().mockResolvedValue(LLM_CONFIG),
+		}),
+	});
+	render(
+		<ServicesContext.Provider value={services}>
+			<ToastProvider>
+				<CoveragePanel
+					workItemId={10}
+					workItemType={opts.workItemType}
+					linkService={linkServiceMock}
+					executionService={execServiceMock}
+				/>
+			</ToastProvider>
+		</ServicesContext.Provider>
+	);
+	return { services };
+}
+
+describe("T-2.22.3 -- CoveragePanel Suggest Tests button", () => {
+	it("renders the 'Suggest Tests' button when workItemType is 'User Story'", async () => {
+		renderWithServices({ workItemType: "User Story" });
+		await waitFor(() => {
+			expect(screen.getByRole("button", { name: /Suggest Tests/i })).toBeDefined();
+		});
+	});
+
+	it("renders the 'Suggest Tests' button when workItemType is 'Bug'", async () => {
+		renderWithServices({ workItemType: "Bug" });
+		await waitFor(() => {
+			expect(screen.getByRole("button", { name: /Suggest Tests/i })).toBeDefined();
+		});
+	});
+
+	it("renders the 'Suggest Tests' button when workItemType is 'Requirement'", async () => {
+		renderWithServices({ workItemType: "Requirement" });
+		await waitFor(() => {
+			expect(screen.getByRole("button", { name: /Suggest Tests/i })).toBeDefined();
+		});
+	});
+
+	it("does NOT render the 'Suggest Tests' button when workItemType is 'Test Case'", async () => {
+		renderWithServices({ workItemType: "Test Case" });
+		// Wait for the panel to settle (empty state)
+		await waitFor(() => expect(screen.getByTestId("coverage-panel")).toBeDefined());
+		expect(screen.queryByRole("button", { name: /Suggest Tests/i })).toBeNull();
+	});
+
+	it("clicking 'Suggest Tests' opens the AiSuggestTestsModal preview", async () => {
+		const user = userEvent.setup();
+		renderWithServices({ workItemType: "User Story" });
+		const btn = await screen.findByRole("button", { name: /Suggest Tests/i });
+		await user.click(btn);
+		await waitFor(() => {
+			// Modal title or dialog with the right aria-label
+			const modal = screen.queryByTestId("ai-suggest-tests-modal");
+			expect(modal).not.toBeNull();
+		});
 	});
 });

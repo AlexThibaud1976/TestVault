@@ -11,6 +11,10 @@ export interface CoveragePanelProps {
 	workItemId: number;
 	linkService: IWorkItemLinkService;
 	executionService: ITestExecutionService;
+	// Sprint 2.22 T-2.22.3: used by the upcoming "Suggest Tests" button to decide
+	// visibility (only User Story / Bug / Requirement). Currently inert -- behaviour
+	// wired in T-2.22.3.
+	workItemType?: string;
 }
 
 type CoverageRow = {
@@ -18,7 +22,12 @@ type CoverageRow = {
 	latestStatus: GlobalStatus | null;
 };
 
-export function CoveragePanel({ workItemId, linkService, executionService }: CoveragePanelProps) {
+export function CoveragePanel({
+	workItemId,
+	linkService,
+	executionService,
+	workItemType: _workItemType,
+}: CoveragePanelProps) {
 	const [rows, setRows] = useState<CoverageRow[]>([]);
 	const [loaded, setLoaded] = useState(false);
 
