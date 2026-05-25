@@ -104,7 +104,10 @@ describe("T-2.21.1 AzureAIFoundryProvider", () => {
 	it("has AbortController timeout for generation calls", () => {
 		const src = readFileSync(FOUNDRY_PROVIDER, "utf-8");
 		expect(src).toContain("AbortController");
-		expect(src).toContain("GENERATION_TIMEOUT_MS");
+		// Sprint 2.21 part 2 CHECKPOINT C: the static GENERATION_TIMEOUT_MS
+		// constant was replaced by a dynamic calculateTimeoutMs(maxTokens)
+		// call adapted to the user's max_tokens setting.
+		expect(src).toContain("calculateTimeoutMs");
 	});
 
 	it("readonly name is azure-ai-foundry", () => {

@@ -37,7 +37,7 @@ function mockFetchTruncated(): void {
 	} as unknown as Response);
 }
 
-function mockFetchOk(): ReturnType<typeof vi.spyOn> {
+function mockFetchOk() {
 	return vi.spyOn(global, "fetch").mockResolvedValue({
 		ok: true,
 		status: 200,

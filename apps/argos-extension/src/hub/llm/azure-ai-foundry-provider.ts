@@ -1,10 +1,14 @@
-import type {
-	GenerationContext,
-	ILlmProvider,
-	LlmProviderConfig,
-	StepsGenerationContext,
-	StepsGenerationResult,
-	TestCaseSuggestion,
+import {
+	type GenerationContext,
+	type ILlmProvider,
+	type LlmProviderConfig,
+	LlmTimeoutError,
+	LlmTruncationError,
+	MAX_TOKENS_DEFAULT,
+	type StepsGenerationContext,
+	type StepsGenerationResult,
+	type TestCaseSuggestion,
+	calculateTimeoutMs,
 } from "./llm-provider.js";
 import {
 	STEPS_GENERATION_SYSTEM_PROMPT,
@@ -13,8 +17,6 @@ import {
 	buildUserPrompt,
 } from "./prompt-templates.js";
 import { parseLlmResponse, parseStepsResponse } from "./test-case-schema.js";
-
-const GENERATION_TIMEOUT_MS = 30000;
 
 /**
  * Normalize an Azure AI Foundry endpoint URL.
@@ -86,8 +88,10 @@ export class AzureAIFoundryProvider implements ILlmProvider {
 
 		const url = `${normalizeFoundryEndpoint(this.config.endpoint ?? "")}/chat/completions`;
 
+		const maxTokens = this.config.maxTokens ?? MAX_TOKENS_DEFAULT;
+		const timeoutMs = calculateTimeoutMs(this.config.maxTokens);
 		const controller = new AbortController();
-		const timeout = setTimeout(() => controller.abort(), GENERATION_TIMEOUT_MS);
+		const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
 		let response: Response;
 		try {
@@ -105,13 +109,20 @@ export class AzureAIFoundryProvider implements ILlmProvider {
 					],
 					response_format: { type: "json_object" },
 					temperature: 0.7,
-					max_tokens: 4000,
+					max_tokens: maxTokens,
 				}),
 				signal: controller.signal,
 			});
-		} finally {
+		} catch (err) {
 			clearTimeout(timeout);
+			if (err instanceof Error && err.name === "AbortError") {
+				throw new LlmTimeoutError(
+					`LLM call timed out after ${Math.round(timeoutMs / 1000)}s. Reduce Max Tokens in Settings or check network connectivity.`
+				);
+			}
+			throw err;
 		}
+		clearTimeout(timeout);
 
 		if (!response.ok) {
 			if (response.status === 401 || response.status === 403) {
@@ -124,8 +135,17 @@ export class AzureAIFoundryProvider implements ILlmProvider {
 		}
 
 		const data = (await response.json()) as {
-			choices?: Array<{ message?: { content?: string } }>;
+			choices?: Array<{ message?: { content?: string }; finish_reason?: string }>;
 		};
+
+		// Sprint 2.21 part 2 -- detect truncation BEFORE parsing JSON
+		// (BCEE-QA bug 2026-05-22). See azure-openai-provider for the
+		// detailed rationale -- Foundry shares the same OpenAI v1 envelope.
+		if (data.choices?.[0]?.finish_reason === "length") {
+			throw new LlmTruncationError(
+				"Response truncated (max_tokens reached). Increase Max Tokens in Settings or request fewer test cases."
+			);
+		}
 
 		const content = data.choices?.[0]?.message?.content;
 		if (!content) {
@@ -142,8 +162,11 @@ export class AzureAIFoundryProvider implements ILlmProvider {
 
 		const url = `${normalizeFoundryEndpoint(this.config.endpoint ?? "")}/chat/completions`;
 
+		const STEPS_DEFAULT = 2000;
+		const maxTokens = this.config.maxTokens ?? STEPS_DEFAULT;
+		const timeoutMs = calculateTimeoutMs(this.config.maxTokens);
 		const controller = new AbortController();
-		const timeout = setTimeout(() => controller.abort(), GENERATION_TIMEOUT_MS);
+		const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
 		let response: Response;
 		try {
@@ -161,13 +184,20 @@ export class AzureAIFoundryProvider implements ILlmProvider {
 					],
 					response_format: { type: "json_object" },
 					temperature: 0.5,
-					max_tokens: 2000,
+					max_tokens: maxTokens,
 				}),
 				signal: controller.signal,
 			});
-		} finally {
+		} catch (err) {
 			clearTimeout(timeout);
+			if (err instanceof Error && err.name === "AbortError") {
+				throw new LlmTimeoutError(
+					`LLM call timed out after ${Math.round(timeoutMs / 1000)}s. Reduce Max Tokens in Settings or check network connectivity.`
+				);
+			}
+			throw err;
 		}
+		clearTimeout(timeout);
 
 		if (!response.ok) {
 			if (response.status === 401 || response.status === 403) {
@@ -183,13 +213,22 @@ export class AzureAIFoundryProvider implements ILlmProvider {
 			choices?: Array<{ message?: { content?: string }; finish_reason?: string }>;
 		};
 
+		const truncated = data.choices?.[0]?.finish_reason === "length";
+
+		// Same hybrid contract as AzureOpenAIProvider.generateSteps: preserve
+		// the Sprint 2.22 truncated:true return path when content is partial,
+		// but throw LlmTruncationError when nothing usable came back.
 		const content = data.choices?.[0]?.message?.content;
 		if (!content) {
+			if (truncated) {
+				throw new LlmTruncationError(
+					"Response truncated (max_tokens reached). Increase Max Tokens in Settings or request fewer steps."
+				);
+			}
 			throw new Error("AI response could not be parsed, retry");
 		}
 
 		const steps = parseStepsResponse(content);
-		const truncated = data.choices?.[0]?.finish_reason === "length";
 		return { steps, truncated };
 	}
 }
