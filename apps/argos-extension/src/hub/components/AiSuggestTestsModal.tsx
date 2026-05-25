@@ -4,11 +4,11 @@ import { useAiGeneration } from "../hooks/use-ai-generation.js";
 import { useLlmConfig } from "../hooks/use-llm-config.js";
 import type { TestCaseSuggestion } from "../llm/llm-provider.js";
 import { useServices } from "../services-context.js";
-import type { WorkItemResult } from "../services/ado-work-items-service.js";
 import { AiSuggestionCard } from "./AiSuggestionCard.js";
+import { AreaPathPicker } from "./AreaPathPicker.js";
+import { IterationPathPicker } from "./IterationPathPicker.js";
 import { LlmConfigStatus } from "./LlmConfigStatus.js";
 import { useArgosToast } from "./Toast.js";
-import { WorkItemPicker } from "./WorkItemPicker.js";
 
 const COUNT_OPTIONS = [
 	{ value: "3", label: "3 test cases" },
@@ -17,15 +17,30 @@ const COUNT_OPTIONS = [
 	{ value: "10", label: "10 test cases" },
 ];
 
-interface AiGenerateModalProps {
+export interface AiSuggestTestsSourceWorkItem {
+	id: number;
+	type: string;
+	title?: string;
+	description?: string;
+	acceptanceCriteria?: string;
+	areaPath?: string;
+	iterationPath?: string;
+}
+
+interface AiSuggestTestsModalProps {
+	sourceWorkItem: AiSuggestTestsSourceWorkItem;
 	onClose: () => void;
 	onCreated: (count: number) => void;
 }
 
 type ModalStep = "select" | "generating" | "suggestions";
 
-export function AiGenerateModal({ onClose, onCreated }: AiGenerateModalProps) {
-	const { testCaseService, workItemLinkService } = useServices();
+export function AiSuggestTestsModal({
+	sourceWorkItem,
+	onClose,
+	onCreated,
+}: AiSuggestTestsModalProps) {
+	const { testCaseService, workItemLinkService, project } = useServices();
 	const { config, isLoading: isLoadingConfig } = useLlmConfig();
 	const {
 		suggestions,
@@ -37,24 +52,25 @@ export function AiGenerateModal({ onClose, onCreated }: AiGenerateModalProps) {
 	const toast = useArgosToast();
 
 	const [step, setStep] = useState<ModalStep>("select");
-	const [selectedWorkItem, setSelectedWorkItem] = useState<WorkItemResult | null>(null);
 	const [targetCount, setTargetCount] = useState("5");
 	const [localSuggestions, setLocalSuggestions] = useState<TestCaseSuggestion[]>([]);
 	const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
 	const [isCreating, setIsCreating] = useState(false);
+	const [areaPath, setAreaPath] = useState(sourceWorkItem.areaPath ?? "");
+	const [iterationPath, setIterationPath] = useState(sourceWorkItem.iterationPath ?? "");
 
 	async function handleGenerate() {
-		if (!config || !selectedWorkItem) return;
+		if (!config) return;
 		setStep("generating");
 		reset();
 		try {
 			const results = await generate(config, {
 				sourceWorkItem: {
-					id: selectedWorkItem.id,
-					type: selectedWorkItem.type,
-					title: selectedWorkItem.title,
-					description: selectedWorkItem.description,
-					acceptanceCriteria: selectedWorkItem.acceptanceCriteria,
+					id: sourceWorkItem.id,
+					type: sourceWorkItem.type,
+					title: sourceWorkItem.title ?? `${sourceWorkItem.type} #${sourceWorkItem.id}`,
+					description: sourceWorkItem.description ?? "",
+					acceptanceCriteria: sourceWorkItem.acceptanceCriteria,
 				},
 				targetCount: Number(targetCount),
 			});
@@ -81,7 +97,6 @@ export function AiGenerateModal({ onClose, onCreated }: AiGenerateModalProps) {
 	}
 
 	async function handleCreate() {
-		if (!selectedWorkItem) return;
 		const toCreate = localSuggestions.filter((_, i) => selectedIndices.has(i));
 		if (toCreate.length === 0) return;
 
@@ -91,7 +106,8 @@ export function AiGenerateModal({ onClose, onCreated }: AiGenerateModalProps) {
 			for (const s of toCreate) {
 				const tc = await testCaseService.create({
 					title: s.title,
-					areaPath: "",
+					areaPath: areaPath.trim(),
+					iterationPath: iterationPath.trim() || undefined,
 					description: s.description || undefined,
 					priority: s.priority === "P1" ? 1 : s.priority === "P2" ? 2 : s.priority === "P3" ? 3 : 4,
 					tags: s.tags.length > 0 ? s.tags : undefined,
@@ -104,15 +120,14 @@ export function AiGenerateModal({ onClose, onCreated }: AiGenerateModalProps) {
 				created.push(tc.id);
 			}
 
-			// Link each created test case to the source work item
 			for (const tcId of created) {
 				await workItemLinkService
-					.addLink(tcId, selectedWorkItem.id, "TestVault.TestedBy")
+					.addLink(tcId, sourceWorkItem.id, "TestVault.TestedBy")
 					.catch(() => {});
 			}
 
 			toast.success(
-				`${created.length} test case${created.length !== 1 ? "s" : ""} created from ${selectedWorkItem.type} #${selectedWorkItem.id}`
+				`${created.length} test case${created.length !== 1 ? "s" : ""} created from ${sourceWorkItem.type} #${sourceWorkItem.id}`
 			);
 			onCreated(created.length);
 		} catch (err) {
@@ -123,12 +138,13 @@ export function AiGenerateModal({ onClose, onCreated }: AiGenerateModalProps) {
 	}
 
 	const selectedCount = selectedIndices.size;
+	const areaPathReady = areaPath.trim().length > 0;
 
 	return (
 		<dialog
 			open
-			aria-label="Generate Test Cases with AI"
-			data-testid="ai-generate-modal"
+			aria-label="Suggest Test Cases with AI"
+			data-testid="ai-suggest-tests-modal"
 			style={{
 				position: "fixed",
 				inset: 0,
@@ -150,7 +166,7 @@ export function AiGenerateModal({ onClose, onCreated }: AiGenerateModalProps) {
 					background: "#fff",
 					borderRadius: "8px",
 					boxShadow: "0 4px 32px rgba(0,0,0,0.18)",
-					width: "600px",
+					width: "640px",
 					maxWidth: "95vw",
 					maxHeight: "90vh",
 					display: "flex",
@@ -158,7 +174,6 @@ export function AiGenerateModal({ onClose, onCreated }: AiGenerateModalProps) {
 					overflow: "hidden",
 				}}
 			>
-				{/* Header */}
 				<div
 					style={{
 						padding: "16px 20px",
@@ -169,7 +184,7 @@ export function AiGenerateModal({ onClose, onCreated }: AiGenerateModalProps) {
 					}}
 				>
 					<div>
-						<span style={{ fontWeight: 700, fontSize: "15px" }}>Generate Test Cases with AI</span>
+						<span style={{ fontWeight: 700, fontSize: "15px" }}>✨ Suggest Test Cases with AI</span>
 						<div style={{ marginTop: "4px" }}>
 							<LlmConfigStatus config={config} isLoading={isLoadingConfig} />
 						</div>
@@ -191,35 +206,29 @@ export function AiGenerateModal({ onClose, onCreated }: AiGenerateModalProps) {
 					</button>
 				</div>
 
-				{/* Body */}
 				<div style={{ padding: "20px", overflowY: "auto", flex: 1 }}>
+					<div
+						data-testid="source-work-item"
+						style={{
+							padding: "8px 12px",
+							background: "#e8f0fe",
+							borderRadius: "4px",
+							marginBottom: "16px",
+							fontSize: "13px",
+						}}
+					>
+						Source:{" "}
+						<strong>
+							{sourceWorkItem.type} #{sourceWorkItem.id}
+						</strong>
+						{sourceWorkItem.title ? ` -- ${sourceWorkItem.title}` : ""}
+					</div>
+
 					{step === "select" && (
 						<>
 							<div style={{ marginBottom: "16px" }}>
-								<p style={{ fontWeight: 600, fontSize: "13px", margin: "0 0 6px" }}>
-									Select source User Story / Bug / Requirement:
-								</p>
-								<WorkItemPicker value={selectedWorkItem} onChange={setSelectedWorkItem} />
-							</div>
-
-							{selectedWorkItem && (
-								<div
-									data-testid="selected-work-item"
-									style={{
-										padding: "8px 12px",
-										background: "#e8f0fe",
-										borderRadius: "4px",
-										marginBottom: "16px",
-										fontSize: "13px",
-									}}
-								>
-									Selected: <strong>#{selectedWorkItem.id}</strong> — {selectedWorkItem.title}
-								</div>
-							)}
-
-							<div style={{ marginBottom: "16px" }}>
 								<label
-									htmlFor="ai-count"
+									htmlFor="ai-tests-count"
 									style={{
 										fontWeight: 600,
 										fontSize: "13px",
@@ -230,10 +239,51 @@ export function AiGenerateModal({ onClose, onCreated }: AiGenerateModalProps) {
 									Number of test cases:
 								</label>
 								<Select
-									id="ai-count"
+									id="ai-tests-count"
 									value={targetCount}
 									onChange={(e) => setTargetCount(e.target.value)}
 									options={COUNT_OPTIONS}
+								/>
+							</div>
+
+							<div style={{ marginBottom: "12px" }}>
+								<label
+									htmlFor="ai-tests-area-path"
+									style={{
+										fontWeight: 600,
+										fontSize: "13px",
+										display: "block",
+										marginBottom: "6px",
+									}}
+								>
+									Area Path for new Test Cases <span style={{ color: "#c62828" }}>*</span>
+								</label>
+								<AreaPathPicker
+									id="ai-tests-area-path"
+									value={areaPath}
+									onChange={setAreaPath}
+									projectId={project}
+									required
+								/>
+							</div>
+
+							<div style={{ marginBottom: "16px" }}>
+								<label
+									htmlFor="ai-tests-iteration-path"
+									style={{
+										fontWeight: 600,
+										fontSize: "13px",
+										display: "block",
+										marginBottom: "6px",
+									}}
+								>
+									Iteration Path <span style={{ color: "#666" }}>(optional)</span>
+								</label>
+								<IterationPathPicker
+									id="ai-tests-iteration-path"
+									value={iterationPath}
+									onChange={setIterationPath}
+									projectId={project}
 								/>
 							</div>
 
@@ -242,7 +292,7 @@ export function AiGenerateModal({ onClose, onCreated }: AiGenerateModalProps) {
 									style={{ color: "#c62828", fontSize: "12px", marginBottom: "12px" }}
 									data-testid="no-config-warning"
 								>
-									AI is not configured. Go to Settings to add your Azure OpenAI credentials.
+									AI is not configured. Go to Settings to add your LLM credentials.
 								</div>
 							)}
 						</>
@@ -262,13 +312,6 @@ export function AiGenerateModal({ onClose, onCreated }: AiGenerateModalProps) {
 
 					{step === "suggestions" && (
 						<>
-							{selectedWorkItem && (
-								<div style={{ marginBottom: "12px", fontSize: "13px", color: "#555" }}>
-									Source: {selectedWorkItem.type} <strong>#{selectedWorkItem.id}</strong> —{" "}
-									{selectedWorkItem.title}
-								</div>
-							)}
-
 							{genError && (
 								<div
 									data-testid="gen-error"
@@ -294,7 +337,6 @@ export function AiGenerateModal({ onClose, onCreated }: AiGenerateModalProps) {
 					)}
 				</div>
 
-				{/* Footer */}
 				<div
 					style={{
 						padding: "12px 20px",
@@ -321,8 +363,8 @@ export function AiGenerateModal({ onClose, onCreated }: AiGenerateModalProps) {
 					{step === "select" && (
 						<Button
 							variant="primary"
-							onClick={handleGenerate}
-							disabled={!selectedWorkItem || !config || isGenerating}
+							onClick={() => void handleGenerate()}
+							disabled={!config || isGenerating || !areaPathReady}
 							data-testid="generate-suggestions-button"
 						>
 							Generate suggestions
@@ -331,7 +373,7 @@ export function AiGenerateModal({ onClose, onCreated }: AiGenerateModalProps) {
 					{step === "suggestions" && (
 						<Button
 							variant="primary"
-							onClick={handleCreate}
+							onClick={() => void handleCreate()}
 							disabled={selectedCount === 0 || isCreating}
 							data-testid="create-selected-button"
 						>

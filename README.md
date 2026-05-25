@@ -17,7 +17,10 @@ data as native Custom Work Items, guaranteeing full customer data sovereignty.
 Key differentiators:
 
 - Custom Work Items readable even without the extension installed
-- AI-assisted test case generation and flakiness detection — BYOK (Bring Your Own Key)
+- AI-assisted test case generation (BYOK, Bring Your Own Key) -- two distinct surfaces:
+  - **Suggest Tests** on the Coverage Panel of a User Story / Bug / Requirement creates new Test Cases linked back to the source requirement
+  - **AI Suggest Steps** inside the Test Case form drafts a Steps list for the Test Case being edited, without creating any Work Item
+- Flakiness detection (BYOK)
 - Rich reporting via co-installable TestPulse extension
 - Pricing ~30% below Jira test extensions + generous Free tier
 

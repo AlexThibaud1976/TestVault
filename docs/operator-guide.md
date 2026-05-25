@@ -155,6 +155,24 @@ To change retention:
 - The `flakinessDetector` job runs Mondays at 06:00 UTC. Manual trigger: `func start --functions flakinessDetector` in a local dev environment.
 - Verify `IFlakinessDataSource` is correctly wired at Function App startup.
 
+### AI button greyed out in the Test Case form
+
+The **✨ AI Suggest Steps** button in the Test Case form is intentionally disabled until the user provides enough context to make a useful prompt. To enable it, either:
+
+- enter a Test Case **Title**, or
+- add at least one **linked requirement** (User Story / Bug / Requirement) in the **Linked Items** section.
+
+The tooltip on the disabled button states this explicitly. This behaviour is the spec-kit decision Q7 (lenient activation: title OR link).
+
+### Where did the AI button go? (Sprint 2.22 migration)
+
+Argos splits AI assistance into two surfaces depending on intent:
+
+- **Generating new Test Cases from a requirement** uses the **✨ Suggest Tests** button on the **Argos Coverage Panel** of a User Story, Bug, or Requirement (right-side tab on the Work Item form).
+- **Drafting steps for the Test Case currently being edited** uses the **✨ AI Suggest Steps** button inside the Test Case form's Steps section.
+
+Before Sprint 2.22 the same button existed in the Test Case form for both intents and would silently create Test Case Work Items on click -- which failed because the form did not yet collect an Area Path. The button has been split (US-5.1 vs US-5.1.1) and the broken create flow removed. See `docs/user-guide.md` (AI assistance) for the full BREAKING CHANGE note.
+
 ---
 
 ## SBOM and security

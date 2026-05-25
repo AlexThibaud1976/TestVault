@@ -80,6 +80,9 @@ export const SHARED_DOC_ALLOWLIST: ReadonlySet<string> = new Set([
 	"claude_prompts/CLAUDE_TASK_sprint-2-21-1-foundry.md",
 	"claude_prompts/CLAUDE_TASK_sprint-2-21-part-1.md",
 	"claude_prompts/CLAUDE_TASK_sprint-2-20.md",
+	// Sprint 2.22 brief: lists Argos default models including gpt-4.1 as
+	// the example of a model to check for deprecation
+	"Specs/CLAUDE_TASK_sprint-2-22-code.md",
 ]);
 
 /**

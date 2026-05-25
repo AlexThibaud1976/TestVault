@@ -7,6 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.29] - 2026-05-25
+
+### Sprint 2.22 -- Bugfix TestCaseFormView + AI button repositioning
+
+#### BREAKING CHANGE
+
+- **The AI button inside the Test Case form no longer creates Test Cases.**
+  Before Sprint 2.22, clicking the AI button in `TestCaseFormView` would
+  attempt to create new `TestVault.TestCase` Work Items -- which failed at
+  runtime with an "Area Path missing" error because the form did not yet
+  collect an Area Path (Sprint 2.19/2.20 regression vs spec.md US-1.1).
+  The button has been split in two:
+  - To **generate new Test Cases from a requirement**, use the new
+    **✨ Suggest Tests** button on the **Coverage Panel** of a User Story,
+    Bug, or Requirement (implements US-5.1, T-6.6 legacy).
+  - To **draft steps for the Test Case currently being edited**, use the
+    new **✨ AI Suggest Steps** button inside the Test Case form. This
+    button **does not create any Work Item**; it only fills the Steps
+    section of the form being edited (implements US-5.1.1, new in PR #96).
+
+#### Added
+
+- **T-2.22.1** -- Area Path and Iteration Path fields restored to
+  `TestCaseFormView`. Area Path required, Iteration Path optional. Both
+  backed by the ADO Classification Nodes API and cached per session.
+- **T-2.22.2** -- `AiSuggestStepsModal` + `ReplaceOrAppendModal` (new).
+  Steps-only generation via the BYOK LLM provider, with conditional
+  activation (title OR linked requirement), and a Replace / Append /
+  Cancel dialog when the form already contains steps.
+- **T-2.22.3** -- `AiSuggestTestsModal` (new) on the **Coverage Panel** of
+  User Story / Bug / Requirement. Source Work Item is implicit (no
+  picker). Area Path / Iteration Path pre-filled from the source WI,
+  modifiable via dropdowns. Creates `TestVault.TestCase` Work Items and
+  `TestVault.TestedBy` links on accept.
+- LLM provider interface gains `generateSteps()` and a dedicated
+  `STEPS_GENERATION_SYSTEM_PROMPT` focused on `{action, expected}` pairs.
+  Implemented for both `azure-openai` and `azure-ai-foundry`.
+- Two new regression tests (TDD strict per constitution sec 10.4):
+  `TestCaseFormView.test.tsx` (T-2.22.1 + T-2.22.2) and additions to
+  `CoveragePanel.test.tsx` (T-2.22.3).
+
+#### Removed
+
+- `AiGenerateModal.tsx` and `WorkItemPicker.tsx` -- replaced by the
+  split `AiSuggestStepsModal` (in the Test Case form) and
+  `AiSuggestTestsModal` (on the Coverage Panel).
+
+#### Fixed
+
+- `TestCaseFormView` no longer sends `areaPath: ""` to
+  `testCaseService.create()`. Save is blocked until the user selects an
+  Area Path; Iteration Path remains optional.
+
 ## [0.5.28.1] - 2026-05-22
 
 ### Added

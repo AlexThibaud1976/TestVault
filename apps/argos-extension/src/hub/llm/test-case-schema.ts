@@ -1,4 +1,4 @@
-import type { TestCaseSuggestion } from "./llm-provider.js";
+import type { TestCaseSuggestion, TestStepSuggestion } from "./llm-provider.js";
 
 const VALID_PRIORITIES = new Set(["P1", "P2", "P3", "P4"]);
 const VALID_COVERAGE_TYPES = new Set([
@@ -56,6 +56,34 @@ export function parseLlmResponse(content: string): TestCaseSuggestion[] {
 
 	if (valid.length === 0) {
 		throw new Error("AI response contained no valid test case suggestions");
+	}
+
+	return valid;
+}
+
+// Sprint 2.22 T-2.22.2 -- parser for the steps-only generation flow.
+// Accepts: { "steps": [{ "action": "...", "expected": "..." }, ...] }
+export function parseStepsResponse(content: string): TestStepSuggestion[] {
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(content);
+	} catch {
+		throw new Error("AI response could not be parsed, retry");
+	}
+
+	if (
+		typeof parsed !== "object" ||
+		parsed === null ||
+		!Array.isArray((parsed as Record<string, unknown>).steps)
+	) {
+		throw new Error("AI response did not contain a steps array");
+	}
+
+	const raw = (parsed as Record<string, unknown>).steps as unknown[];
+	const valid = raw.filter(isValidStep);
+
+	if (valid.length === 0) {
+		throw new Error("AI response contained no valid steps");
 	}
 
 	return valid;
