@@ -297,6 +297,7 @@ export function createMockAiGenerationService(
 ): IAiGenerationService {
 	return {
 		generate: vi.fn().mockResolvedValue([]),
+		generateSteps: vi.fn().mockResolvedValue({ steps: [], truncated: false }),
 		...overrides,
 	};
 }

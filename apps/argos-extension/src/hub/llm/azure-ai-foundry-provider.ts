@@ -2,10 +2,17 @@ import type {
 	GenerationContext,
 	ILlmProvider,
 	LlmProviderConfig,
+	StepsGenerationContext,
+	StepsGenerationResult,
 	TestCaseSuggestion,
 } from "./llm-provider.js";
-import { TEST_CASE_GENERATION_SYSTEM_PROMPT, buildUserPrompt } from "./prompt-templates.js";
-import { parseLlmResponse } from "./test-case-schema.js";
+import {
+	STEPS_GENERATION_SYSTEM_PROMPT,
+	TEST_CASE_GENERATION_SYSTEM_PROMPT,
+	buildStepsUserPrompt,
+	buildUserPrompt,
+} from "./prompt-templates.js";
+import { parseLlmResponse, parseStepsResponse } from "./test-case-schema.js";
 
 const GENERATION_TIMEOUT_MS = 30000;
 
@@ -126,5 +133,63 @@ export class AzureAIFoundryProvider implements ILlmProvider {
 		}
 
 		return parseLlmResponse(content);
+	}
+
+	async generateSteps(context: StepsGenerationContext): Promise<StepsGenerationResult> {
+		if (!this.isConfigured()) {
+			throw new Error("Verify your API key in Settings");
+		}
+
+		const url = `${normalizeFoundryEndpoint(this.config.endpoint ?? "")}/chat/completions`;
+
+		const controller = new AbortController();
+		const timeout = setTimeout(() => controller.abort(), GENERATION_TIMEOUT_MS);
+
+		let response: Response;
+		try {
+			response = await fetch(url, {
+				method: "POST",
+				headers: {
+					"api-key": this.config.apiKey,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					model: this.config.deploymentName,
+					messages: [
+						{ role: "system", content: STEPS_GENERATION_SYSTEM_PROMPT },
+						{ role: "user", content: buildStepsUserPrompt(context) },
+					],
+					response_format: { type: "json_object" },
+					temperature: 0.5,
+					max_tokens: 2000,
+				}),
+				signal: controller.signal,
+			});
+		} finally {
+			clearTimeout(timeout);
+		}
+
+		if (!response.ok) {
+			if (response.status === 401 || response.status === 403) {
+				throw new Error("Verify your API key in Settings");
+			}
+			if (response.status === 429) {
+				throw new Error("Too many requests, retry in 60 seconds");
+			}
+			throw new Error(`Foundry API error: ${response.status}`);
+		}
+
+		const data = (await response.json()) as {
+			choices?: Array<{ message?: { content?: string }; finish_reason?: string }>;
+		};
+
+		const content = data.choices?.[0]?.message?.content;
+		if (!content) {
+			throw new Error("AI response could not be parsed, retry");
+		}
+
+		const steps = parseStepsResponse(content);
+		const truncated = data.choices?.[0]?.finish_reason === "length";
+		return { steps, truncated };
 	}
 }
