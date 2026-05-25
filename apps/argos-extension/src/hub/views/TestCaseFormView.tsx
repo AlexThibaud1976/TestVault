@@ -1,6 +1,8 @@
 import type { TestCaseDraft } from "@atconseil/argos-sdk";
 import { useCallback, useState } from "react";
 import { AiGenerateModal } from "../components/AiGenerateModal.js";
+import { AreaPathPicker } from "../components/AreaPathPicker.js";
+import { IterationPathPicker } from "../components/IterationPathPicker.js";
 import { Badge, Button, Input, SectionCollapsible, Select } from "../design-system/index.js";
 import { useArgosCreate } from "../hooks/use-argos-create.js";
 import { useServices } from "../services-context.js";
@@ -26,7 +28,7 @@ interface TestCaseFormViewProps {
 }
 
 export function TestCaseFormView({ onCancel, onSuccess, caseId: _caseId }: TestCaseFormViewProps) {
-	const { testCaseService } = useServices();
+	const { testCaseService, project } = useServices();
 	const [aiModalOpen, setAiModalOpen] = useState(false);
 
 	const [title, setTitle] = useState("");
@@ -38,6 +40,8 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId: _caseId }: TestC
 	const [steps, setSteps] = useState<TestStep[]>([{ id: 1, action: "", expected: "" }]);
 	const [expectedResult, setExpectedResult] = useState("");
 	const [linkedIds, setLinkedIds] = useState("");
+	const [areaPath, setAreaPath] = useState("");
+	const [iterationPath, setIterationPath] = useState("");
 
 	const createFn = useCallback(
 		(draft: TestCaseDraft) => testCaseService.create(draft),
@@ -50,16 +54,17 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId: _caseId }: TestC
 		onSuccess: (result) => onSuccess(result.id),
 	});
 
-	const isValid = title.trim().length > 0;
+	const isValid = title.trim().length > 0 && areaPath.trim().length > 0;
 
 	async function handleSubmit() {
 		if (!isValid) return;
 		const draft: TestCaseDraft = {
 			title: title.trim(),
-			areaPath: "",
+			areaPath: areaPath.trim(),
 			description: description.trim() || undefined,
 			priority: Number(priority) as 1 | 2 | 3 | 4,
 			tags: tags.length > 0 ? tags : undefined,
+			iterationPath: iterationPath.trim() || undefined,
 			steps: steps
 				.filter((s) => s.action.trim())
 				.map((s, i) => ({ index: i + 1, action: s.action.trim(), expected: s.expected.trim() })),
@@ -344,27 +349,43 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId: _caseId }: TestC
 
 				<SectionCollapsible
 					title="Metadata"
-					subtitle="Area path and iteration (Sprint 2.20: real ADO integration)"
+					subtitle="Area path and iteration"
 					statusBadge={
-						<Badge kind="neutral" dot>
-							Optional
-						</Badge>
+						areaPath.trim().length > 0 ? (
+							<Badge kind="success" dot>
+								Complete
+							</Badge>
+						) : (
+							<Badge kind="neutral" dot>
+								Required
+							</Badge>
+						)
 					}
+					defaultOpen
 				>
-					<div className="wit-coming-soon-placeholder">
-						<svg
-							width="16"
-							height="16"
-							viewBox="0 0 16 16"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="1.5"
-							aria-hidden="true"
-						>
-							<circle cx="8" cy="8" r="6" />
-							<path d="M8 5v3l1.5 1.5" />
-						</svg>
-						Area path and iteration -- Sprint 2.20 (TECH-DEBT-061)
+					<div className="wit-form-field">
+						<label className="wit-field-label" htmlFor="tc-area-path">
+							Area Path <span className="wit-field-required">*</span>
+						</label>
+						<AreaPathPicker
+							id="tc-area-path"
+							value={areaPath}
+							onChange={setAreaPath}
+							projectId={project}
+							required
+						/>
+					</div>
+
+					<div className="wit-form-field">
+						<label className="wit-field-label" htmlFor="tc-iteration-path">
+							Iteration Path <span className="wit-field-optional">Optional</span>
+						</label>
+						<IterationPathPicker
+							id="tc-iteration-path"
+							value={iterationPath}
+							onChange={setIterationPath}
+							projectId={project}
+						/>
 					</div>
 				</SectionCollapsible>
 			</div>
