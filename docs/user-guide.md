@@ -130,6 +130,55 @@ For architecture and technical details, see `plan.md` in the spec-kit.
 
 ---
 
+## AI assistance (BYOK)
+
+Argos exposes two distinct AI entry points, each scoped to a clearly different intent. Both call the configured LLM provider directly from the browser (no Argos backend, no proxy). Customers always Bring Their Own Key (BYOK) and the key never leaves their ADO tenant.
+
+> **BREAKING CHANGE (Sprint 2.22)** — The AI button inside the Test Case form **no longer creates Test Cases**. To generate Test Cases from a requirement, use the **Suggest Tests** button on the Coverage Panel of a User Story, Bug, or Requirement. The button inside the Test Case form has been renamed **AI Suggest Steps** and only fills the Steps section of the Test Case being edited.
+
+### Generate Test Cases from a Requirement — Coverage Panel
+
+Open a **User Story**, **Bug**, or **Requirement** Work Item in ADO. In the **Argos Coverage Panel** (right-side tab on the Work Item form), click **✨ Suggest Tests**.
+
+1. Choose how many Test Cases to generate (3, 5, 7 or 10).
+2. The **Area Path** and **Iteration Path** are pre-filled from the source Work Item but can be changed via the dropdowns.
+3. Click **Generate suggestions**. After a few seconds, a preview lists the candidate Test Cases. Edit titles, descriptions, steps and tags inline. Toggle the checkbox to deselect any candidate you do not want.
+4. Click **Create N selected**. Each candidate is persisted as a `TestVault.TestCase` Work Item and linked back to the source via a **Tested By** relation.
+
+The Suggest Tests button is **only** visible on User Story, Bug and Requirement. On other Work Item types (Test Case, Task, Epic, etc.), the button is hidden.
+
+### Suggest Steps for the current Test Case — Test Case form
+
+When you are creating or editing a Test Case from the Argos hub, the **✨ AI Suggest Steps** button (in the Test Steps section) generates a draft list of steps for the Test Case you are currently editing. **It does not create any new Test Case Work Item.** The result fills the Steps section of the form in memory; you still need to click **Create Test Case** / **Save** to persist.
+
+The button activates as soon as you have either:
+
+- entered a **Title** for the Test Case, **or**
+- added at least one **linked requirement** (User Story / Bug / Requirement) in the Linked Items section.
+
+If neither is set, the button is disabled with the tooltip *"Set a title or link a requirement to enable AI suggestions"*.
+
+After clicking the button:
+
+- Choose the number of steps (1–15, default 5) and click **Generate**.
+- Review and edit each `{action, expected}` pair inline.
+- Click **Accept**.
+
+If the form already contains steps, Argos asks whether to **Replace existing**, **Append to existing**, or **Cancel** before applying the changes. Cancel returns to the form with no modification.
+
+### Errors and limits
+
+| Scenario | What you see |
+| --- | --- |
+| LLM key invalid or expired | *"Verify your API key in Settings"* |
+| Provider down or timeout | *"LLM provider did not respond"* |
+| Response truncated by `max_tokens` | Toast: *"Response truncated by max_tokens. Increase the setting or ask for fewer steps."* |
+| AI not configured at all | Banner: *"AI is not configured. Go to Settings to add your LLM credentials."* |
+
+Every AI call is journalled in `TestVault.AuditLog`. The API key is **never** logged: only the last four characters appear in audit entries.
+
+---
+
 ## Phase 4 — Import / Export / CLI
 
 ### Importing Test Cases
