@@ -175,7 +175,6 @@ export function CoveragePanel({
 					onClose={() => setAiModalOpen(false)}
 					onCreated={() => {
 						setAiModalOpen(false);
-						setRefreshNonce((n) => n + 1);
 					}}
 				/>
 			)}
