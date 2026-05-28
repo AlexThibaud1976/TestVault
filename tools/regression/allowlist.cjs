@@ -67,7 +67,12 @@ const SHARED_DOC_ALLOWLIST = new Set([
 	"claude_prompts/CLAUDE_TASK_sprint-2-21-part-3-drawer-gherkin.md",
 	"claude_prompts/sprint-2-21-part-3-code-report.md",
 	// Sprint 2.22 brief: lists Argos default models including gpt-4.1 as
-	// the example of a model to check for deprecation
+	// the example of a model to check for deprecation. Also describes the
+	// Coverage Panel layout via the "Xray-like" metaphor (10 mentions) --
+	// kept here while the file lives in Specs/ during sprint execution.
+	// The Specs/ entry below will be removed in the post-merge cleanup
+	// once the file moves to claude_prompts/.
+	"Specs/CLAUDE_TASK_sprint-2-22-code.md",
 	"claude_prompts/CLAUDE_TASK_sprint-2-22-code.md",
 	// Sprint 2.21 part 2 brief: documents the placeholder decision around
 	// gpt-4.1-mini (TECH-DEBT-072 to clarify BYOK strategy in a future sprint)
