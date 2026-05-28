@@ -4,6 +4,43 @@
 
 ---
 
+## Test Set / Test Plan / Precondition / Test Execution (Sprint 2.23 -- v0.5.33)
+
+Sprint 2.23 closes the T-0.5.2 wiring : the four remaining Work Item types now have edit mode (Test Set / Test Plan / Precondition) or display-only mode (Test Execution).
+
+### Edit a Test Set
+
+Opening a Test Set from the **Sets** list now populates the form with the existing name, description, tags and linked Test Case ids. The submit button reads **Update Test Set** and persists changes via `testSetService.update`. Inline TC composition (input + Add button) is unchanged from earlier sprints.
+
+### Lock / Unlock a Test Plan
+
+A **Lock** button appears on Draft Test Plans (edit mode). Clicking it transitions the plan state to **Locked** via `testPlanService.lock`. A locked plan :
+
+- Shows an **Unlock** button in place of Lock (Admin-only at the SDK level; the role check in the UI is deferred).
+- Disables the **Save changes** button.
+- Renders a notice : *"Test Plan locked. Unlock to modify (Admin only)."*
+
+Automatic snapshot creation on Lock (US-4.1) remains deferred to Phase 3 (TestCaseVersions). The Lock here only changes the WIT state.
+
+### Edit a Precondition
+
+Same pattern as Test Set / Test Case : open from the **Precond.** list, the form fetches the existing Precondition and exposes an **Update Precondition** button.
+
+### Preconditions listed on a Test Case
+
+When a Test Case opened in edit mode has `TestVault.PreconditionLinks` set (JSON `number[]` field), the form renders a read-only **Preconditions** section listing the linked precondition ids. Resolving each precondition title is left to a follow-up sprint.
+
+### Run a Test Case and view past executions
+
+A **Run Test** button is now visible on the Test Case form in edit mode. Clicking it triggers a navigation to a fresh Test Execution form scoped to the current Test Case (the routing wiring is partial -- the form opens but the prefilled `testCaseId` requires a follow-up).
+
+Opening an existing Test Execution shows it in **display-only mode** (constitution §3.5 immutability) :
+
+- All step results, environment, and global status are read-only.
+- A **Re-run** button creates a brand-new Test Execution for the same Test Case. The previous record stays intact.
+
+The global status (`Pass` / `Fail` / `Blocked` / `Skipped` / `Unexecuted`) is computed from the step results via the SDK helper `computeGlobalStatus` (rules : `Fail` wins over `Blocked`, `Skipped` only when every step is Skipped, otherwise `Pass`).
+
 ## Phase 1 — Referential CRUD
 
 The hub exposes five navigation sections: **Plans**, **Cases**, **Sets**, **Precond.** (Preconditions), and **Reports**. The default view shows active Test Plans and recently-failed executions.

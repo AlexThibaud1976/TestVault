@@ -23,6 +23,7 @@ Key differentiators:
 - **BDD / Gherkin native editor** in the Test Case form, powered by Monaco (the engine that backs VS Code), with live Gherkin validation (scenario count + per-line errors)
 - **Rich Coverage Panel** on User Story / Bug / Requirement Work Items : displays each linked Test Case with id + title, state, priority, steps count, assigned, and latest execution status. Accepts both Argos custom relations and the standard ADO "Tested By" link type.
 - **In-place Test Case edit** : opening a Test Case from the Cases list or from the Coverage Panel loads the existing Work Item, populates every field (including BDD / Gherkin and steps), and the **Update Test Case** button persists the diff via `testCaseService.update`.
+- **Complete 5-WIT wiring** (Sprint 2.23) : edit mode for Test Set / Test Plan / Precondition + display-only mode for Test Execution (constitution §3.5 immutability). Test Plan **Lock / Unlock** UX on top of the already-implemented SDK methods. Run Test button on the Test Case form opens a fresh Test Execution. Re-run from a past execution creates a new immutable record.
 - Flakiness detection (BYOK)
 - Rich reporting via co-installable TestPulse extension
 - Pricing ~30% below Jira test extensions + generous Free tier
