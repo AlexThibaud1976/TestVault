@@ -79,9 +79,7 @@ describe("T-2.23 -- TestSetFormView edit mode (fetch by setId)", () => {
 			.mockResolvedValue(makeTestSetRecord({ name: "Login set", description: "Auth bundle" }));
 		renderForm({ testSetService: createMockTestSetService({ read: readMock }), setId: 77 });
 		await waitFor(() => {
-			const nameInput = screen.getByPlaceholderText(/Auth smoke|Test Set name|Name/i) as
-				| HTMLInputElement
-				| undefined;
+			const nameInput = document.getElementById("ts-name") as HTMLInputElement | null;
 			expect(nameInput?.value).toBe("Login set");
 		});
 	});

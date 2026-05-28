@@ -1,5 +1,5 @@
-import type { TestSetDraft } from "@atconseil/argos-sdk";
-import { useCallback, useState } from "react";
+import type { TestSetDraft, TestSetPatch } from "@atconseil/argos-sdk";
+import { useCallback, useEffect, useState } from "react";
 import { Badge, Button, Input, SectionCollapsible } from "../design-system/index.js";
 import { useArgosCreate } from "../hooks/use-argos-create.js";
 import { useServices } from "../services-context.js";
@@ -11,7 +11,7 @@ interface TestSetFormViewProps {
 	setId?: number;
 }
 
-export function TestSetFormView({ onCancel, onSuccess, setId: _setId }: TestSetFormViewProps) {
+export function TestSetFormView({ onCancel, onSuccess, setId }: TestSetFormViewProps) {
 	const { testSetService } = useServices();
 
 	const [name, setName] = useState("");
@@ -20,6 +20,40 @@ export function TestSetFormView({ onCancel, onSuccess, setId: _setId }: TestSetF
 	const [tags, setTags] = useState<string[]>([]);
 	const [tcIdInput, setTcIdInput] = useState("");
 	const [linkedTcIds, setLinkedTcIds] = useState<number[]>([]);
+
+	// Sprint 2.23 -- edit mode (setId set) fetches the existing TestSet
+	// via testSetService.read and populates the form. Create mode keeps
+	// the original empty-form behaviour.
+	const isEditMode = setId !== undefined;
+	const [isLoadingTestSet, setIsLoadingTestSet] = useState(isEditMode);
+	const [loadError, setLoadError] = useState<string | null>(null);
+	const [isUpdating, setIsUpdating] = useState(false);
+
+	useEffect(() => {
+		if (setId === undefined) return;
+		let cancelled = false;
+		setIsLoadingTestSet(true);
+		setLoadError(null);
+		testSetService
+			.read(setId)
+			.then((ts) => {
+				if (cancelled) return;
+				setName(ts.name);
+				setDescription(ts.description ?? "");
+				setTags(ts.tags ?? []);
+				setLinkedTcIds(ts.testCaseIds ?? []);
+			})
+			.catch((err: unknown) => {
+				if (cancelled) return;
+				setLoadError(err instanceof Error ? err.message : String(err));
+			})
+			.finally(() => {
+				if (!cancelled) setIsLoadingTestSet(false);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [setId, testSetService]);
 
 	const createFn = useCallback(
 		(draft: TestSetDraft) => testSetService.create(draft),
@@ -43,6 +77,19 @@ export function TestSetFormView({ onCancel, onSuccess, setId: _setId }: TestSetF
 			tags: tags.length > 0 ? tags : undefined,
 			testCaseIds: linkedTcIds.length > 0 ? linkedTcIds : undefined,
 		};
+		if (isEditMode && setId !== undefined) {
+			setIsUpdating(true);
+			try {
+				const patch: TestSetPatch = draft;
+				const updated = await testSetService.update(setId, patch);
+				onSuccess(updated.id);
+			} catch {
+				// Surfaced via toast in a follow-up sprint.
+			} finally {
+				setIsUpdating(false);
+			}
+			return;
+		}
 		await mutate(draft).catch(() => {});
 	}
 
@@ -70,6 +117,40 @@ export function TestSetFormView({ onCancel, onSuccess, setId: _setId }: TestSetF
 
 	const section1Complete = name.trim().length > 0;
 
+	if (isLoadingTestSet) {
+		return (
+			<div
+				className="wit-form-view"
+				data-testid="testset-form-loading"
+				style={{ padding: 32, textAlign: "center", color: "#555" }}
+			>
+				Loading Test Set #{setId}...
+			</div>
+		);
+	}
+
+	if (loadError) {
+		return (
+			<div
+				className="wit-form-view"
+				data-testid="testset-form-error"
+				style={{ padding: 32, color: "#c62828" }}
+			>
+				Failed to load Test Set #{setId}: {loadError}
+				<div style={{ marginTop: 12 }}>
+					<Button variant="subtle" onClick={onCancel}>
+						Back to list
+					</Button>
+				</div>
+			</div>
+		);
+	}
+
+	const headerTitle = isEditMode ? `Edit Test Set #${setId}` : "New Test Set";
+	const submitInFlight = isCreating || isUpdating;
+	const submitIdleLabel = isEditMode ? "Update Test Set" : "Create Test Set";
+	const submitBusyLabel = isEditMode ? "Saving..." : "Creating...";
+
 	return (
 		<div className="wit-form-view">
 			<header className="wit-form-header">
@@ -78,7 +159,7 @@ export function TestSetFormView({ onCancel, onSuccess, setId: _setId }: TestSetF
 						type="button"
 						className="wit-form-back-btn"
 						onClick={onCancel}
-						disabled={isCreating}
+						disabled={submitInFlight}
 						aria-label="Back to list"
 					>
 						<svg
@@ -93,14 +174,14 @@ export function TestSetFormView({ onCancel, onSuccess, setId: _setId }: TestSetF
 							<path d="M10 3L5 8l5 5" />
 						</svg>
 					</button>
-					<h1 className="wit-form-title">New Test Set</h1>
+					<h1 className="wit-form-title">{headerTitle}</h1>
 				</div>
 				<div className="wit-form-header-actions">
-					<Button variant="subtle" onClick={onCancel} disabled={isCreating}>
+					<Button variant="subtle" onClick={onCancel} disabled={submitInFlight}>
 						Cancel
 					</Button>
-					<Button variant="primary" onClick={handleSubmit} disabled={!isValid || isCreating}>
-						{isCreating ? "Creating..." : "Create Test Set"}
+					<Button variant="primary" onClick={handleSubmit} disabled={!isValid || submitInFlight}>
+						{submitInFlight ? submitBusyLabel : submitIdleLabel}
 					</Button>
 				</div>
 			</header>
