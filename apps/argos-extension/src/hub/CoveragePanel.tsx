@@ -3,9 +3,9 @@ import type {
 	IWorkItemLinkService,
 	WorkItemLink,
 } from "@atconseil/argos-sdk";
-import type { GlobalStatus } from "@atconseil/argos-types";
+import type { GlobalStatus, TestVaultTestCase } from "@atconseil/argos-types";
 import { Text } from "@fluentui/react-components";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import type { AiSuggestTestsSourceWorkItem } from "./components/AiSuggestTestsModal.js";
 import { AreaPathPicker } from "./components/AreaPathPicker.js";
 import { IterationPathPicker } from "./components/IterationPathPicker.js";
@@ -16,7 +16,7 @@ import { Button, Select } from "./design-system/index.js";
 import { useAiGeneration } from "./hooks/use-ai-generation.js";
 import { useLlmConfig } from "./hooks/use-llm-config.js";
 import type { TestCaseSuggestion } from "./llm/llm-provider.js";
-import { useServices } from "./services-context.js";
+import { ServicesContext, useServices } from "./services-context.js";
 
 const AI_ELIGIBLE_TYPES = new Set(["User Story", "Bug", "Requirement"]);
 
@@ -48,6 +48,19 @@ export interface CoveragePanelProps {
 type CoverageRow = {
 	link: WorkItemLink;
 	latestStatus: GlobalStatus | null;
+	// Sprint 2.22 -- enriched display. When ServicesContext is available
+	// the panel hydrates each row via testCaseService.read; otherwise the
+	// hydration stays null and the panel falls back to the minimal id-only
+	// display (kept for the basic CoveragePanel tests that render without
+	// a Provider).
+	tc: TestVaultTestCase | null;
+};
+
+const PRIORITY_LABELS: Record<1 | 2 | 3 | 4, string> = {
+	1: "P1",
+	2: "P2",
+	3: "P3",
+	4: "P4",
 };
 
 export function CoveragePanel({
@@ -64,6 +77,11 @@ export function CoveragePanel({
 	const [rows, setRows] = useState<CoverageRow[]>([]);
 	const [loaded, setLoaded] = useState(false);
 	const [drawerOpen, setDrawerOpen] = useState(false);
+	// useContext, not useServices: useServices throws when no provider is
+	// mounted (basic CoveragePanel tests render without one). useContext
+	// returns null which lets us gracefully skip the enrichment step.
+	const services = useContext(ServicesContext);
+	const tcReader = services?.testCaseService;
 
 	useEffect(() => {
 		void (async () => {
@@ -74,16 +92,18 @@ export function CoveragePanel({
 						testCaseId: link.targetId,
 						pageSize: 1,
 					});
+					const tc = tcReader ? await tcReader.read(link.targetId).catch(() => null) : null;
 					return {
 						link,
 						latestStatus: page.items[0]?.globalStatus ?? null,
+						tc,
 					};
 				})
 			);
 			setRows(coverageRows);
 			setLoaded(true);
 		})();
-	}, [linkService, executionService, workItemId]);
+	}, [linkService, executionService, workItemId, tcReader]);
 
 	if (!loaded) return null;
 
@@ -156,7 +176,16 @@ export function CoveragePanel({
 							Test Case
 						</th>
 						<th style={{ textAlign: "left", padding: "6px", borderBottom: "1px solid #e0e0e0" }}>
-							Link Type
+							State
+						</th>
+						<th style={{ textAlign: "left", padding: "6px", borderBottom: "1px solid #e0e0e0" }}>
+							Priority
+						</th>
+						<th style={{ textAlign: "left", padding: "6px", borderBottom: "1px solid #e0e0e0" }}>
+							Steps
+						</th>
+						<th style={{ textAlign: "left", padding: "6px", borderBottom: "1px solid #e0e0e0" }}>
+							Assigned
 						</th>
 						<th style={{ textAlign: "left", padding: "6px", borderBottom: "1px solid #e0e0e0" }}>
 							Latest Status
@@ -164,15 +193,28 @@ export function CoveragePanel({
 					</tr>
 				</thead>
 				<tbody>
-					{rows.map(({ link, latestStatus }) => (
+					{rows.map(({ link, latestStatus, tc }) => (
 						<tr
 							key={`${link.targetId}-${link.linkType}`}
 							data-testid={`coverage-row-${link.targetId}`}
 							style={{ borderBottom: "1px solid #f0f0f0" }}
 						>
-							<td style={{ padding: "6px" }}>#{link.targetId}</td>
-							<td style={{ padding: "6px", fontSize: "12px", color: "#666" }}>
-								{link.linkType.replace("TestVault.", "")}
+							<td style={{ padding: "6px" }}>
+								<span data-testid={`coverage-row-title-${link.targetId}`}>
+									{tc ? `#${link.targetId} -- ${tc.title}` : `#${link.targetId}`}
+								</span>
+							</td>
+							<td style={{ padding: "6px", fontSize: "12px", color: "#444" }}>
+								{tc ? tc.state : "-"}
+							</td>
+							<td style={{ padding: "6px", fontSize: "12px", color: "#444" }}>
+								{tc ? PRIORITY_LABELS[tc.priority] : "-"}
+							</td>
+							<td style={{ padding: "6px", fontSize: "12px", color: "#444" }}>
+								{tc ? `${tc.steps.length} step${tc.steps.length === 1 ? "" : "s"}` : "-"}
+							</td>
+							<td style={{ padding: "6px", fontSize: "12px", color: "#444" }}>
+								{tc?.assignedTo ?? "-"}
 							</td>
 							<td style={{ padding: "6px" }}>{latestStatus ?? "No executions"}</td>
 						</tr>
