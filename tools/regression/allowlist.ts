@@ -110,6 +110,9 @@ export const SHARED_DOC_ALLOWLIST: ReadonlySet<string> = new Set([
 	// (allowlist update, tasks.md patches, constitution v0.5.3). Contains
 	// meta-discussion of the Xray-like metaphor used in the sprint brief.
 	"claude_prompts/sprint-2-22-cleanup-report.md",
+	// TECH-DEBT-T2213-B sprint report: meta-discussion of the Xray pre-flight
+	// blocker that was inherited from the Sprint 2.22 cleanup report.
+	"claude_prompts/tech-debt-T2213-B-report.md",
 ]);
 
 /**
