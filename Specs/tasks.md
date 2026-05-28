@@ -1540,6 +1540,76 @@ T-7.1 → T-7.2 → T-7.3, T-7.4, T-7.5 → T-7.6 → T-7.7 → T-7.8 → T-7.9 
 
 ---
 
+## TECH-DEBT Backlog
+
+> Incidents et dettes techniques identifiés en production ou post-sprint.
+> Chaque entrée = un sprint de remédiation potentiel.
+> Priorités : **HAUTE** (bloquer si non résolu avant GA), **MOYENNE**, **BASSE**.
+
+### TECH-DEBT-047 — Idempotency picklists (LIVRÉ Sprint 2.8)
+
+**Priorité :** HAUTE
+**Source :** Bug E2E 2026-05-15, Sprint 2.8 prévu
+**Symptôme :** `VS402848: The picklist name TestVault-Priority is already in use` lors d'une réinstallation sans nettoyage préalable.
+**Plan :** GET-first + skip-if-exists dans `process-install.ts`. — ✅ déjà livré (cf. ligne 250 ci-dessus).
+
+### TECH-DEBT-052 — Playwright E2E non activé
+
+**Priorité :** MOYENNE
+**Source :** Décision 2026-05-22 — msw + RTL uniquement jusqu'à résolution.
+**Symptôme :** couverture E2E réelle manquante sur parcours critiques.
+**Plan :** activer Playwright quand une instance ADO Cloud de test stable sera disponible.
+
+### TECH-DEBT-053 — Reformulation test régression LLM deprecation
+
+**Priorité :** BASSE
+**Source :** Session 2026-05-25.
+**Symptôme :** libellé du test `LLM-2026-05-09-gpt41-deprecation` ambigu (documentation utilisateur vs code provider).
+**Plan :** reformulation libellé uniquement, pas de logique changée.
+
+### TECH-DEBT-T2213-A — HIGH `tmp@0.2.5` via exceljs (RÉSOLU)
+
+**Priorité :** HAUTE
+**Source :** `pnpm audit` Sprint 2.21 part 3, GHSA-ph9p-34f9-6g65.
+**Symptôme :** vulnérabilité HIGH préexistante sur main via `exceljs@4.4.0 → tmp@0.2.5` (11 chemins : argos-exporters, argos-importers, argos-functions, argos-cli, e2e).
+**Plan :** ✅ **RÉSOLU** post-merge via `pnpm.overrides: { "tmp": ">=0.2.6" }` dans le root `package.json`. Tous les chemins résolvent maintenant `tmp@0.2.7`. CI `audit-ci` passe.
+
+### TECH-DEBT-T2213-B — Code mort `AiSuggestTestsModal` + `ReplaceOrAppendModal`
+
+**Priorité :** HAUTE
+**Source :** Sprint 2.21 part 3 — composants remplacés par les Drawers mais conservés pour ne pas casser `T-2.21-ai-generation-flow.test.ts`.
+**Plan :** supprimer les deux composants + migrer le test de régression dans une seule PR (~30 min). À faire avant le prochain sprint touchant la couche AI.
+
+### TECH-DEBT-T2213-C — 8 MODERATE `dompurify` via Monaco
+
+**Priorité :** BASSE
+**Source :** Sprint 2.21 part 3, `monaco-editor@0.55.1 → dompurify@3.2.7`.
+**Symptôme :** 8 MODERATE CVEs (XSS / prototype pollution / SAFE_FOR_TEMPLATES bypass), patched en `dompurify >= 3.4.0`. Risque faible pour notre usage (éditeur code, pas de rendu markdown attaquant).
+**Plan :** surveiller upgrade Monaco ou pin override via `pnpm.overrides` (`dompurify: ">=3.4.0"`).
+
+### TECH-DEBT-T2213-D — Monaco en `plaintext` (pas de coloration Gherkin native)
+
+**Priorité :** MOYENNE
+**Source :** Sprint 2.21 part 3, T-5.1 PARTIAL.
+**Symptôme :** Monaco tourne en mode `plaintext`, pas de coloration syntaxique Gherkin (Given/When/Then non colorés).
+**Plan :** enregistrer un Monarch grammar custom pour Gherkin via `monaco.languages.register` + `setMonarchTokensProvider`. Sprint UX dédié. Prérequis pour repasser T-5.1 en `[x]`.
+
+### TECH-DEBT-T2213-E — Pas de lazy loading Monaco
+
+**Priorité :** BASSE
+**Source :** Sprint 2.21 part 3.
+**Symptôme :** Monaco charge ses workers à la première render de la section "BDD / Gherkin" (collapsible, donc OK pour la majorité des users).
+**Plan :** `React.lazy()` + `<Suspense>` si first-open `TestCaseFormView` devient un goulot identifié en production.
+
+### TECH-DEBT-T2213-F — Référence `testpulse-ui-shared` obsolète
+
+**Priorité :** HAUTE
+**Source :** Sprint 2.21 part 3 — écart identifié dans le rapport (`packages/testpulse-ui-shared/package.json` listé dans le CLAUDE_TASK pour le bump mais inexistant dans le repo).
+**Symptôme :** `tasks.md` (TECH-DEBT-T2213-F : ce package n'existe plus dans le repo — à nettoyer) et CLAUDE_TASKs antérieurs référencent `packages/testpulse-ui-shared/` qui a été supprimé/renommé lors d'une refactorisation antérieure.
+**Plan :** auditer tous les fichiers spec-kit (constitution / spec / plan / tasks) pour éliminer les références à `testpulse-ui-shared`. Corriger en une seule PR. À traiter avant le prochain sprint touchant le versioning.
+
+---
+
 ## Métriques de progression
 
 | Phase | Tâches totales | Critique 🔴 | Important 🟡 | Optionnel 🟢 |
