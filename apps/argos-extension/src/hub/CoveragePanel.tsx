@@ -6,7 +6,6 @@ import type {
 import type { GlobalStatus, TestVaultTestCase } from "@atconseil/argos-types";
 import { Text } from "@fluentui/react-components";
 import { useContext, useEffect, useState } from "react";
-import type { AiSuggestTestsSourceWorkItem } from "./components/AiSuggestTestsModal.js";
 import { AreaPathPicker } from "./components/AreaPathPicker.js";
 import { IterationPathPicker } from "./components/IterationPathPicker.js";
 import { LlmConfigStatus } from "./components/LlmConfigStatus.js";
@@ -19,6 +18,20 @@ import type { TestCaseSuggestion } from "./llm/llm-provider.js";
 import { ServicesContext, useServices } from "./services-context.js";
 
 const AI_ELIGIBLE_TYPES = new Set(["User Story", "Bug", "Requirement"]);
+
+// Sprint 2.21 part 3 -- source work item context for the AI Suggest Tests
+// flow. Inlined here (TECH-DEBT-T2213-B sprint, 2026-05-28) so the
+// dead AiSuggestTestsModal component that originally defined this type
+// can be deleted without breaking CoveragePanelSuggestTestsFlow's props.
+export interface AiSuggestTestsSourceWorkItem {
+	id: number;
+	type: string;
+	title?: string;
+	description?: string;
+	acceptanceCriteria?: string;
+	areaPath?: string;
+	iterationPath?: string;
+}
 
 const COUNT_OPTIONS = [
 	{ value: "3", label: "3 test cases" },

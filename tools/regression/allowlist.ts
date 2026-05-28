@@ -106,6 +106,10 @@ export const SHARED_DOC_ALLOWLIST: ReadonlySet<string> = new Set([
 	// during cleanup execution. Will be removed in the post-merge
 	// follow-up once the file moves to claude_prompts/.
 	"Specs/CLAUDE_TASK_sprint-2-22-cleanup.md",
+	// Sprint 2.22 cleanup report: documents the Sprint 2.22 cleanup steps
+	// (allowlist update, tasks.md patches, constitution v0.5.3). Contains
+	// meta-discussion of the Xray-like metaphor used in the sprint brief.
+	"claude_prompts/sprint-2-22-cleanup-report.md",
 ]);
 
 /**
