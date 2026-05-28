@@ -854,13 +854,24 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 📚 `plan.md` §3.3
 
 - [x] Champ `TestVault.Gherkin` ajouté au schéma
-- [x] Custom Control pour édition Gherkin avec coloration syntaxique (Monaco editor)
-- [x] Validation syntaxe Gherkin
-- [x] GherkinEditor wire dans CasesView (Sprint 2.5d)
+- [~] Custom Control pour édition Gherkin avec Monaco editor
+      PARTIAL — Monaco livré (Sprint 2.21 part 3, v0.5.31). Coloration
+      syntaxique Gherkin **non native** (Monaco tourne en mode `plaintext`,
+      pas de Monarch grammar Gherkin enregistré). Voir TECH-DEBT-T2213-D.
+- [~] Validation syntaxe Gherkin
+      PARTIAL — validation structurelle basique uniquement via
+      `validateGherkin()` de `@atconseil/argos-gherkin` (scenario count +
+      erreurs ligne). Pas de grammar Gherkin complète W3C.
+- [x] GherkinEditor wire dans CasesView (Sprint 2.5d) + TestCaseFormView (Sprint 2.21 part 3)
 
 **Done quand :**
-- [x] Édition Gherkin avec coloration et validation
-- [x] Tests
+
+- [~] Édition Gherkin avec Monaco — PARTIAL (voir ci-dessus)
+- [x] Tests (553 tests verts, GherkinEditor.test.tsx + T-2.21-part-3-gherkin-editor.test.ts)
+
+**Note :** T-5.1 est UNBLOCKED pour T-5.2 (parser bidirectionnel). La coloration
+syntaxique est UX, pas fonctionnelle pour la sync repo. Repasser tous les items
+en `[x]` quand TECH-DEBT-T2213-D est résolu.
 
 ### T-5.2 — Parser Gherkin et conversion bidirectionnelle 🟡
 
@@ -1118,8 +1129,59 @@ en Phase 6+ post-launch.
 - [ ] Bump 0.5.28.1 -> 0.5.29
 
 **Refs :**
+
 - Decouverte limite max_tokens=4000 lors test E2E vendredi 2026-05-22
 - Decision Alex : configurable + pedagogique (Sprint 2.21 part 2)
+
+---
+
+### Sprint 2.21 part 3 — Drawer UX + Monaco Gherkin editor (DELIVERED v0.5.31) 🟢
+
+📚 `claude_prompts/CLAUDE_TASK_sprint-2-21-part-3-drawer-gherkin.md`
+📚 `claude_prompts/sprint-2-21-part-3-code-report.md`
+
+**Livré le 2026-05-28** — v0.5.30 → v0.5.31 (PR #101 squash-mergée à `47281e7`).
+
+**Périmètre livré :**
+
+- [x] **SuggestTestsDrawer** : Fluent OverlayDrawer multi-step pour la review
+      des TCs générés (Coverage Panel). Phases configure (select count + Area
+      Path + Iteration Path) → generating → review. Footer : Accept All /
+      Accept Selected (N) / Dismiss + édition par TC avant acceptation.
+- [x] **SuggestStepsDrawer** : Fluent OverlayDrawer pour la review des steps
+      générés (TestCaseFormView). Replace / Complete / Cancel — wrapper UX
+      pur sur la logique Sprint 2.22 (`applySteps()` inchangée).
+- [~] **GherkinEditor** : Monaco editor pour le champ TestVault.Gherkin
+      (T-5.1 PARTIAL — coloration Gherkin native pas implémentée,
+      cf. TECH-DEBT-T2213-D).
+- [x] **+18 tests** : `T-2.21-part-3-drawer-suggest-tests`,
+      `T-2.21-part-3-drawer-suggest-steps`, `T-2.21-part-3-gherkin-editor`
+      (structurels) + 25 RTL behaviour tests (8 SuggestTestsDrawer +
+      8 SuggestStepsDrawer + 9 GherkinEditor). 553 tests verts au total.
+- [x] **Documentation** : user-guide (sections Drawer + BDD/Gherkin),
+      operator-guide (section Monaco bundle + audit), CHANGELOG [0.5.31].
+- [x] **CI fix post-merge** : `pnpm overrides tmp >=0.2.6` pour clore la
+      HIGH `GHSA-ph9p-34f9-6g65` que `audit-ci` bloquait (supersede
+      TECH-DEBT-T2213-A).
+
+**Écarts vs CLAUDE_TASK documentés :**
+
+- Chemins réels du repo différents (CoveragePanel.tsx pas dans sous-dossier,
+  GherkinEditor.tsx pré-existant en textarea).
+- Bump étendu à 15 `package.json` (Changesets fixed mode Sprint 8) au lieu
+  des 3 listés (TECH-DEBT-T2213-F).
+- `testpulse-ui-shared` n'existe pas dans le repo (TECH-DEBT-T2213-F).
+- `AiSuggestTestsModal` + `ReplaceOrAppendModal` conservés en code mort
+  (TECH-DEBT-T2213-B).
+
+**TECH-DEBT identifiés (à traiter dans sprints dédiés) :**
+
+- TECH-DEBT-T2213-A — HIGH `tmp@0.2.5` via exceljs : ✅ RÉSOLU (pnpm override).
+- TECH-DEBT-T2213-B — code mort `AiSuggestTestsModal` + `ReplaceOrAppendModal`.
+- TECH-DEBT-T2213-C — 8 MODERATE `dompurify` via Monaco (faible risque).
+- TECH-DEBT-T2213-D — Monaco en `plaintext` (pas de coloration Gherkin native).
+- TECH-DEBT-T2213-E — pas de lazy loading Monaco.
+- TECH-DEBT-T2213-F — référence `testpulse-ui-shared` obsolète dans specs.
 
 ---
 
