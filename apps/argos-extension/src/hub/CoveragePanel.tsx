@@ -5,15 +5,27 @@ import type {
 } from "@atconseil/argos-sdk";
 import type { GlobalStatus } from "@atconseil/argos-types";
 import { Text } from "@fluentui/react-components";
-import { useState } from "react";
-import { useEffect } from "react";
-import {
-	AiSuggestTestsModal,
-	type AiSuggestTestsSourceWorkItem,
-} from "./components/AiSuggestTestsModal.js";
-import { Button } from "./design-system/index.js";
+import { useEffect, useState } from "react";
+import type { AiSuggestTestsSourceWorkItem } from "./components/AiSuggestTestsModal.js";
+import { AreaPathPicker } from "./components/AreaPathPicker.js";
+import { IterationPathPicker } from "./components/IterationPathPicker.js";
+import { LlmConfigStatus } from "./components/LlmConfigStatus.js";
+import { SuggestTestsDrawer } from "./components/SuggestTestsDrawer/index.js";
+import { useArgosToast } from "./components/Toast.js";
+import { Button, Select } from "./design-system/index.js";
+import { useAiGeneration } from "./hooks/use-ai-generation.js";
+import { useLlmConfig } from "./hooks/use-llm-config.js";
+import type { TestCaseSuggestion } from "./llm/llm-provider.js";
+import { useServices } from "./services-context.js";
 
 const AI_ELIGIBLE_TYPES = new Set(["User Story", "Bug", "Requirement"]);
+
+const COUNT_OPTIONS = [
+	{ value: "3", label: "3 test cases" },
+	{ value: "5", label: "5 test cases" },
+	{ value: "7", label: "7 test cases" },
+	{ value: "10", label: "10 test cases" },
+];
 
 export interface CoveragePanelProps {
 	workItemId: number;
@@ -24,7 +36,7 @@ export interface CoveragePanelProps {
 	// work-item-form service. When undefined or not in
 	// {User Story, Bug, Requirement}, the button is hidden (e.g. Test Case).
 	workItemType?: string;
-	// Optional context passed to the AI modal. The widget entry fills it
+	// Optional context passed to the AI drawer. The widget entry fills it
 	// from the work-item-form service; not required for the button to render.
 	workItemTitle?: string;
 	workItemDescription?: string;
@@ -51,7 +63,7 @@ export function CoveragePanel({
 }: CoveragePanelProps) {
 	const [rows, setRows] = useState<CoverageRow[]>([]);
 	const [loaded, setLoaded] = useState(false);
-	const [aiModalOpen, setAiModalOpen] = useState(false);
+	const [drawerOpen, setDrawerOpen] = useState(false);
 
 	useEffect(() => {
 		void (async () => {
@@ -102,7 +114,7 @@ export function CoveragePanel({
 				<Button
 					variant="secondary"
 					size="small"
-					onClick={() => setAiModalOpen(true)}
+					onClick={() => setDrawerOpen(true)}
 					data-testid="suggest-tests-button"
 				>
 					✨ Suggest Tests
@@ -111,6 +123,14 @@ export function CoveragePanel({
 		);
 	}
 
+	const drawer = sourceWorkItem ? (
+		<CoveragePanelSuggestTestsFlow
+			isOpen={drawerOpen}
+			sourceWorkItem={sourceWorkItem}
+			onDismiss={() => setDrawerOpen(false)}
+		/>
+	) : null;
+
 	if (rows.length === 0) {
 		return (
 			<div data-testid="coverage-panel" style={{ padding: "16px" }}>
@@ -118,16 +138,7 @@ export function CoveragePanel({
 				<div data-testid="coverage-empty" style={{ color: "#666" }}>
 					No linked Test Cases.
 				</div>
-
-				{aiModalOpen && sourceWorkItem && (
-					<AiSuggestTestsModal
-						sourceWorkItem={sourceWorkItem}
-						onClose={() => setAiModalOpen(false)}
-						onCreated={() => {
-							setAiModalOpen(false);
-						}}
-					/>
-				)}
+				{drawer}
 			</div>
 		);
 	}
@@ -168,16 +179,186 @@ export function CoveragePanel({
 					))}
 				</tbody>
 			</table>
-
-			{aiModalOpen && sourceWorkItem && (
-				<AiSuggestTestsModal
-					sourceWorkItem={sourceWorkItem}
-					onClose={() => setAiModalOpen(false)}
-					onCreated={() => {
-						setAiModalOpen(false);
-					}}
-				/>
-			)}
+			{drawer}
 		</div>
+	);
+}
+
+interface CoveragePanelSuggestTestsFlowProps {
+	isOpen: boolean;
+	sourceWorkItem: AiSuggestTestsSourceWorkItem;
+	onDismiss: () => void;
+}
+
+// Sprint 2.21 part 3 -- multi-step Drawer orchestration. Kept in a sub
+// component so the parent CoveragePanel can be rendered in unit tests
+// without wiring ServicesContext / ToastProvider when workItemType is
+// not in the AI-eligible set.
+function CoveragePanelSuggestTestsFlow({
+	isOpen,
+	sourceWorkItem,
+	onDismiss,
+}: CoveragePanelSuggestTestsFlowProps) {
+	const { testCaseService, workItemLinkService, project } = useServices();
+	const { config, isLoading: isLoadingConfig } = useLlmConfig();
+	const { suggestions, isLoading: isGenerating, generate, reset } = useAiGeneration();
+	const toast = useArgosToast();
+
+	const [targetCount, setTargetCount] = useState("5");
+	const [areaPath, setAreaPath] = useState(sourceWorkItem.areaPath ?? "");
+	const [iterationPath, setIterationPath] = useState(sourceWorkItem.iterationPath ?? "");
+	const [error, setError] = useState<string | undefined>(undefined);
+
+	useEffect(() => {
+		if (!isOpen) {
+			reset();
+			setError(undefined);
+		}
+	}, [isOpen, reset]);
+
+	async function handleGenerate() {
+		if (!config) return;
+		setError(undefined);
+		try {
+			await generate(config, {
+				sourceWorkItem: {
+					id: sourceWorkItem.id,
+					type: sourceWorkItem.type,
+					title: sourceWorkItem.title ?? `${sourceWorkItem.type} #${sourceWorkItem.id}`,
+					description: sourceWorkItem.description ?? "",
+					acceptanceCriteria: sourceWorkItem.acceptanceCriteria,
+				},
+				targetCount: Number(targetCount),
+			});
+		} catch (err) {
+			setError(err instanceof Error ? err.message : "Generation failed");
+		}
+	}
+
+	async function handleAccept(accepted: TestCaseSuggestion[]) {
+		try {
+			const created: number[] = [];
+			for (const s of accepted) {
+				const tc = await testCaseService.create({
+					title: s.title,
+					areaPath: areaPath.trim(),
+					iterationPath: iterationPath.trim() || undefined,
+					description: s.description || undefined,
+					priority: s.priority === "P1" ? 1 : s.priority === "P2" ? 2 : s.priority === "P3" ? 3 : 4,
+					tags: s.tags.length > 0 ? s.tags : undefined,
+					steps: s.steps.map((step, i) => ({
+						index: i + 1,
+						action: step.action,
+						expected: step.expected,
+					})),
+				});
+				created.push(tc.id);
+			}
+			for (const tcId of created) {
+				await workItemLinkService
+					.addLink(tcId, sourceWorkItem.id, "TestVault.TestedBy")
+					.catch(() => {});
+			}
+			toast.success(
+				`${created.length} test case${created.length !== 1 ? "s" : ""} created from ${sourceWorkItem.type} #${sourceWorkItem.id}`
+			);
+			onDismiss();
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : String(err);
+			toast.error(`Failed to create test cases: ${msg}`);
+			setError(msg);
+		}
+	}
+
+	const areaPathReady = areaPath.trim().length > 0;
+	const sourceLabel = `Source: ${sourceWorkItem.type} #${sourceWorkItem.id}${
+		sourceWorkItem.title ? ` -- ${sourceWorkItem.title}` : ""
+	}`;
+
+	const selectPhaseSlot = (
+		<div>
+			<div style={{ marginBottom: 12 }}>
+				<LlmConfigStatus config={config} isLoading={isLoadingConfig} />
+			</div>
+
+			<div style={{ marginBottom: 12 }}>
+				<label
+					htmlFor="suggest-tests-count"
+					style={{ fontWeight: 600, fontSize: 13, display: "block", marginBottom: 6 }}
+				>
+					Number of test cases:
+				</label>
+				<Select
+					id="suggest-tests-count"
+					value={targetCount}
+					onChange={(e) => setTargetCount(e.target.value)}
+					options={COUNT_OPTIONS}
+				/>
+			</div>
+
+			<div style={{ marginBottom: 12 }}>
+				<label
+					htmlFor="suggest-tests-area-path"
+					style={{ fontWeight: 600, fontSize: 13, display: "block", marginBottom: 6 }}
+				>
+					Area Path <span style={{ color: "#c62828" }}>*</span>
+				</label>
+				<AreaPathPicker
+					id="suggest-tests-area-path"
+					value={areaPath}
+					onChange={setAreaPath}
+					projectId={project}
+					required
+				/>
+			</div>
+
+			<div style={{ marginBottom: 16 }}>
+				<label
+					htmlFor="suggest-tests-iteration-path"
+					style={{ fontWeight: 600, fontSize: 13, display: "block", marginBottom: 6 }}
+				>
+					Iteration Path <span style={{ color: "#666" }}>(optional)</span>
+				</label>
+				<IterationPathPicker
+					id="suggest-tests-iteration-path"
+					value={iterationPath}
+					onChange={setIterationPath}
+					projectId={project}
+				/>
+			</div>
+
+			{!config && !isLoadingConfig && (
+				<div
+					style={{ color: "#c62828", fontSize: 12, marginBottom: 12 }}
+					data-testid="no-config-warning"
+				>
+					AI is not configured. Go to Settings to add your LLM credentials.
+				</div>
+			)}
+
+			<div style={{ display: "flex", justifyContent: "flex-end" }}>
+				<Button
+					variant="primary"
+					onClick={() => void handleGenerate()}
+					disabled={!config || !areaPathReady || isGenerating}
+					data-testid="suggest-tests-generate"
+				>
+					Generate suggestions
+				</Button>
+			</div>
+		</div>
+	);
+
+	return (
+		<SuggestTestsDrawer
+			isOpen={isOpen}
+			suggestions={suggestions.length > 0 ? suggestions : undefined}
+			isGenerating={isGenerating}
+			selectPhaseSlot={selectPhaseSlot}
+			sourceLabel={sourceLabel}
+			errorMessage={error}
+			onAccept={handleAccept}
+			onDismiss={onDismiss}
+		/>
 	);
 }

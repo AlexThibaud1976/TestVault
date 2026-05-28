@@ -17,9 +17,10 @@ data as native Custom Work Items, guaranteeing full customer data sovereignty.
 Key differentiators:
 
 - Custom Work Items readable even without the extension installed
-- AI-assisted test case generation (BYOK, Bring Your Own Key) -- two distinct surfaces:
-  - **Suggest Tests** on the Coverage Panel of a User Story / Bug / Requirement creates new Test Cases linked back to the source requirement
-  - **AI Suggest Steps** inside the Test Case form drafts a Steps list for the Test Case being edited, without creating any Work Item
+- AI-assisted test case generation (BYOK, Bring Your Own Key) -- two distinct surfaces, both reviewed in a side **Drawer** before persisting:
+  - **Suggest Tests** on the Coverage Panel of a User Story / Bug / Requirement opens a multi-step Drawer (configure → generate → review with per-card edit + Accept All / Accept Selected / Dismiss) and creates new Test Cases linked back to the source requirement
+  - **AI Suggest Steps** inside the Test Case form drafts a Steps list and opens a Drawer with **Replace** / **Complete** / **Cancel** actions for clear review before applying changes
+- **BDD / Gherkin native editor** in the Test Case form, powered by Monaco (the engine that backs VS Code), with live Gherkin validation (scenario count + per-line errors)
 - Flakiness detection (BYOK)
 - Rich reporting via co-installable TestPulse extension
 - Pricing ~30% below Jira test extensions + generous Free tier

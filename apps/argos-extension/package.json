@@ -1,6 +1,6 @@
 {
 	"name": "argosTesting",
-	"version": "0.5.30",
+	"version": "0.5.31",
 	"private": false,
 	"type": "module",
 	"scripts": {
@@ -21,8 +21,10 @@
 		"@atconseil/argos-types": "workspace:^",
 		"@atconseil/argos-wit-schema": "workspace:*",
 		"@fluentui/react-components": "^9.54.0",
+		"@monaco-editor/react": "^4.7.0",
 		"azure-devops-extension-api": "^4.0.2",
 		"azure-devops-extension-sdk": "^4.0.2",
+		"monaco-editor": "^0.55.1",
 		"react": "^18.3.0",
 		"react-dom": "^18.3.0"
 	},
