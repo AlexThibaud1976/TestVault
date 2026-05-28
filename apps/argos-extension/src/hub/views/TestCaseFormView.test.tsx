@@ -40,6 +40,7 @@ interface RenderOptions {
 	testCaseService?: ITestCaseService;
 	aiGenerate?: () => Promise<unknown>;
 	getConfig?: () => Promise<unknown>;
+	caseId?: number;
 }
 
 function renderForm(opts: RenderOptions = {}) {
@@ -72,7 +73,7 @@ function renderForm(opts: RenderOptions = {}) {
 	render(
 		<ServicesContext.Provider value={services}>
 			<ToastProvider>
-				<TestCaseFormView onCancel={onCancel} onSuccess={onSuccess} />
+				<TestCaseFormView onCancel={onCancel} onSuccess={onSuccess} caseId={opts.caseId} />
 			</ToastProvider>
 		</ServicesContext.Provider>
 	);
@@ -243,5 +244,127 @@ describe("T-2.22.2 -- TestCaseFormView AI Suggest Steps (Sprint 2.21 part 1 regr
 
 		// Critical assertion: NO Test Case creation API call must have been issued
 		expect(createMock).not.toHaveBeenCalled();
+	});
+});
+
+// =============================================================================
+// T-2.22 -- TestCaseFormView edit mode (caseId fetch + populate)
+// Sprint 2.22: caseId prop was ignored, now wired to testCaseService.read.
+// =============================================================================
+
+function makeTestCaseRecord(overrides?: Record<string, unknown>) {
+	return {
+		id: 42,
+		title: "Existing TC",
+		description: "Existing description",
+		state: "Design" as const,
+		areaPath: "MockProject\\Auth",
+		iterationPath: "MockProject\\Sprint 1",
+		tags: ["smoke"],
+		steps: [
+			{ index: 1, action: "Click Login", expected: "Login page" },
+			{ index: 2, action: "Enter creds", expected: "Dashboard" },
+		],
+		priority: 2 as const,
+		automationStatus: "Manual" as const,
+		preconditionLinks: [],
+		assignedTo: undefined,
+		automationKey: undefined,
+		gherkin: undefined,
+		estimatedDuration: undefined,
+		createdBy: "alex@example.com",
+		createdAt: "2026-05-28T10:00:00Z",
+		modifiedBy: "alex@example.com",
+		modifiedAt: "2026-05-28T10:00:00Z",
+		...overrides,
+	};
+}
+
+describe("T-2.22 -- TestCaseFormView edit mode (caseId fetch + populate)", () => {
+	it("create mode (no caseId) does NOT call testCaseService.read", async () => {
+		const readMock = vi.fn();
+		renderForm({
+			testCaseService: createMockTestCaseService({ read: readMock }),
+		});
+		await new Promise((r) => setTimeout(r, 50));
+		expect(readMock).not.toHaveBeenCalled();
+	});
+
+	it("edit mode (caseId set) calls testCaseService.read with the provided id", async () => {
+		const readMock = vi.fn().mockResolvedValue(makeTestCaseRecord());
+		renderForm({
+			testCaseService: createMockTestCaseService({ read: readMock }),
+			caseId: 42,
+		});
+		await waitFor(() => expect(readMock).toHaveBeenCalledWith(42));
+	});
+
+	it("edit mode shows a loading state while the WIT is being fetched", async () => {
+		let resolveFetch: (v: unknown) => void = () => {};
+		const readMock = vi.fn().mockImplementation(
+			() =>
+				new Promise((res) => {
+					resolveFetch = res;
+				})
+		);
+		renderForm({
+			testCaseService: createMockTestCaseService({ read: readMock }),
+			caseId: 42,
+		});
+		await waitFor(() => expect(screen.getByTestId("tc-form-loading")).toBeDefined());
+		resolveFetch(makeTestCaseRecord());
+	});
+
+	it("edit mode populates title, description, area path, iteration path, priority", async () => {
+		const readMock = vi
+			.fn()
+			.mockResolvedValue(makeTestCaseRecord({ title: "Login flow", description: "Verify login" }));
+		renderForm({
+			testCaseService: createMockTestCaseService({ read: readMock }),
+			caseId: 42,
+		});
+		await waitFor(() => {
+			const titleInput = screen.getByPlaceholderText(
+				/Login with valid credentials/i
+			) as HTMLInputElement;
+			expect(titleInput.value).toBe("Login flow");
+		});
+	});
+
+	it("edit mode populates the steps editor from TestVault.Steps", async () => {
+		const readMock = vi.fn().mockResolvedValue(makeTestCaseRecord());
+		renderForm({
+			testCaseService: createMockTestCaseService({ read: readMock }),
+			caseId: 42,
+		});
+		await waitFor(() => {
+			expect(screen.getByTestId("step-row-0")).toBeDefined();
+			expect(screen.getByTestId("step-row-1")).toBeDefined();
+		});
+		const a0 = screen.getByTestId("step-action-0") as HTMLInputElement;
+		expect(a0.value).toBe("Click Login");
+	});
+
+	it("edit mode shows an error state if the fetch rejects", async () => {
+		const readMock = vi.fn().mockRejectedValue(new Error("WIT 42 not found"));
+		renderForm({
+			testCaseService: createMockTestCaseService({ read: readMock }),
+			caseId: 42,
+		});
+		await waitFor(() => {
+			expect(screen.getByTestId("tc-form-error").textContent).toContain("not found");
+		});
+	});
+
+	it("edit mode replaces the Create button with an Update button", async () => {
+		const readMock = vi.fn().mockResolvedValue(makeTestCaseRecord());
+		renderForm({
+			testCaseService: createMockTestCaseService({ read: readMock }),
+			caseId: 42,
+		});
+		await waitFor(() => {
+			expect(screen.queryByRole("button", { name: /Create Test Case/i })).toBeNull();
+			expect(screen.getByRole("button", { name: /Update Test Case|Save/i })).toBeDefined();
+		});
 	});
 });

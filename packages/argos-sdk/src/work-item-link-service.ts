@@ -24,18 +24,36 @@ function extractIdFromUrl(url: string): number {
 	return Number(parts[parts.length - 1]);
 }
 
+// Sprint 2.22 -- native ADO relation rels that we surface as the
+// equivalent custom Argos link type. Only "forward" links (User Story
+// -> Test Case) are picked up; the "reverse" side is filtered out so a
+// TC opened in Argos does not list itself.
+const NATIVE_TESTED_BY_RELS = new Set([
+	"Microsoft.VSTS.Common.TestedBy-Forward",
+	"TestVault.TestedBy-Forward",
+]);
+
 export function createWorkItemLinkService(adoClient: IAdoClient): IWorkItemLinkService {
 	return {
 		async listLinks(testCaseId) {
 			const wi = await adoClient.fetchWorkItem(testCaseId);
-			return (wi.relations ?? [])
-				.filter((r) => r.attributes?.[WI_LINK_TYPE_ATTR] !== undefined)
-				.map((r) => ({
-					targetId: extractIdFromUrl(r.url),
+			const relations = wi.relations ?? [];
+			const collected = new Map<number, WorkItemLink>();
+			for (const r of relations) {
+				const custom = r.attributes?.[WI_LINK_TYPE_ATTR] as WiLinkType | undefined;
+				const isNativeTestedBy = NATIVE_TESTED_BY_RELS.has(r.rel ?? "");
+				if (custom === undefined && !isNativeTestedBy) continue;
+				const targetId = extractIdFromUrl(r.url);
+				// Dedup: prefer the custom-tagged entry when both sides are present.
+				if (collected.has(targetId) && custom === undefined) continue;
+				collected.set(targetId, {
+					targetId,
 					targetUrl: r.url,
-					linkType: r.attributes?.[WI_LINK_TYPE_ATTR] as WiLinkType,
+					linkType: custom ?? "TestVault.TestedBy",
 					isOrphan: false,
-				}));
+				});
+			}
+			return Array.from(collected.values());
 		},
 
 		async addLink(testCaseId, targetWiId, linkType) {

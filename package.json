@@ -1,6 +1,6 @@
 {
 	"name": "argos",
-	"version": "0.5.31",
+	"version": "0.5.32",
 	"private": true,
 	"engines": {
 		"node": ">=22.0.0",
