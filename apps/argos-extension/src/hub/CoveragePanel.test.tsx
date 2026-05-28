@@ -259,15 +259,16 @@ describe("T-2.22.3 -- CoveragePanel Suggest Tests button", () => {
 		expect(screen.queryByRole("button", { name: /Suggest Tests/i })).toBeNull();
 	});
 
-	it("clicking 'Suggest Tests' opens the AiSuggestTestsModal preview", async () => {
+	it("clicking 'Suggest Tests' opens the SuggestTestsDrawer (Sprint 2.21 part 3 migration)", async () => {
 		const user = userEvent.setup();
 		renderWithServices({ workItemType: "User Story" });
 		const btn = await screen.findByRole("button", { name: /Suggest Tests/i });
 		await user.click(btn);
 		await waitFor(() => {
-			// Modal title or dialog with the right aria-label
-			const modal = screen.queryByTestId("ai-suggest-tests-modal");
-			expect(modal).not.toBeNull();
+			// Sprint 2.21 part 3 replaced the AiSuggestTestsModal (dialog) with the
+			// multi-step SuggestTestsDrawer (Fluent OverlayDrawer).
+			const drawer = screen.queryByTestId("suggest-tests-drawer");
+			expect(drawer).not.toBeNull();
 		});
 	});
 });
