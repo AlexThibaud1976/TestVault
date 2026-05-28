@@ -405,3 +405,70 @@ describe("T-2.22 -- CoveragePanel enriched display", () => {
 		});
 	});
 });
+
+// =============================================================================
+// T-2.22 -- Suggest Tests from Coverage Panel : Area Path inheritance
+// =============================================================================
+
+describe("T-2.22 -- Suggest Tests Area Path inheritance", () => {
+	it("opening the SuggestTestsDrawer renders an Area Path picker (fed from the source US)", async () => {
+		const user = userEvent.setup();
+		renderWithServices({ workItemType: "User Story" });
+		const btn = await screen.findByRole("button", { name: /Suggest Tests/i });
+		await user.click(btn);
+		await waitFor(() => {
+			expect(screen.getByTestId("suggest-tests-drawer")).toBeDefined();
+			expect(screen.getByLabelText(/Area Path/i)).toBeDefined();
+		});
+	});
+
+	it("clicking Suggest Tests does NOT call testCaseService.create during generation (Area Path bug regression)", async () => {
+		const user = userEvent.setup();
+		const createSpy = vi.fn();
+		const linkServiceMock = createMockWILService({
+			listLinks: vi.fn().mockResolvedValue([]),
+		});
+		const execServiceMock = makeExecService({
+			listExecutions: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 }),
+		});
+		const services = createMockServices({
+			workItemLinkService: linkServiceMock,
+			testExecutionService: execServiceMock,
+			adoClassificationService: createMockAdoClassificationService({
+				getAreaPaths: vi.fn().mockResolvedValue(AREA_PATHS),
+			}),
+			adoIterationsService: createMockAdoIterationsService({
+				getIterations: vi.fn().mockResolvedValue(ITERATIONS),
+			}),
+			testCaseService: createMockTestCaseService({ create: createSpy }),
+			aiGenerationService: createMockAiGenerationService({
+				generate: vi.fn().mockResolvedValue([]),
+			}),
+			llmConfigService: createMockLlmConfigService({
+				getConfig: vi.fn().mockResolvedValue(LLM_CONFIG),
+			}),
+		});
+		render(
+			<ServicesContext.Provider value={services}>
+				<ToastProvider>
+					<CoveragePanel
+						workItemId={10}
+						workItemType="User Story"
+						workItemAreaPath="MockProject\\Auth"
+						linkService={linkServiceMock}
+						executionService={execServiceMock}
+					/>
+				</ToastProvider>
+			</ServicesContext.Provider>
+		);
+
+		const btn = await screen.findByRole("button", { name: /Suggest Tests/i });
+		await user.click(btn);
+		await new Promise((r) => setTimeout(r, 100));
+		// Critical assertion (original bug): clicking Suggest Tests must NOT
+		// trigger any Test Case WIT creation during the generation phase.
+		// Creation only happens when the user explicitly accepts in the
+		// Drawer footer.
+		expect(createSpy).not.toHaveBeenCalled();
+	});
+});
