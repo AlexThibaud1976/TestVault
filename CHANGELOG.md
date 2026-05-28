@@ -7,6 +7,83 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.31] - 2026-05-28
+
+### Sprint 2.21 part 3 -- Drawer UX for AI Suggestions + Monaco Gherkin editor
+
+#### Added
+
+- **SuggestTestsDrawer** (`components/SuggestTestsDrawer/`): Fluent UI 2
+  OverlayDrawer that hosts the full multi-step AI Suggest Tests flow in
+  Coverage Panel (select count + Area Path + Iteration Path -> generating
+  spinner -> review with per-card edit). Footer actions:
+  `Accept All` / `Accept Selected (N)` / `Dismiss`.
+- **SuggestStepsDrawer** (`components/SuggestStepsDrawer/`): Fluent UI 2
+  OverlayDrawer that wraps the existing Sprint 2.22 Replace / Append /
+  Cancel logic for AI Suggest Steps in TestCaseFormView. The Drawer is a
+  pure UX wrapper -- the merge logic stays in `TestCaseFormView.applySteps()`.
+- **Monaco-based GherkinEditor** (T-5.1): `GherkinEditor.tsx` now uses
+  `@monaco-editor/react` instead of a plain textarea. The existing
+  `validateGherkin()` pipeline from `@atconseil/argos-gherkin` is preserved
+  -- scenario count and per-line errors stay rendered below the editor.
+  Backward compatible: plain text already stored in `TestVault.Gherkin`
+  renders unchanged.
+- **Gherkin field in TestCaseFormView** ("New Test Case" view): new
+  collapsible section "BDD / Gherkin" exposing GherkinEditor. The value
+  is wired into the `TestCaseDraft` payload submitted to
+  `testCaseService.create`.
+- **New dependencies**: `@monaco-editor/react` ^4.7.0, `monaco-editor`
+  ^0.55.1.
+
+#### Changed
+
+- **CoveragePanel**: replaces `AiSuggestTestsModal` (dialog) with the new
+  multi-step `SuggestTestsDrawer`. The AI orchestration moved into a sub
+  component (`CoveragePanelSuggestTestsFlow`) so the basic CoveragePanel
+  tests stay free of ServicesContext wiring.
+- **TestCaseFormView**: replaces `ReplaceOrAppendModal` with
+  `SuggestStepsDrawer`. The Sprint 2.22 callback wiring stays intact --
+  Replace -> `applySteps("replace")`, Complete -> `applySteps("append")`,
+  Cancel -> `setPendingSteps(null)`.
+
+#### Technical
+
+- New regression guards: `tools/regression/T-2.21-part-3-drawer-suggest-tests.test.ts`,
+  `T-2.21-part-3-drawer-suggest-steps.test.ts`,
+  `T-2.21-part-3-gherkin-editor.test.ts` -- structural assertions on file
+  existence, exports, Fluent OverlayDrawer presence, Monaco import,
+  preserved `validateGherkin`, package.json dependencies.
+- RTL behaviour tests: 8 tests for SuggestTestsDrawer, 8 tests for
+  SuggestStepsDrawer, 9 tests for GherkinEditor (with Monaco mocked via
+  `vi.mock("@monaco-editor/react", ...)`).
+- Monaco is mocked in jsdom (`@monaco-editor/react` ships with browser-only
+  APIs). The mock keeps `value` / `onChange` so behaviour assertions stay
+  meaningful.
+- Bundle delta: VSIX 902 KB -> 1,050 KB (+148 KB, well below the +500 KB
+  alert threshold).
+
+#### Backward Compatibility
+
+- `AiSuggestTestsModal.tsx`, `AiSuggestStepsModal.tsx` and
+  `ReplaceOrAppendModal.tsx` are kept as-is. The Drawer surfaces replace
+  them in the live UI but the components are still importable. Removal
+  is scheduled for a future sprint along with updates to
+  `T-2.21-ai-generation-flow.test.ts` (TECH-DEBT logged in the code
+  report).
+- Sprint 2.22 Replace / Append / Cancel logic is untouched -- the Drawer
+  only wraps it through callbacks. Sprint 2.22 regression tests stay
+  green (T-2.22.1, T-2.22.2, T-2.22.3).
+
+#### Security
+
+- `pnpm audit --audit-level=high`: no new HIGH introduced by this sprint.
+  Pre-existing HIGH `tmp@0.2.5` (via `exceljs`, unrelated to this sprint)
+  documented as TECH-DEBT in the code report.
+- Monaco install brought 8 transitive MODERATE CVEs through
+  `dompurify@3.2.7`. Risk is low for our usage (code editor, no markdown
+  rendering of user input). Patched in `dompurify >= 3.4.0` -- documented
+  as TECH-DEBT for a future Monaco upgrade.
+
 ## [0.5.30] - 2026-05-25
 
 ### Sprint 2.21 part 2 -- Advanced AI Settings (max_tokens configurable)

@@ -249,3 +249,25 @@ Pointing this contribution at `dist/hub/hub.html` (the main hub bundle) would lo
 ### Manifest targets
 
 `vss-extension.json` declares `Microsoft.VisualStudio.Services.Cloud` as the sole target. This restricts the extension to Azure DevOps Services (Cloud) only, per constitution v0.3.0 §1.
+
+---
+
+## Sprint 2.21 part 3 -- Monaco editor for Gherkin
+
+`@monaco-editor/react` and `monaco-editor` were added as dependencies in
+Sprint 2.21 part 3 (T-5.1). Operational impact to track:
+
+- **Bundle size**: the VSIX grew from ~902 KB to ~1,050 KB (+148 KB).
+  Hub bundle delta: +163 KB (Monaco core lazy-loadable). Coverage Panel
+  widget delta: +300 KB (mostly Fluent UI 2 OverlayDrawer pulled in by
+  `SuggestTestsDrawer`). Well below the +500 KB alert threshold.
+- **First-open latency**: Monaco loads its worker assets dynamically on
+  first render of the Test Case form ("BDD / Gherkin" section).
+  Subsequent opens are cached. No impact on the rest of the hub.
+- **Network**: Monaco assets ship with the VSIX. No additional CDN call
+  at runtime, no extra firewall rule needed for customers behind
+  restrictive egress policies.
+- **Audit**: `pnpm audit` reports 8 transitive MODERATE CVEs through
+  `dompurify@3.2.7` (Monaco dep). Risk for our usage is low (code editor,
+  no markdown rendering of attacker-controlled content). All are patched
+  in `dompurify >= 3.4.0`; track Monaco upgrade as TECH-DEBT.

@@ -140,10 +140,16 @@ Argos exposes two distinct AI entry points, each scoped to a clearly different i
 
 Open a **User Story**, **Bug**, or **Requirement** Work Item in ADO. In the **Argos Coverage Panel** (right-side tab on the Work Item form), click **✨ Suggest Tests**.
 
+Since Sprint 2.21 part 3, the review surface is a **side Drawer** instead of a full-screen dialog. The Drawer slides in from the right edge and hosts all three phases of the flow (configure → generate → review).
+
 1. Choose how many Test Cases to generate (3, 5, 7 or 10).
 2. The **Area Path** and **Iteration Path** are pre-filled from the source Work Item but can be changed via the dropdowns.
-3. Click **Generate suggestions**. After a few seconds, a preview lists the candidate Test Cases. Edit titles, descriptions, steps and tags inline. Toggle the checkbox to deselect any candidate you do not want.
-4. Click **Create N selected**. Each candidate is persisted as a `TestVault.TestCase` Work Item and linked back to the source via a **Tested By** relation.
+3. Click **Generate suggestions**. After a few seconds, the Drawer body switches to a list of candidate Test Cases. Edit titles and descriptions inline via the **Edit** button on each card. Toggle the checkbox to deselect any candidate you do not want.
+4. In the Drawer footer, three actions are available:
+   - **Accept Selected (N)** — creates only the checked candidates and closes the Drawer.
+   - **Accept All** — creates every candidate, regardless of the checkbox state.
+   - **Dismiss** — closes the Drawer without creating anything.
+5. Each created candidate is persisted as a `TestVault.TestCase` Work Item and linked back to the source via a **Tested By** relation.
 
 The Suggest Tests button is **only** visible on User Story, Bug and Requirement. On other Work Item types (Test Case, Task, Epic, etc.), the button is hidden.
 
@@ -164,7 +170,23 @@ After clicking the button:
 - Review and edit each `{action, expected}` pair inline.
 - Click **Accept**.
 
-If the form already contains steps, Argos asks whether to **Replace existing**, **Append to existing**, or **Cancel** before applying the changes. Cancel returns to the form with no modification.
+If the form already contains steps, Argos opens a **side Drawer** (introduced in Sprint 2.21 part 3) that previews the generated steps and offers three footer actions:
+
+- **Replace** — replaces every existing step with the generated ones.
+- **Complete** — keeps the existing steps and appends the generated ones after them.
+- **Cancel** — closes the Drawer with no modification.
+
+When the form has no existing steps, the Drawer skips the choice and the **Replace** button is rebadged **Insert** for clarity. The merge logic itself is the same as it was in Sprint 2.22 — only the surface has changed.
+
+### BDD / Gherkin editor (Test Case form)
+
+Each Test Case now exposes a **BDD / Gherkin** collapsible section in the form. It is powered by a Monaco code editor (the same engine that backs VS Code) configured with the **Gherkin syntax hint** above the editor: *"Gherkin syntax supported (Feature / Scenario / Given / When / Then / And)"*.
+
+- The editor stores its content in the `TestVault.Gherkin` field of the Test Case.
+- Backward compatibility: any plain text already stored before Sprint 2.21 part 3 renders unchanged.
+- Validation is live: a green caption *"N scenario(s) -- valid"* appears below the editor when the content parses cleanly, and per-line errors show up if the Gherkin grammar is broken.
+- The editor is read-only when the Test Case is locked (`Closed` / shipped versions).
+- The full Azure Repos sync flow described under US-4.5 is **not** included in this sprint -- the editor is local to the Test Case form.
 
 ### Errors and limits
 
