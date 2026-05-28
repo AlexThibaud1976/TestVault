@@ -1,5 +1,6 @@
 import type { TestCaseDraft } from "@atconseil/argos-sdk";
 import { useCallback, useState } from "react";
+import { GherkinEditor } from "../GherkinEditor.js";
 import { AiSuggestStepsModal } from "../components/AiSuggestStepsModal.js";
 import { AreaPathPicker } from "../components/AreaPathPicker.js";
 import { IterationPathPicker } from "../components/IterationPathPicker.js";
@@ -45,6 +46,7 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId: _caseId }: TestC
 	const [linkedIds, setLinkedIds] = useState("");
 	const [areaPath, setAreaPath] = useState("");
 	const [iterationPath, setIterationPath] = useState("");
+	const [gherkin, setGherkin] = useState("");
 
 	const createFn = useCallback(
 		(draft: TestCaseDraft) => testCaseService.create(draft),
@@ -71,6 +73,7 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId: _caseId }: TestC
 			steps: steps
 				.filter((s) => s.action.trim())
 				.map((s, i) => ({ index: i + 1, action: s.action.trim(), expected: s.expected.trim() })),
+			gherkin: gherkin.trim() || undefined,
 		};
 		await mutate(draft).catch(() => {});
 	}
@@ -366,6 +369,20 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId: _caseId }: TestC
 							placeholder="Describe the expected behavior overall..."
 							rows={3}
 						/>
+					</div>
+				</SectionCollapsible>
+
+				<SectionCollapsible
+					title="BDD / Gherkin"
+					subtitle="Feature / Scenario / Given / When / Then (Monaco editor)"
+					statusBadge={
+						<Badge kind="neutral" dot>
+							Optional
+						</Badge>
+					}
+				>
+					<div className="wit-form-field">
+						<GherkinEditor value={gherkin} onChange={setGherkin} />
 					</div>
 				</SectionCollapsible>
 

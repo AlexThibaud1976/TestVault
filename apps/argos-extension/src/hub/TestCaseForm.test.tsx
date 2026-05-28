@@ -1,8 +1,26 @@
+// Sprint 2.21 part 3 -- Monaco mock for the embedded GherkinEditor.
+// jsdom does not provide the browser APIs Monaco needs; the mock keeps
+// value/onChange so the existing behaviour tests stay meaningful.
+import { vi } from "vitest";
+
+vi.mock("@monaco-editor/react", () => ({
+	default: ({
+		value,
+		onChange,
+	}: { value?: string; onChange?: (v: string | undefined) => void }) => (
+		<textarea
+			data-testid="gherkin-monaco"
+			value={value ?? ""}
+			onChange={(e) => onChange?.(e.target.value)}
+		/>
+	),
+}));
+
 import type { ITestCaseService, TestCaseDraft } from "@atconseil/argos-sdk";
 import type { TestVaultTestCase } from "@atconseil/argos-types";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { TestCaseForm } from "./TestCaseForm.js";
 
 afterEach(cleanup);
@@ -165,7 +183,7 @@ describe("TestCaseForm", () => {
 		const user = userEvent.setup();
 		render(<TestCaseForm service={makeService()} project="MyProject" />);
 		await user.click(screen.getByTestId("bdd-mode-toggle"));
-		expect(screen.getByTestId("gherkin-textarea")).toBeDefined();
+		expect(screen.getByTestId("gherkin-monaco")).toBeDefined();
 	});
 
 	it("pre-populates Gherkin field when initialValue has gherkin content", () => {
@@ -173,7 +191,7 @@ describe("TestCaseForm", () => {
 			"Feature: Login\n  Scenario: User logs in\n    Given I open the app\n    Then I see the login form";
 		const initial = makeTestCase({ gherkin });
 		render(<TestCaseForm service={makeService()} project="MyProject" initialValue={initial} />);
-		const ta = screen.getByTestId("gherkin-textarea") as HTMLTextAreaElement;
+		const ta = screen.getByTestId("gherkin-monaco") as HTMLTextAreaElement;
 		expect(ta.value).toBe(gherkin);
 	});
 

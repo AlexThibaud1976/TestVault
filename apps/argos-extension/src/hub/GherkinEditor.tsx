@@ -1,19 +1,47 @@
 import { validateGherkin } from "@atconseil/argos-gherkin";
 import { Text } from "@fluentui/react-components";
+import MonacoEditor from "@monaco-editor/react";
 import { useEffect, useState } from "react";
+
+// Sprint 2.21 part 3 (T-5.1) -- Monaco-based editor for the
+// TestVault.Gherkin field. The editor itself is Monaco; the existing
+// validateGherkin() pipeline from @atconseil/argos-gherkin is preserved
+// as a live validation summary rendered below the editor (scenario count
+// or per-line errors). Backward compat: any plain text already stored in
+// TestVault.Gherkin renders unchanged.
+//
+// Monaco does not ship a Gherkin language; we use "plaintext" with an
+// explicit hint UI ("Gherkin syntax supported -- Feature / Scenario /
+// Given / When / Then"). Bundle impact: lazy-loaded by Monaco; see the
+// code report for the actual VSIX delta.
 
 export type GherkinEditorProps = {
 	value: string;
 	onChange: (value: string) => void;
+	readOnly?: boolean;
+	height?: string;
 };
 
-const PLACEHOLDER = `Feature: My feature
-  Scenario: My scenario
-    Given some precondition
-    When an action is performed
-    Then the expected outcome is observed`;
+const PLACEHOLDER_HINT =
+	"Gherkin syntax supported (Feature / Scenario / Given / When / Then / And)";
 
-export function GherkinEditor({ value, onChange }: GherkinEditorProps): React.ReactElement {
+const DEFAULT_HEIGHT = "200px";
+
+const MONACO_OPTIONS = {
+	minimap: { enabled: false },
+	wordWrap: "on" as const,
+	lineNumbers: "on" as const,
+	scrollBeyondLastLine: false,
+	fontSize: 13,
+	fontFamily: "monospace",
+};
+
+export function GherkinEditor({
+	value,
+	onChange,
+	readOnly,
+	height,
+}: GherkinEditorProps): React.ReactElement {
 	const [validation, setValidation] = useState(() => validateGherkin(value));
 
 	useEffect(() => {
@@ -24,21 +52,31 @@ export function GherkinEditor({ value, onChange }: GherkinEditorProps): React.Re
 
 	return (
 		<div data-testid="gherkin-editor">
-			<textarea
-				data-testid="gherkin-textarea"
-				value={value}
-				onChange={(e) => onChange(e.target.value)}
-				placeholder={PLACEHOLDER}
-				rows={12}
-				style={{ width: "100%", fontFamily: "monospace", fontSize: 13, resize: "vertical" }}
-			/>
+			<div data-testid="gherkin-hint" style={{ fontSize: 12, color: "#666", marginBottom: 4 }}>
+				{PLACEHOLDER_HINT}
+			</div>
+			<div
+				style={{
+					border: "1px solid #d0d0d0",
+					borderRadius: 4,
+					overflow: "hidden",
+				}}
+			>
+				<MonacoEditor
+					language="plaintext"
+					height={height ?? DEFAULT_HEIGHT}
+					value={value}
+					onChange={(v) => onChange(v ?? "")}
+					options={{ ...MONACO_OPTIONS, readOnly: readOnly ?? false }}
+				/>
+			</div>
 			{hasContent && validation.valid && (
 				<Text
 					data-testid="gherkin-scenario-count"
 					size={200}
 					style={{ color: "#28a745", display: "block", marginTop: 4 }}
 				>
-					{validation.scenarioCount} scenario{validation.scenarioCount === 1 ? "" : "s"} — valid
+					{validation.scenarioCount} scenario{validation.scenarioCount === 1 ? "" : "s"} -- valid
 				</Text>
 			)}
 			{hasContent && !validation.valid && (
