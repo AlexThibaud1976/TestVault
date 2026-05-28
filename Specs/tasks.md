@@ -1647,9 +1647,9 @@ T-7.1 → T-7.2 → T-7.3, T-7.4, T-7.5 → T-7.6 → T-7.7 → T-7.8 → T-7.9 
 
 ### TECH-DEBT-T2213-B — Code mort `AiSuggestTestsModal` + `ReplaceOrAppendModal`
 
-**Priorité :** HAUTE
+**Priorité :** RÉSOLUE
 **Source :** Sprint 2.21 part 3 — composants remplacés par les Drawers mais conservés pour ne pas casser `T-2.21-ai-generation-flow.test.ts`.
-**Plan :** supprimer les deux composants + migrer le test de régression dans une seule PR (~30 min). À faire avant le prochain sprint touchant la couche AI.
+**Résolution :** sprint `tech-debt/T2213-B` (2026-05-28) — `T-2.21-ai-generation-flow.test.ts` migré vers les contrats `SuggestTestsDrawer` (et signalant qu'`AiSuggestStepsModal` reste vivant, juste enveloppé par `SuggestStepsDrawer` pour la phase review). Type `AiSuggestTestsSourceWorkItem` inliné dans `CoveragePanel.tsx` pour libérer le dernier import actif. Composants `AiSuggestTestsModal.tsx` (313 lignes) et `ReplaceOrAppendModal.tsx` (143 lignes) supprimés. Voir `claude_prompts/CLAUDE_TASK_tech-debt-T2213-B.md`.
 
 ### TECH-DEBT-T2213-C — 8 MODERATE `dompurify` via Monaco
 
