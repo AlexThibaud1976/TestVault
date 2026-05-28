@@ -1,28 +1,41 @@
-import {
-	createAdoClient,
-	createTestExecutionService,
-	createWorkItemLinkService,
-} from "@atconseil/argos-sdk";
 import * as SDK from "azure-devops-extension-sdk";
 import { createRoot } from "react-dom/client";
 import { CoveragePanel } from "../../hub/CoveragePanel.js";
+import { ToastProvider } from "../../hub/components/Toast.js";
+import { ServicesContext } from "../../hub/services-context.js";
+import { buildServices } from "../../hub/services.js";
 import { getWorkItemField, getWorkItemId, getWorkItemType } from "./coverage-panel-entry.js";
+
+// Sprint 2.22 -- the widget now mounts a ServicesContext.Provider around
+// CoveragePanel so the inner CoveragePanelSuggestTestsFlow (added in
+// Sprint 2.21 part 3) can call useServices() without crashing. The
+// widget previously rendered the panel with only linkService /
+// executionService as props, leaving the AI flow component without a
+// services context -- clicking "Suggest Tests" in BCEE-QA crashed with
+// "useServices must be called inside ServicesProvider".
 
 interface PageCtxExtended {
 	host: { serverUrl: string };
-	project?: { name: string };
+	project?: { id: string; name: string };
 }
 
 SDK.init();
 SDK.ready().then(async () => {
 	const ctx = SDK.getPageContext() as unknown as PageCtxExtended;
-	const orgUrl = ctx.host.serverUrl;
-	const project = ctx.project?.name ?? "";
-	const token = await SDK.getAccessToken();
+	const baseUrl = ctx.host.serverUrl;
+	const projectId = ctx.project?.id ?? "";
+	const projectName = ctx.project?.name ?? "";
 
-	const adoClient = createAdoClient({ baseUrl: orgUrl, project, pat: token });
-	const linkService = createWorkItemLinkService(adoClient);
-	const executionService = createTestExecutionService(adoClient, project);
+	// Build the full Services bundle so CoveragePanel can hydrate each
+	// row via testCaseService.read and the AI flow can use useServices().
+	const services = buildServices({
+		baseUrl,
+		project: projectName,
+		organization: projectId,
+		accessTokenFactory: () => SDK.getAccessToken(),
+		isLoading: false,
+		error: null,
+	});
 
 	const [
 		workItemId,
@@ -45,17 +58,21 @@ SDK.ready().then(async () => {
 	const el = document.getElementById("root");
 	if (el) {
 		createRoot(el).render(
-			<CoveragePanel
-				workItemId={workItemId}
-				workItemType={workItemType}
-				workItemTitle={title}
-				workItemDescription={description}
-				workItemAcceptanceCriteria={acceptanceCriteria}
-				workItemAreaPath={areaPath}
-				workItemIterationPath={iterationPath}
-				linkService={linkService}
-				executionService={executionService}
-			/>
+			<ServicesContext.Provider value={services}>
+				<ToastProvider>
+					<CoveragePanel
+						workItemId={workItemId}
+						workItemType={workItemType}
+						workItemTitle={title}
+						workItemDescription={description}
+						workItemAcceptanceCriteria={acceptanceCriteria}
+						workItemAreaPath={areaPath}
+						workItemIterationPath={iterationPath}
+						linkService={services.workItemLinkService}
+						executionService={services.testExecutionService}
+					/>
+				</ToastProvider>
+			</ServicesContext.Provider>
 		);
 	}
 });
