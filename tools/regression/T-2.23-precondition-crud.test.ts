@@ -32,7 +32,8 @@ describe("T-2.23 -- Precondition CRUD regression guard", () => {
 
 	it("PreconditionFormView consumes preconditionService.read for the edit mode", () => {
 		const src = readFileSync(PC_FORM_VIEW, "utf-8");
-		expect(src).toMatch(/preconditionService\.read/);
+		// Biome may reformat the chained call across lines, so allow whitespace.
+		expect(src).toMatch(/preconditionService\s*\.\s*read/);
 	});
 
 	it("PreconditionFormView exposes loading and error states", () => {

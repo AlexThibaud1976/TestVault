@@ -48,6 +48,11 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId }: TestCaseFormVi
 	const [areaPath, setAreaPath] = useState("");
 	const [iterationPath, setIterationPath] = useState("");
 	const [gherkin, setGherkin] = useState("");
+	// Sprint 2.23 -- in edit mode the TC carries TestVault.PreconditionLinks
+	// (Option A: number[] field). We display the linked Precondition ids as
+	// a read-only preamble. Fetching their titles is left to a future sprint
+	// (TECH-DEBT) to avoid an extra N+1 read here.
+	const [preconditionLinks, setPreconditionLinks] = useState<number[]>([]);
 
 	// Sprint 2.22 -- edit mode (caseId set) fetches the existing WIT via
 	// testCaseService.read and populates the form. Create mode (caseId
@@ -80,6 +85,7 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId }: TestCaseFormVi
 				}));
 				setSteps(fetchedSteps.length > 0 ? fetchedSteps : [{ id: 1, action: "", expected: "" }]);
 				setNextStepId(Math.max(fetchedSteps.length, 1) + 1);
+				setPreconditionLinks(tc.preconditionLinks ?? []);
 			})
 			.catch((err: unknown) => {
 				if (cancelled) return;
@@ -422,6 +428,28 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId }: TestCaseFormVi
 						/>
 					</div>
 				</SectionCollapsible>
+
+				{isEditMode && preconditionLinks.length > 0 && (
+					<SectionCollapsible
+						title="Preconditions"
+						subtitle={`${preconditionLinks.length} linked precondition${
+							preconditionLinks.length === 1 ? "" : "s"
+						} (read-only)`}
+						statusBadge={
+							<Badge kind="neutral" dot>
+								Linked
+							</Badge>
+						}
+					>
+						<div className="wit-form-field" data-testid="tc-precondition-links">
+							<ul style={{ margin: 0, paddingLeft: 20, fontSize: 13 }}>
+								{preconditionLinks.map((pcId) => (
+									<li key={pcId}>Precondition #{pcId}</li>
+								))}
+							</ul>
+						</div>
+					</SectionCollapsible>
+				)}
 
 				<SectionCollapsible
 					title="BDD / Gherkin"
