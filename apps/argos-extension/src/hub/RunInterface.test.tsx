@@ -82,6 +82,7 @@ function makeExecService(
 		finalizeRun: vi.fn().mockResolvedValue(makeFinalizedExec(globalStatus)),
 		linkBug: vi.fn().mockResolvedValue(makeFinalizedExec(globalStatus)),
 		listExecutions: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 }),
+		read: vi.fn(),
 	};
 }
 

@@ -54,6 +54,7 @@ function makeService(overrides?: Partial<ITestExecutionService>): ITestExecution
 					makeFinalizedExec(2, "Dev", "Fail", EARLIER),
 				])
 			),
+		read: vi.fn(),
 		...overrides,
 	};
 }

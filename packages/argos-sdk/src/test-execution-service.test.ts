@@ -543,8 +543,8 @@ describe("computeGlobalStatus", () => {
 	it("returns Pass when all steps are Pass", () => {
 		expect(
 			computeGlobalStatus([
-				{ stepIndex: 0, status: "Pass" },
-				{ stepIndex: 1, status: "Pass" },
+				{ stepIndex: 0, status: "Pass", evidenceIds: [] },
+				{ stepIndex: 1, status: "Pass", evidenceIds: [] },
 			])
 		).toBe("Pass");
 	});
@@ -552,9 +552,9 @@ describe("computeGlobalStatus", () => {
 	it("returns Fail as soon as one step is Fail (even if others Pass)", () => {
 		expect(
 			computeGlobalStatus([
-				{ stepIndex: 0, status: "Pass" },
-				{ stepIndex: 1, status: "Fail" },
-				{ stepIndex: 2, status: "Pass" },
+				{ stepIndex: 0, status: "Pass", evidenceIds: [] },
+				{ stepIndex: 1, status: "Fail", evidenceIds: [] },
+				{ stepIndex: 2, status: "Pass", evidenceIds: [] },
 			])
 		).toBe("Fail");
 	});
@@ -562,8 +562,8 @@ describe("computeGlobalStatus", () => {
 	it("returns Blocked when at least one step is Blocked and none Fail", () => {
 		expect(
 			computeGlobalStatus([
-				{ stepIndex: 0, status: "Pass" },
-				{ stepIndex: 1, status: "Blocked" },
+				{ stepIndex: 0, status: "Pass", evidenceIds: [] },
+				{ stepIndex: 1, status: "Blocked", evidenceIds: [] },
 			])
 		).toBe("Blocked");
 	});
@@ -571,8 +571,8 @@ describe("computeGlobalStatus", () => {
 	it("returns Skipped only when ALL steps are Skipped", () => {
 		expect(
 			computeGlobalStatus([
-				{ stepIndex: 0, status: "Skipped" },
-				{ stepIndex: 1, status: "Skipped" },
+				{ stepIndex: 0, status: "Skipped", evidenceIds: [] },
+				{ stepIndex: 1, status: "Skipped", evidenceIds: [] },
 			])
 		).toBe("Skipped");
 	});
@@ -580,8 +580,8 @@ describe("computeGlobalStatus", () => {
 	it("Fail takes precedence over Blocked", () => {
 		expect(
 			computeGlobalStatus([
-				{ stepIndex: 0, status: "Blocked" },
-				{ stepIndex: 1, status: "Fail" },
+				{ stepIndex: 0, status: "Blocked", evidenceIds: [] },
+				{ stepIndex: 1, status: "Fail", evidenceIds: [] },
 			])
 		).toBe("Fail");
 	});

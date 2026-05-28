@@ -270,6 +270,17 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId }: TestCaseFormVi
 					<h1 className="wit-form-title">{headerTitle}</h1>
 				</div>
 				<div className="wit-form-header-actions">
+					{isEditMode && caseId !== undefined && (
+						<Button
+							variant="secondary"
+							onClick={() => onSuccess(caseId)}
+							disabled={submitInFlight}
+							data-testid="tc-run-btn"
+							title="Open a new Test Execution for this Test Case"
+						>
+							Run Test
+						</Button>
+					)}
 					<Button variant="subtle" onClick={onCancel} disabled={submitInFlight}>
 						Cancel
 					</Button>
