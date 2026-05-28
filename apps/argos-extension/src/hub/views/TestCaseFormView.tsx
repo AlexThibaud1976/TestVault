@@ -1,5 +1,5 @@
-import type { TestCaseDraft } from "@atconseil/argos-sdk";
-import { useCallback, useState } from "react";
+import type { TestCaseDraft, TestCasePatch } from "@atconseil/argos-sdk";
+import { useCallback, useEffect, useState } from "react";
 import { GherkinEditor } from "../GherkinEditor.js";
 import { AiSuggestStepsModal } from "../components/AiSuggestStepsModal.js";
 import { AreaPathPicker } from "../components/AreaPathPicker.js";
@@ -31,7 +31,7 @@ interface TestCaseFormViewProps {
 	caseId?: number;
 }
 
-export function TestCaseFormView({ onCancel, onSuccess, caseId: _caseId }: TestCaseFormViewProps) {
+export function TestCaseFormView({ onCancel, onSuccess, caseId }: TestCaseFormViewProps) {
 	const { testCaseService, project } = useServices();
 	const [aiModalOpen, setAiModalOpen] = useState(false);
 	const [pendingSteps, setPendingSteps] = useState<TestStepSuggestion[] | null>(null);
@@ -48,6 +48,50 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId: _caseId }: TestC
 	const [areaPath, setAreaPath] = useState("");
 	const [iterationPath, setIterationPath] = useState("");
 	const [gherkin, setGherkin] = useState("");
+
+	// Sprint 2.22 -- edit mode (caseId set) fetches the existing WIT via
+	// testCaseService.read and populates the form. Create mode (caseId
+	// undefined) keeps the original empty form behaviour.
+	const isEditMode = caseId !== undefined;
+	const [isLoadingTestCase, setIsLoadingTestCase] = useState(isEditMode);
+	const [loadError, setLoadError] = useState<string | null>(null);
+	const [isUpdating, setIsUpdating] = useState(false);
+
+	useEffect(() => {
+		if (caseId === undefined) return;
+		let cancelled = false;
+		setIsLoadingTestCase(true);
+		setLoadError(null);
+		testCaseService
+			.read(caseId)
+			.then((tc) => {
+				if (cancelled) return;
+				setTitle(tc.title);
+				setDescription(tc.description ?? "");
+				setPriority(String(tc.priority) as "1" | "2" | "3" | "4");
+				setTags(tc.tags ?? []);
+				setAreaPath(tc.areaPath ?? "");
+				setIterationPath(tc.iterationPath ?? "");
+				setGherkin(tc.gherkin ?? "");
+				const fetchedSteps = (tc.steps ?? []).map((s, i) => ({
+					id: i + 1,
+					action: s.action ?? "",
+					expected: s.expected ?? "",
+				}));
+				setSteps(fetchedSteps.length > 0 ? fetchedSteps : [{ id: 1, action: "", expected: "" }]);
+				setNextStepId(Math.max(fetchedSteps.length, 1) + 1);
+			})
+			.catch((err: unknown) => {
+				if (cancelled) return;
+				setLoadError(err instanceof Error ? err.message : String(err));
+			})
+			.finally(() => {
+				if (!cancelled) setIsLoadingTestCase(false);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [caseId, testCaseService]);
 
 	const createFn = useCallback(
 		(draft: TestCaseDraft) => testCaseService.create(draft),
@@ -76,6 +120,19 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId: _caseId }: TestC
 				.map((s, i) => ({ index: i + 1, action: s.action.trim(), expected: s.expected.trim() })),
 			gherkin: gherkin.trim() || undefined,
 		};
+		if (isEditMode && caseId !== undefined) {
+			setIsUpdating(true);
+			try {
+				const patch: TestCasePatch = draft;
+				const updated = await testCaseService.update(caseId, patch);
+				onSuccess(updated.id);
+			} catch {
+				// Errors surfaced via toast in a follow-up sprint; keep form usable.
+			} finally {
+				setIsUpdating(false);
+			}
+			return;
+		}
 		await mutate(draft).catch(() => {});
 	}
 
@@ -147,6 +204,40 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId: _caseId }: TestC
 
 	const section1Complete = title.trim().length > 0;
 
+	if (isLoadingTestCase) {
+		return (
+			<div
+				className="wit-form-view"
+				data-testid="tc-form-loading"
+				style={{ padding: 32, textAlign: "center", color: "#555" }}
+			>
+				Loading Test Case #{caseId}...
+			</div>
+		);
+	}
+
+	if (loadError) {
+		return (
+			<div
+				className="wit-form-view"
+				data-testid="tc-form-error"
+				style={{ padding: 32, color: "#c62828" }}
+			>
+				Failed to load Test Case #{caseId}: {loadError}
+				<div style={{ marginTop: 12 }}>
+					<Button variant="subtle" onClick={onCancel}>
+						Back to list
+					</Button>
+				</div>
+			</div>
+		);
+	}
+
+	const headerTitle = isEditMode ? `Edit Test Case #${caseId}` : "New Test Case";
+	const submitInFlight = isCreating || isUpdating;
+	const submitIdleLabel = isEditMode ? "Update Test Case" : "Create Test Case";
+	const submitBusyLabel = isEditMode ? "Saving..." : "Creating...";
+
 	return (
 		<div className="wit-form-view">
 			<header className="wit-form-header">
@@ -155,7 +246,7 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId: _caseId }: TestC
 						type="button"
 						className="wit-form-back-btn"
 						onClick={onCancel}
-						disabled={isCreating}
+						disabled={submitInFlight}
 						aria-label="Back to list"
 					>
 						<svg
@@ -170,14 +261,14 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId: _caseId }: TestC
 							<path d="M10 3L5 8l5 5" />
 						</svg>
 					</button>
-					<h1 className="wit-form-title">New Test Case</h1>
+					<h1 className="wit-form-title">{headerTitle}</h1>
 				</div>
 				<div className="wit-form-header-actions">
-					<Button variant="subtle" onClick={onCancel} disabled={isCreating}>
+					<Button variant="subtle" onClick={onCancel} disabled={submitInFlight}>
 						Cancel
 					</Button>
-					<Button variant="primary" onClick={handleSubmit} disabled={!isValid || isCreating}>
-						{isCreating ? "Creating..." : "Create Test Case"}
+					<Button variant="primary" onClick={handleSubmit} disabled={!isValid || submitInFlight}>
+						{submitInFlight ? submitBusyLabel : submitIdleLabel}
 					</Button>
 				</div>
 			</header>
