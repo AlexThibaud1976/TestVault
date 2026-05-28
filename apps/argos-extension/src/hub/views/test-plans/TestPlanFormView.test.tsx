@@ -283,7 +283,7 @@ describe("T-2.23 -- TestPlanFormView Lock/Unlock (Sprint 2.23)", () => {
 		const readMock = vi.fn().mockResolvedValue(makePlanRecord("Locked"));
 		renderForm({ testPlanService: createMockTestPlanService({ read: readMock }) }, 200);
 		await waitFor(() => {
-			const saveBtn = screen.getByRole("button", { name: /Save Test Plan|Update Test Plan/i }) as
+			const saveBtn = screen.getByRole("button", { name: /Save changes/i }) as
 				| HTMLButtonElement
 				| undefined;
 			expect(saveBtn?.disabled).toBe(true);

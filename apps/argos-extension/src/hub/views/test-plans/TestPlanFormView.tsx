@@ -29,6 +29,12 @@ export function TestPlanFormView({ planId, onCancel, onSuccess }: TestPlanFormVi
 	const [tags, setTags] = useState<string[]>([]);
 	const [isSaving, setIsSaving] = useState(false);
 	const [saveError, setSaveError] = useState<Error | null>(null);
+	// Sprint 2.23 -- planState reflects the SDK-side state of the Test Plan
+	// (Draft / Locked / Closed). When the plan transitions via lock() or
+	// unlock() we update it locally so the UI reflects the new state without
+	// a full refetch.
+	const [planState, setPlanState] = useState<"Draft" | "Locked" | "Closed" | null>(null);
+	const [isTransitioning, setIsTransitioning] = useState(false);
 
 	// Pre-fill form when existing plan loads in edit mode
 	useEffect(() => {
@@ -38,9 +44,41 @@ export function TestPlanFormView({ planId, onCancel, onSuccess }: TestPlanFormVi
 		setDescription(existingPlan.description ?? "");
 		setIterationPath(existingPlan.iterationPath ?? "");
 		setTags(existingPlan.environments ?? []);
+		setPlanState(existingPlan.state as "Draft" | "Locked" | "Closed");
 	}, [existingPlan]);
 
+	const isLocked = planState === "Locked";
 	const isValid = name.trim().length > 0;
+
+	async function handleLock() {
+		if (planId === undefined) return;
+		setIsTransitioning(true);
+		try {
+			const locked = await testPlanService.lock(planId);
+			setPlanState(locked.state as "Draft" | "Locked" | "Closed");
+			toast.success(`Test Plan #${locked.id} locked`);
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : "Unknown error";
+			toast.error(`Failed to lock Test Plan: ${msg}`);
+		} finally {
+			setIsTransitioning(false);
+		}
+	}
+
+	async function handleUnlock() {
+		if (planId === undefined) return;
+		setIsTransitioning(true);
+		try {
+			const unlocked = await testPlanService.unlock(planId);
+			setPlanState(unlocked.state as "Draft" | "Locked" | "Closed");
+			toast.success(`Test Plan #${unlocked.id} unlocked`);
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : "Unknown error";
+			toast.error(`Failed to unlock Test Plan: ${msg}`);
+		} finally {
+			setIsTransitioning(false);
+		}
+	}
 
 	async function handleSubmit() {
 		if (!isValid) return;
@@ -119,10 +157,34 @@ export function TestPlanFormView({ planId, onCancel, onSuccess }: TestPlanFormVi
 					<h1 className="form-title">{isEditMode ? "Edit Test Plan" : "New Test Plan"}</h1>
 				</div>
 				<div className="form-header-actions">
+					{isEditMode && planState === "Draft" && (
+						<Button
+							variant="secondary"
+							onClick={handleLock}
+							disabled={isSaving || isTransitioning}
+							data-testid="tp-lock-btn"
+						>
+							{isTransitioning ? "Locking…" : "Lock"}
+						</Button>
+					)}
+					{isEditMode && planState === "Locked" && (
+						<Button
+							variant="secondary"
+							onClick={handleUnlock}
+							disabled={isSaving || isTransitioning}
+							data-testid="tp-unlock-btn"
+						>
+							{isTransitioning ? "Unlocking…" : "Unlock"}
+						</Button>
+					)}
 					<Button variant="subtle" onClick={onCancel} disabled={isSaving}>
 						Cancel
 					</Button>
-					<Button variant="primary" onClick={handleSubmit} disabled={!isValid || isSaving}>
+					<Button
+						variant="primary"
+						onClick={handleSubmit}
+						disabled={!isValid || isSaving || isLocked}
+					>
 						{isSaving
 							? isEditMode
 								? "Saving…"
@@ -133,6 +195,23 @@ export function TestPlanFormView({ planId, onCancel, onSuccess }: TestPlanFormVi
 					</Button>
 				</div>
 			</header>
+
+			{isLocked && (
+				<output
+					data-testid="tp-locked-notice"
+					style={{
+						background: "#fff3e0",
+						border: "1px solid #ffb74d",
+						borderRadius: 4,
+						padding: "8px 12px",
+						margin: "8px 16px",
+						fontSize: 13,
+						color: "#5d4037",
+					}}
+				>
+					Test Plan locked. Unlock to modify (Admin only).
+				</output>
+			)}
 
 			{saveError && (
 				<div className="form-error" role="alert">
