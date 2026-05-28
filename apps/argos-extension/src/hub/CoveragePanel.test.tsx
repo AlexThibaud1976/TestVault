@@ -272,3 +272,136 @@ describe("T-2.22.3 -- CoveragePanel Suggest Tests button", () => {
 		});
 	});
 });
+
+// =============================================================================
+// T-2.22 -- Coverage Panel enriched display (title / state / priority /
+// assigned / steps count). Sprint 2.22 adds testCaseService.read calls to
+// hydrate the row for each linked TC.
+// =============================================================================
+
+function makeFullTc(id: number, overrides?: Record<string, unknown>) {
+	return {
+		id,
+		title: `TC ${id}`,
+		description: "",
+		state: "Active" as const,
+		areaPath: "Proj",
+		iterationPath: "",
+		tags: [],
+		steps: [
+			{ index: 1, action: "Click", expected: "Result" },
+			{ index: 2, action: "Verify", expected: "OK" },
+		],
+		priority: 2 as 1 | 2 | 3 | 4,
+		automationStatus: "Manual" as const,
+		preconditionLinks: [],
+		assignedTo: "alex@example.com",
+		automationKey: undefined,
+		gherkin: undefined,
+		estimatedDuration: undefined,
+		createdBy: "alex",
+		createdAt: "2026-05-28T10:00:00Z",
+		modifiedBy: "alex",
+		modifiedAt: "2026-05-28T10:00:00Z",
+		...overrides,
+	};
+}
+
+describe("T-2.22 -- CoveragePanel enriched display", () => {
+	it("renders Test Case title for each linked TC", async () => {
+		const linkService = makeLinkService({
+			listLinks: vi.fn().mockResolvedValue([makeLink(42), makeLink(43)]),
+		});
+		const execService = makeExecService();
+		const readMock = vi
+			.fn()
+			.mockImplementation((id: number) =>
+				Promise.resolve(makeFullTc(id, { title: `Story ${id}` }))
+			);
+		render(
+			<ServicesContext.Provider
+				value={createMockServices({
+					testCaseService: createMockTestCaseService({ read: readMock }),
+				})}
+			>
+				<ToastProvider>
+					<CoveragePanel workItemId={10} linkService={linkService} executionService={execService} />
+				</ToastProvider>
+			</ServicesContext.Provider>
+		);
+		await waitFor(() => {
+			expect(screen.getByText(/Story 42/)).toBeDefined();
+			expect(screen.getByText(/Story 43/)).toBeDefined();
+		});
+	});
+
+	it("renders Test Case priority label and steps count", async () => {
+		const linkService = makeLinkService({
+			listLinks: vi.fn().mockResolvedValue([makeLink(42)]),
+		});
+		const execService = makeExecService();
+		const readMock = vi
+			.fn()
+			.mockResolvedValue(makeFullTc(42, { priority: 1, title: "Critical TC" }));
+		render(
+			<ServicesContext.Provider
+				value={createMockServices({
+					testCaseService: createMockTestCaseService({ read: readMock }),
+				})}
+			>
+				<ToastProvider>
+					<CoveragePanel workItemId={10} linkService={linkService} executionService={execService} />
+				</ToastProvider>
+			</ServicesContext.Provider>
+		);
+		await waitFor(() => {
+			// P1 label or numeric priority surfaced + steps count visible
+			expect(screen.getByText(/P1|Priority 1/)).toBeDefined();
+			expect(screen.getByText(/2 steps?/)).toBeDefined();
+		});
+	});
+
+	it("renders Test Case state for each linked TC", async () => {
+		const linkService = makeLinkService({
+			listLinks: vi.fn().mockResolvedValue([makeLink(42)]),
+		});
+		const execService = makeExecService();
+		const readMock = vi.fn().mockResolvedValue(makeFullTc(42, { state: "Closed" }));
+		render(
+			<ServicesContext.Provider
+				value={createMockServices({
+					testCaseService: createMockTestCaseService({ read: readMock }),
+				})}
+			>
+				<ToastProvider>
+					<CoveragePanel workItemId={10} linkService={linkService} executionService={execService} />
+				</ToastProvider>
+			</ServicesContext.Provider>
+		);
+		await waitFor(() => {
+			expect(screen.getByText(/Closed/)).toBeDefined();
+		});
+	});
+
+	it("renders Assigned to value when present (fallback to '-' if absent)", async () => {
+		const linkService = makeLinkService({
+			listLinks: vi.fn().mockResolvedValue([makeLink(42)]),
+		});
+		const execService = makeExecService();
+		const readMock = vi.fn().mockResolvedValue(makeFullTc(42, { assignedTo: "jane@example.com" }));
+		render(
+			<ServicesContext.Provider
+				value={createMockServices({
+					testCaseService: createMockTestCaseService({ read: readMock }),
+				})}
+			>
+				<ToastProvider>
+					<CoveragePanel workItemId={10} linkService={linkService} executionService={execService} />
+				</ToastProvider>
+			</ServicesContext.Provider>
+		);
+		await waitFor(() => {
+			expect(screen.getByText(/jane@example\.com/)).toBeDefined();
+		});
+	});
+});

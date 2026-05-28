@@ -99,6 +99,61 @@ describe("listLinks", () => {
 		const links = await service.listLinks(42);
 		expect(links[0]?.isOrphan).toBe(false);
 	});
+
+	// Sprint 2.22 -- widen the filter to native ADO TestedBy relations so the
+	// Coverage Panel surfaces Test Cases linked via the standard ADO link
+	// types (not just the Argos custom WI_LINK_TYPE_ATTR attribute).
+	it("Sprint 2.22 -- recognises native ADO TestedBy-Forward relations", async () => {
+		const adoClient = makeAdoClient({
+			fetchWorkItem: vi.fn().mockResolvedValue(
+				rawTc([
+					{
+						rel: "Microsoft.VSTS.Common.TestedBy-Forward",
+						url: "https://dev.azure.com/org/x/_apis/wit/workitems/333",
+					},
+				])
+			),
+		});
+		const service = createWorkItemLinkService(adoClient);
+		const links = await service.listLinks(42);
+		expect(links).toHaveLength(1);
+		expect(links[0]?.targetId).toBe(333);
+		expect(links[0]?.linkType).toBe("TestVault.TestedBy");
+	});
+
+	it("Sprint 2.22 -- ignores native TestedBy-Reverse (only forward links surface)", async () => {
+		const adoClient = makeAdoClient({
+			fetchWorkItem: vi.fn().mockResolvedValue(
+				rawTc([
+					{
+						rel: "Microsoft.VSTS.Common.TestedBy-Reverse",
+						url: "https://dev.azure.com/org/x/_apis/wit/workitems/444",
+					},
+				])
+			),
+		});
+		const service = createWorkItemLinkService(adoClient);
+		const links = await service.listLinks(42);
+		expect(links).toHaveLength(0);
+	});
+
+	it("Sprint 2.22 -- deduplicates when the same target is linked via both custom and native rel", async () => {
+		const adoClient = makeAdoClient({
+			fetchWorkItem: vi.fn().mockResolvedValue(
+				rawTc([
+					tvRelation(555, "TestVault.TestedBy"),
+					{
+						rel: "Microsoft.VSTS.Common.TestedBy-Forward",
+						url: "https://dev.azure.com/org/x/_apis/wit/workitems/555",
+					},
+				])
+			),
+		});
+		const service = createWorkItemLinkService(adoClient);
+		const links = await service.listLinks(42);
+		expect(links).toHaveLength(1);
+		expect(links[0]?.targetId).toBe(555);
+	});
 });
 
 // ─── addLink ──────────────────────────────────────────────────────────────────
