@@ -166,9 +166,10 @@ Conséquence de l'audit 2026-05-09 : les composants UI riches existent (40+ fich
 React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 ça avant de poursuivre les développements neufs de Phase 1.
 
-- [x] T-0.5.1 — Inventaire des composants riches non-wirés (DONE TECH-DEBT-015A)
+- [x] T-0.5.1 — Inventaire des composants riches non-wirés (DONE TECH-DEBT-015A ; ré-inventorié Sprint 2.22 PF-3)
 - [x] T-0.5.2 — (App.tsx) : remplacer les stubs par les composants riches existants (Plans, Cases, Sets, Preconditions, Reports, AI-Config, Audit log, Settings) -- DONE Sprint 2.5d : 24 composants riches integres (Phase 2-7 wiring complet)
-- [x] T-0.5.3 — Tests de wiring (composant rendu réellement vs stub) (DONE Sprint 2.5a : 5 tests WIRING-2026-05-10 + Sprint 2.5b : 3 tests WIRING-2026-05-15, 5 nouvelles assertions)
+      _Sprint 2.22 enrichissement_ : TestCaseFormView edit mode (fetch-by-caseId + Update button), StepsEditor extrait avec Move Up/Down, Coverage Panel rich display (title/state/priority/steps/assigned). Voir TECH-DEBT-T222-C pour les wirings TestPlan/TestSet/Precondition restants.
+- [x] T-0.5.3 — Tests de wiring (composant rendu réellement vs stub) (DONE Sprint 2.5a : 5 tests WIRING-2026-05-10 + Sprint 2.5b : 3 tests WIRING-2026-05-15, 5 nouvelles assertions ; +24 RTL tests Sprint 2.22)
 - [ ] T-0.5.4 — Vérifier accessibility (aria-* sur la sidebar, focus management)
 - [ ] T-0.5.5 — Mettre à jour (README.md) avec screenshots du hub réel
 
@@ -1185,6 +1186,76 @@ en Phase 6+ post-launch.
 
 ---
 
+### Sprint 2.22 — WIT Display + Steps CRUD + Coverage Panel rich UX (DELIVERED v0.5.32) 🟢
+
+📚 `claude_prompts/CLAUDE_TASK_sprint-2-22-code.md`
+📚 `claude_prompts/sprint-2-22-code-report.md`
+
+**Livré le 2026-05-28** — v0.5.31 → v0.5.32 (PR #102 squash-mergée à `7bd9247`).
+
+**Périmètre livré :**
+
+- [x] **StepsEditor** extrait : composant `components/StepsEditor/` avec Move
+      Up / Move Down + Add / Remove / Edit. `TestCaseFormView` migre du CRUD
+      inline vers ce composant contrôlé.
+- [x] **TestCaseFormView edit mode** : `caseId` consommé, fetch via
+      `testCaseService.read`, populate complet (titre / description /
+      priority / tags / area path / iteration path / gherkin / steps).
+      `tc-form-loading` + `tc-form-error` + bouton **Update Test Case**.
+- [x] **Coverage Panel rich display** : id + title + state + priority
+      (P1-P4) + steps count + assigned + latest execution status. Hydraté
+      via `testCaseService.read` ; fallback gracieux id-only si pas de
+      ServicesContext.
+- [x] **`listLinks` data layer widened** : accepte aussi
+      `Microsoft.VSTS.Common.TestedBy-Forward` + `TestVault.TestedBy-Forward`
+      en plus du custom `WI_LINK_TYPE_ATTR`. Reverse ignoré. Dedup par
+      target id avec préférence custom. Corrige "Coverage Panel vide en
+      BCEE-QA".
+- [x] **Widget Coverage Panel fix** : `widgets/coverage-panel/index.tsx`
+      wrappe désormais `<ServicesContext.Provider>` + `<ToastProvider>`
+      autour de `<CoveragePanel>` via `buildServices()`. Corrige le crash
+      "Suggest Tests sur User Story" en BCEE-QA.
+- [x] **Bug Area Path** : CONFIRMÉ RÉSOLU via combinaison Sprint 2.21
+      part 3 (création post-Accept dans le Drawer footer) + Sprint 2.22
+      (widget ServicesProvider qui permet enfin de tester le flow en
+      BCEE-QA). Test régression : `T-2.22 -- Suggest Tests Area Path
+      inheritance > clicking Suggest Tests does NOT call
+      testCaseService.create during generation` vert.
+- [x] **+24 tests RTL** + 3 SDK tests + 4 regression guards
+      structurels : `T-2.22-testcase-display`, `T-2.22-testcase-wiring`,
+      `T-2.22-coverage-panel-data`, `T-2.22-suggest-tests-coverage-panel`.
+      567+ tests verts pour argos-extension, 328 pour argos-sdk.
+- [x] **Documentation** : user-guide (Coverage Panel column table + Edit
+      mode + Move Up/Down), operator-guide (Sprint 2.22 link types + N+1
+      read concern + widget services bundle), CHANGELOG [0.5.32], README
+      differentiators.
+
+**Écarts vs CLAUDE_TASK documentés :**
+
+- Plan réduit à 11 commits parce que `TestCasesListView` + routing étaient
+  déjà câblés et l'Area Path inheritance était déjà implémentée en Sprint
+  2.21 part 3 — C2 réduit au fix widget plumbing.
+- Bump étendu à 15 `package.json` (Changesets fixed mode) au lieu des 3
+  listés dans le brief.
+- `TestCaseFormView` edit mode appelle `testCaseService.update` inline
+  (pas via un `useArgosUpdate` hook qui n'existe pas encore — voir
+  TECH-DEBT-T222-B).
+- Terme "Xray-like" neutralisé dans tout le code/tests/CHANGELOG/commits
+  produits (rich display / detailed columns / enriched display).
+
+**TECH-DEBT identifiés (à traiter dans sprints dédiés) :**
+
+- TECH-DEBT-T222-A — N+1 reads Coverage Panel (Promise.all OK ≤50 TCs,
+  batch `getWorkItems` à prévoir).
+- TECH-DEBT-T222-B — `useArgosUpdate` hook absent (cohérence avec
+  `useArgosCreate`).
+- TECH-DEBT-T222-C — TestPlan / TestSet / Precondition wirings restants
+  (T-0.5.2 suite).
+- TECH-DEBT-T222-D — Allowlist temporaire `Specs/CLAUDE_TASK_sprint-2-22-
+  code.md` : ✅ RÉSOLU au COMMIT 1 du cleanup post-merge.
+
+---
+
 ### Sprint 2.22 - Bugfix TestCaseFormView + AI bouton repositioning 🔴
 
 📚 spec.md US-1.1, US-5.1, US-5.1.1, F1
@@ -1607,6 +1678,33 @@ T-7.1 → T-7.2 → T-7.3, T-7.4, T-7.5 → T-7.6 → T-7.7 → T-7.8 → T-7.9 
 **Source :** Sprint 2.21 part 3 — écart identifié dans le rapport (`packages/testpulse-ui-shared/package.json` listé dans le CLAUDE_TASK pour le bump mais inexistant dans le repo).
 **Symptôme :** `tasks.md` (TECH-DEBT-T2213-F : ce package n'existe plus dans le repo — à nettoyer) et CLAUDE_TASKs antérieurs référencent `packages/testpulse-ui-shared/` qui a été supprimé/renommé lors d'une refactorisation antérieure.
 **Plan :** auditer tous les fichiers spec-kit (constitution / spec / plan / tasks) pour éliminer les références à `testpulse-ui-shared`. Corriger en une seule PR. À traiter avant le prochain sprint touchant le versioning.
+
+### TECH-DEBT-T222-A — N+1 reads Coverage Panel
+
+**Priorité :** MOYENNE
+**Source :** Sprint 2.22, `claude_prompts/sprint-2-22-code-report.md`.
+**Symptôme :** hydratation per-row via `Promise.all` -- chaque row appelle `testCaseService.read` (un `getWorkItem` ADO par TC linké). Acceptable jusqu'à ~50 TCs ; 100+ TCs devient une latence visible.
+**Plan :** remplacer la boucle `read` par un batch `getWorkItems([ids...])` (un seul appel ADO pour tous les TC ids du panel). Ajouter pagination si nécessaire.
+
+### TECH-DEBT-T222-B — `useArgosUpdate` hook absent
+
+**Priorité :** MOYENNE
+**Source :** Sprint 2.22 -- TestCaseFormView edit mode appelle `testCaseService.update(caseId, draft)` inline dans `handleSubmit`.
+**Symptôme :** incohérence avec le pattern `useArgosCreate` qui centralise audit log, toast success/error, état `isCreating`. L'edit mode duplique ce flow en local (`isUpdating`).
+**Plan :** créer `useArgosUpdate<T>` sur le même modèle que `useArgosCreate`. Migrer TestCaseFormView edit mode + futurs TestPlan / TestSet / Precondition edit modes vers ce hook. Sprint dédié ~1h.
+
+### TECH-DEBT-T222-C — TestPlan / TestSet / Precondition wirings restants
+
+**Priorité :** HAUTE
+**Source :** Sprint 2.22 -- T-0.5.2 enrichi pour TestCase uniquement (display + Steps CRUD + edit mode + Coverage Panel rich display).
+**Symptôme :** les autres WIT (TestPlan, TestSet, Precondition, TestExecution) ont un display basique. Pas de Steps editor équivalent, pas de Coverage Panel hydraté, pas de rich edit mode. La démo "produit utilisable bout-en-bout" reste partielle.
+**Plan :** sprint dédié T-0.5.2 suite. Étendre les patterns Sprint 2.22 (fetch-by-id + Update button + edit mode) aux 3 autres WIT. Prérequis pour la démo complète du produit.
+
+### TECH-DEBT-T222-D — Entrée allowlist temporaire `Specs/CLAUDE_TASK_sprint-2-22-code.md`
+
+**Priorité :** RÉSOLUE
+**Source :** Sprint 2.22 -- entrée temporaire ajoutée dans `tools/regression/allowlist.cjs` + `allowlist.ts` pour exempter le brief contenant 10 mentions "Xray-like" (métaphore concurrentielle interdite par `CFG-2026-05-10-no-xray-references`).
+**Résolution :** ✅ retirée au COMMIT 1 du cleanup post-merge Sprint 2.22 (`4fbc7be`). Le brief vit maintenant à `claude_prompts/CLAUDE_TASK_sprint-2-22-code.md`, déjà allowlisté depuis Sprint 2.21 part 2 cleanup.
 
 ---
 
