@@ -1,6 +1,6 @@
 {
 	"name": "@atconseil/argos-gherkin",
-	"version": "0.5.31",
+	"version": "0.5.32",
 	"private": false,
 	"type": "module",
 	"main": "./dist/index.js",
