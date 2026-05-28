@@ -11,14 +11,14 @@ import { TestPlanFormView } from "./TestPlanFormView.js";
 
 afterEach(cleanup);
 
-function renderForm(overrides?: Parameters<typeof createMockServices>[0]) {
+function renderForm(overrides?: Parameters<typeof createMockServices>[0], planId?: number) {
 	const services = createMockServices(overrides);
 	const onCancel = vi.fn();
 	const onSuccess = vi.fn();
 	render(
 		<ServicesContext.Provider value={services}>
 			<ToastProvider>
-				<TestPlanFormView onCancel={onCancel} onSuccess={onSuccess} />
+				<TestPlanFormView onCancel={onCancel} onSuccess={onSuccess} planId={planId} />
 			</ToastProvider>
 		</ServicesContext.Provider>
 	);
@@ -202,5 +202,97 @@ describe("TestPlanFormView (Sprint 2.18)", () => {
 		renderForm();
 		await userEvent.type(screen.getByLabelText(/plan name/i), "Done");
 		expect(screen.getByText("Complete")).toBeDefined();
+	});
+});
+
+// =============================================================================
+// T-2.23 -- TestPlan Lock / Unlock UX (CHECKPOINT B)
+// =============================================================================
+
+function makePlanRecord(state: "Draft" | "Locked" | "Closed", overrides?: Record<string, unknown>) {
+	return {
+		id: 200,
+		name: "Sprint plan",
+		description: "",
+		state,
+		owner: "alex@example.com",
+		iterationPath: "Proj\\Sprint 1",
+		areaPath: "Proj",
+		environments: [],
+		testSetIds: [],
+		lockedSnapshotIds: undefined,
+		createdBy: "alex",
+		createdAt: "2026-05-28T10:00:00Z",
+		modifiedBy: "alex",
+		modifiedAt: "2026-05-28T10:00:00Z",
+		...overrides,
+	};
+}
+
+describe("T-2.23 -- TestPlanFormView Lock/Unlock (Sprint 2.23)", () => {
+	it("create mode does NOT render the Lock or Unlock buttons", async () => {
+		renderForm();
+		await waitFor(() => expect(screen.getByText("New Test Plan")).toBeDefined());
+		expect(screen.queryByTestId("tp-lock-btn")).toBeNull();
+		expect(screen.queryByTestId("tp-unlock-btn")).toBeNull();
+	});
+
+	it("edit mode on a Draft plan renders the Lock button (and not Unlock)", async () => {
+		const readMock = vi.fn().mockResolvedValue(makePlanRecord("Draft"));
+		renderForm({ testPlanService: createMockTestPlanService({ read: readMock }) }, 200);
+		await waitFor(() => expect(screen.getByTestId("tp-lock-btn")).toBeDefined());
+		expect(screen.queryByTestId("tp-unlock-btn")).toBeNull();
+	});
+
+	it("edit mode on a Locked plan renders the Unlock button (and not Lock)", async () => {
+		const readMock = vi.fn().mockResolvedValue(makePlanRecord("Locked"));
+		renderForm({ testPlanService: createMockTestPlanService({ read: readMock }) }, 200);
+		await waitFor(() => expect(screen.getByTestId("tp-unlock-btn")).toBeDefined());
+		expect(screen.queryByTestId("tp-lock-btn")).toBeNull();
+	});
+
+	it("clicking Lock calls testPlanService.lock with the plan id", async () => {
+		const readMock = vi.fn().mockResolvedValue(makePlanRecord("Draft"));
+		const lockMock = vi.fn().mockResolvedValue(makePlanRecord("Locked"));
+		renderForm(
+			{
+				testPlanService: createMockTestPlanService({ read: readMock, lock: lockMock }),
+			},
+			200
+		);
+		const btn = await screen.findByTestId("tp-lock-btn");
+		await userEvent.click(btn);
+		await waitFor(() => expect(lockMock).toHaveBeenCalledWith(200));
+	});
+
+	it("clicking Unlock calls testPlanService.unlock with the plan id", async () => {
+		const readMock = vi.fn().mockResolvedValue(makePlanRecord("Locked"));
+		const unlockMock = vi.fn().mockResolvedValue(makePlanRecord("Draft"));
+		renderForm(
+			{
+				testPlanService: createMockTestPlanService({ read: readMock, unlock: unlockMock }),
+			},
+			200
+		);
+		const btn = await screen.findByTestId("tp-unlock-btn");
+		await userEvent.click(btn);
+		await waitFor(() => expect(unlockMock).toHaveBeenCalledWith(200));
+	});
+
+	it("Locked plan disables the Save button", async () => {
+		const readMock = vi.fn().mockResolvedValue(makePlanRecord("Locked"));
+		renderForm({ testPlanService: createMockTestPlanService({ read: readMock }) }, 200);
+		await waitFor(() => {
+			const saveBtn = screen.getByRole("button", { name: /Save Test Plan|Update Test Plan/i }) as
+				| HTMLButtonElement
+				| undefined;
+			expect(saveBtn?.disabled).toBe(true);
+		});
+	});
+
+	it("Locked plan exposes a 'plan-locked' notice", async () => {
+		const readMock = vi.fn().mockResolvedValue(makePlanRecord("Locked"));
+		renderForm({ testPlanService: createMockTestPlanService({ read: readMock }) }, 200);
+		await waitFor(() => expect(screen.getByTestId("tp-locked-notice")).toBeDefined());
 	});
 });
