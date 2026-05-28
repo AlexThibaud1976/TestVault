@@ -1,5 +1,6 @@
 import type { ExecutionDraft } from "@atconseil/argos-sdk";
-import { useCallback, useState } from "react";
+import type { TestVaultTestExecution } from "@atconseil/argos-types";
+import { useCallback, useEffect, useState } from "react";
 import { Badge, Button, Input, SectionCollapsible, Select } from "../design-system/index.js";
 import { useArgosCreate } from "../hooks/use-argos-create.js";
 import { useServices } from "../services-context.js";
@@ -28,7 +29,7 @@ interface TestExecutionFormViewProps {
 export function TestExecutionFormView({
 	onCancel,
 	onSuccess,
-	executionId: _executionId,
+	executionId,
 }: TestExecutionFormViewProps) {
 	const { testExecutionService } = useServices();
 
@@ -38,6 +39,51 @@ export function TestExecutionFormView({
 	const [actualResult, setActualResult] = useState("");
 	const [notes, setNotes] = useState("");
 	const [stepStatus, setStepStatus] = useState("");
+
+	// Sprint 2.23 -- display-only mode for an existing execution. Per
+	// constitution S3.5 the TestExecution is IMMUTABLE after creation.
+	// When executionId is set we render the run as read-only and expose
+	// a Re-run button (creates a brand-new TestExecution for the same
+	// TC) instead of Save / Update.
+	const isDisplayMode = executionId !== undefined;
+	const [isLoadingExecution, setIsLoadingExecution] = useState(isDisplayMode);
+	const [loadError, setLoadError] = useState<string | null>(null);
+	const [_loadedExecution, setLoadedExecution] = useState<TestVaultTestExecution | null>(null);
+
+	useEffect(() => {
+		if (executionId === undefined) return;
+		let cancelled = false;
+		setIsLoadingExecution(true);
+		setLoadError(null);
+		testExecutionService
+			.read(executionId)
+			.then((exec) => {
+				if (cancelled) return;
+				setLoadedExecution(exec);
+				setTestCaseId(String(exec.testCaseId ?? ""));
+				setTestPlanId(String(exec.testPlanId ?? ""));
+				setEnvironment(exec.environment ?? "qa");
+			})
+			.catch((err: unknown) => {
+				if (cancelled) return;
+				setLoadError(err instanceof Error ? err.message : String(err));
+			})
+			.finally(() => {
+				if (!cancelled) setIsLoadingExecution(false);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [executionId, testExecutionService]);
+
+	function handleReRun() {
+		// Navigate the parent back to a fresh create-mode form for the
+		// same TC. The parent owns the routing -- we surface intent via
+		// onSuccess(0) signalling "go back to a fresh create". A more
+		// proper flow would route to test-execution-form with prefilled
+		// testCaseId; deferred as TECH-DEBT.
+		onSuccess(0);
+	}
 
 	const createFn = useCallback(
 		(draft: ExecutionDraft) => testExecutionService.startRun(draft),
@@ -74,6 +120,35 @@ export function TestExecutionFormView({
 	const failCount = stepStatus === "Fail" ? 1 : 0;
 	const blockedCount = stepStatus === "Blocked" ? 1 : 0;
 
+	if (isLoadingExecution) {
+		return (
+			<div
+				className="wit-form-view"
+				data-testid="te-form-loading"
+				style={{ padding: 32, textAlign: "center", color: "#555" }}
+			>
+				Loading Test Execution #{executionId}...
+			</div>
+		);
+	}
+
+	if (loadError) {
+		return (
+			<div
+				className="wit-form-view"
+				data-testid="te-form-error"
+				style={{ padding: 32, color: "#c62828" }}
+			>
+				Failed to load Test Execution #{executionId}: {loadError}
+				<div style={{ marginTop: 12 }}>
+					<Button variant="subtle" onClick={onCancel}>
+						Back to list
+					</Button>
+				</div>
+			</div>
+		);
+	}
+
 	return (
 		<div className="wit-form-view">
 			<header className="wit-form-header">
@@ -97,15 +172,23 @@ export function TestExecutionFormView({
 							<path d="M10 3L5 8l5 5" />
 						</svg>
 					</button>
-					<h1 className="wit-form-title">New Test Execution</h1>
+					<h1 className="wit-form-title">
+						{isDisplayMode ? `Test Execution #${executionId}` : "New Test Execution"}
+					</h1>
 				</div>
 				<div className="wit-form-header-actions">
 					<Button variant="subtle" onClick={onCancel} disabled={isCreating}>
-						Cancel
+						{isDisplayMode ? "Back to list" : "Cancel"}
 					</Button>
-					<Button variant="primary" onClick={handleSubmit} disabled={!isValid || isCreating}>
-						{isCreating ? "Starting..." : "Start Run"}
-					</Button>
+					{isDisplayMode ? (
+						<Button variant="primary" onClick={handleReRun} data-testid="te-rerun-btn">
+							Re-run
+						</Button>
+					) : (
+						<Button variant="primary" onClick={handleSubmit} disabled={!isValid || isCreating}>
+							{isCreating ? "Starting..." : "Start Run"}
+						</Button>
+					)}
 				</div>
 			</header>
 

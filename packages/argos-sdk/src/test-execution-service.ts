@@ -64,6 +64,10 @@ export interface ITestExecutionService {
 	finalizeRun(id: number): Promise<TestVaultTestExecution>;
 	linkBug(id: number, bugId: number): Promise<TestVaultTestExecution>;
 	listExecutions(options: ListExecutionsOptions): Promise<ExecutionPage>;
+	// Sprint 2.23 -- display-only mode for an existing execution. Per
+	// constitution S3.5 the returned TestExecution is immutable from the
+	// UI side; this method only reads it.
+	read(id: number): Promise<TestVaultTestExecution>;
 }
 
 // ─── Field mapping helpers ────────────────────────────────────────────────────
@@ -112,13 +116,31 @@ function fromRawFinalized(wi: RawWorkItem): TestVaultTestExecution {
 	};
 }
 
-function calcGlobalStatus(results: TestStepResult[]): GlobalStatus {
+/**
+ * Compute the global execution status from the per-step results.
+ *
+ * Rules (US-2.1 / constitution S3.5) :
+ *   - empty -> Unexecuted
+ *   - any step Fail -> Fail (Fail wins over Blocked)
+ *   - any step Blocked (no Fail) -> Blocked
+ *   - all steps Skipped -> Skipped
+ *   - otherwise -> Pass
+ *
+ * Exported (Sprint 2.23 / TECH-DEBT-T222 surface) so the UI execution
+ * form can preview the global status while the user fills the
+ * step-by-step grid, without re-implementing the rule.
+ */
+export function computeGlobalStatus(results: TestStepResult[]): GlobalStatus {
 	if (results.length === 0) return "Unexecuted";
 	if (results.some((r) => r.status === "Fail")) return "Fail";
 	if (results.some((r) => r.status === "Blocked")) return "Blocked";
 	if (results.every((r) => r.status === "Skipped")) return "Skipped";
 	return "Pass";
 }
+
+// Kept as an internal alias so the existing call sites below stay
+// unchanged. Could be inlined in a follow-up cleanup sprint.
+const calcGlobalStatus = computeGlobalStatus;
 
 function isCompleted(wi: RawWorkItem): boolean {
 	return wi.fields["System.State"] === "Completed";
@@ -258,6 +280,11 @@ export function createTestExecutionService(
 
 			const items = await Promise.all(pageIds.map((id) => adoClient.fetchWorkItem(id)));
 			return { items: items.map(fromRawFinalized), total, page, pageSize };
+		},
+
+		async read(id) {
+			const raw = await adoClient.fetchWorkItem(id);
+			return fromRawFinalized(raw);
 		},
 	};
 }

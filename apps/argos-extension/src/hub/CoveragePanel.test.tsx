@@ -80,6 +80,7 @@ function makeExecService(overrides?: Partial<ITestExecutionService>): ITestExecu
 			.mockImplementation(({ testCaseId }: { testCaseId: number }) =>
 				Promise.resolve(makeExecPage([makeExec(testCaseId, testCaseId === 42 ? "Pass" : "Fail")]))
 			),
+		read: vi.fn(),
 		...overrides,
 	};
 }

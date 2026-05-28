@@ -138,6 +138,7 @@ export function createMockTestExecutionService(
 		finalizeRun: vi.fn().mockResolvedValue({}),
 		linkBug: vi.fn().mockResolvedValue({}),
 		listExecutions: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 }),
+		read: vi.fn().mockResolvedValue({}),
 		...overrides,
 	} as unknown as ITestExecutionService;
 }

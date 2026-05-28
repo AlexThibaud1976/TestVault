@@ -1,5 +1,5 @@
-import type { PreconditionDraft } from "@atconseil/argos-sdk";
-import { useCallback, useState } from "react";
+import type { PreconditionDraft, PreconditionPatch } from "@atconseil/argos-sdk";
+import { useCallback, useEffect, useState } from "react";
 import { Badge, Button, Input, SectionCollapsible } from "../design-system/index.js";
 import { useArgosCreate } from "../hooks/use-argos-create.js";
 import { useServices } from "../services-context.js";
@@ -14,7 +14,7 @@ interface PreconditionFormViewProps {
 export function PreconditionFormView({
 	onCancel,
 	onSuccess,
-	preconditionId: _preconditionId,
+	preconditionId,
 }: PreconditionFormViewProps) {
 	const { preconditionService } = useServices();
 
@@ -24,6 +24,39 @@ export function PreconditionFormView({
 	const [cleanup, setCleanup] = useState("");
 	const [tagInput, setTagInput] = useState("");
 	const [tags, setTags] = useState<string[]>([]);
+
+	// Sprint 2.23 -- edit mode (preconditionId set) fetches the existing
+	// Precondition and populates the form. Create mode keeps the empty
+	// form behaviour.
+	const isEditMode = preconditionId !== undefined;
+	const [isLoadingPrecondition, setIsLoadingPrecondition] = useState(isEditMode);
+	const [loadError, setLoadError] = useState<string | null>(null);
+	const [isUpdating, setIsUpdating] = useState(false);
+
+	useEffect(() => {
+		if (preconditionId === undefined) return;
+		let cancelled = false;
+		setIsLoadingPrecondition(true);
+		setLoadError(null);
+		preconditionService
+			.read(preconditionId)
+			.then((pc) => {
+				if (cancelled) return;
+				setTitle(pc.title);
+				setDescription(pc.description ?? "");
+				setTags(pc.tags ?? []);
+			})
+			.catch((err: unknown) => {
+				if (cancelled) return;
+				setLoadError(err instanceof Error ? err.message : String(err));
+			})
+			.finally(() => {
+				if (!cancelled) setIsLoadingPrecondition(false);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [preconditionId, preconditionService]);
 
 	const createFn = useCallback(
 		(draft: PreconditionDraft) => preconditionService.create(draft),
@@ -48,6 +81,19 @@ export function PreconditionFormView({
 			description: desc || undefined,
 			tags: tags.length > 0 ? tags : undefined,
 		};
+		if (isEditMode && preconditionId !== undefined) {
+			setIsUpdating(true);
+			try {
+				const patch: PreconditionPatch = draft;
+				const updated = await preconditionService.update(preconditionId, patch);
+				onSuccess(updated.id);
+			} catch {
+				// surfaced via toast in a follow-up sprint
+			} finally {
+				setIsUpdating(false);
+			}
+			return;
+		}
 		await mutate(draft).catch(() => {});
 	}
 
@@ -63,6 +109,40 @@ export function PreconditionFormView({
 
 	const section1Complete = title.trim().length > 0;
 
+	if (isLoadingPrecondition) {
+		return (
+			<div
+				className="wit-form-view"
+				data-testid="precondition-form-loading"
+				style={{ padding: 32, textAlign: "center", color: "#555" }}
+			>
+				Loading Precondition #{preconditionId}...
+			</div>
+		);
+	}
+
+	if (loadError) {
+		return (
+			<div
+				className="wit-form-view"
+				data-testid="precondition-form-error"
+				style={{ padding: 32, color: "#c62828" }}
+			>
+				Failed to load Precondition #{preconditionId}: {loadError}
+				<div style={{ marginTop: 12 }}>
+					<Button variant="subtle" onClick={onCancel}>
+						Back to list
+					</Button>
+				</div>
+			</div>
+		);
+	}
+
+	const headerTitle = isEditMode ? `Edit Precondition #${preconditionId}` : "New Precondition";
+	const submitInFlight = isCreating || isUpdating;
+	const submitIdleLabel = isEditMode ? "Update Precondition" : "Create Precondition";
+	const submitBusyLabel = isEditMode ? "Saving..." : "Creating...";
+
 	return (
 		<div className="wit-form-view">
 			<header className="wit-form-header">
@@ -71,7 +151,7 @@ export function PreconditionFormView({
 						type="button"
 						className="wit-form-back-btn"
 						onClick={onCancel}
-						disabled={isCreating}
+						disabled={submitInFlight}
 						aria-label="Back to list"
 					>
 						<svg
@@ -86,14 +166,14 @@ export function PreconditionFormView({
 							<path d="M10 3L5 8l5 5" />
 						</svg>
 					</button>
-					<h1 className="wit-form-title">New Precondition</h1>
+					<h1 className="wit-form-title">{headerTitle}</h1>
 				</div>
 				<div className="wit-form-header-actions">
-					<Button variant="subtle" onClick={onCancel} disabled={isCreating}>
+					<Button variant="subtle" onClick={onCancel} disabled={submitInFlight}>
 						Cancel
 					</Button>
-					<Button variant="primary" onClick={handleSubmit} disabled={!isValid || isCreating}>
-						{isCreating ? "Creating..." : "Create Precondition"}
+					<Button variant="primary" onClick={handleSubmit} disabled={!isValid || submitInFlight}>
+						{submitInFlight ? submitBusyLabel : submitIdleLabel}
 					</Button>
 				</div>
 			</header>

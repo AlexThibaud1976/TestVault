@@ -42,6 +42,7 @@ function makeExecService(overrides?: Partial<ITestExecutionService>): ITestExecu
 		finalizeRun: vi.fn(),
 		linkBug: vi.fn(),
 		listExecutions: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 }),
+		read: vi.fn(),
 		...overrides,
 	};
 }

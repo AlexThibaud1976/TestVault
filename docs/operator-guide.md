@@ -329,3 +329,34 @@ The widget entry now mounts a full `Services` bundle through
   shipped inline in the VSIX; no additional CDN call.
 - The widget requires the `vso.extension.data_write` scope (already
   declared) so the LLM config can be read for the BYOK flow.
+
+---
+
+## Sprint 2.23 -- Precondition link strategy + Test Plan Lock state
+
+### Precondition link strategy (Option A)
+
+Argos persists the link between a Test Case and its Preconditions as a
+JSON `number[]` in the Test Case's `TestVault.PreconditionLinks`
+field. This is the strategy already used by `argos-sdk` and `argos-cli`;
+Sprint 2.23 reaffirms it as the canonical option. Operators integrating
+TestPulse (or external Test Case generators) should populate this field
+when seeding Test Cases with predefined Preconditions.
+
+The alternative (a typed ADO link `TestVault.PreconditionOf`) is **not**
+used by Argos in this version. Switching strategies would be a breaking
+change for downstream consumers.
+
+### Test Plan Lock state
+
+Locking a Test Plan PATCHes `System.State` from `Draft` to `Locked`.
+The state machine is defined in the Custom Process : the WIT schema
+exposes the three states `Draft / Locked / Closed` (cf.
+`argos-wit-schema` `index.test.ts`). The SDK's `testPlanService.lock`
+also reads and persists `TestVault.LockedSnapshotIds` (future US-4.1
+TestCaseVersions snapshots), but Sprint 2.23 leaves the field empty.
+
+If the locked-plan check is ever needed at the API level, the SDK
+already throws `"Test Plan is locked"` when `testPlanService.update`
+is called on a Locked plan. The UI mirror (Save button disabled +
+locked notice) is what Sprint 2.23 adds on top.

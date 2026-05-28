@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { IAdoClient, RawWorkItem } from "./ado-client.js";
 import {
 	TestExecutionImmutableError,
+	computeGlobalStatus,
 	createTestExecutionService,
 } from "./test-execution-service.js";
 
@@ -529,5 +530,59 @@ describe("listExecutions", () => {
 		expect(page.page).toBe(1);
 		expect(page.pageSize).toBe(20);
 		expect(page.items).toHaveLength(20);
+	});
+});
+
+// ─── computeGlobalStatus (Sprint 2.23) ────────────────────────────────────────
+
+describe("computeGlobalStatus", () => {
+	it("returns Unexecuted when no step results are provided", () => {
+		expect(computeGlobalStatus([])).toBe("Unexecuted");
+	});
+
+	it("returns Pass when all steps are Pass", () => {
+		expect(
+			computeGlobalStatus([
+				{ stepIndex: 0, status: "Pass", evidenceIds: [] },
+				{ stepIndex: 1, status: "Pass", evidenceIds: [] },
+			])
+		).toBe("Pass");
+	});
+
+	it("returns Fail as soon as one step is Fail (even if others Pass)", () => {
+		expect(
+			computeGlobalStatus([
+				{ stepIndex: 0, status: "Pass", evidenceIds: [] },
+				{ stepIndex: 1, status: "Fail", evidenceIds: [] },
+				{ stepIndex: 2, status: "Pass", evidenceIds: [] },
+			])
+		).toBe("Fail");
+	});
+
+	it("returns Blocked when at least one step is Blocked and none Fail", () => {
+		expect(
+			computeGlobalStatus([
+				{ stepIndex: 0, status: "Pass", evidenceIds: [] },
+				{ stepIndex: 1, status: "Blocked", evidenceIds: [] },
+			])
+		).toBe("Blocked");
+	});
+
+	it("returns Skipped only when ALL steps are Skipped", () => {
+		expect(
+			computeGlobalStatus([
+				{ stepIndex: 0, status: "Skipped", evidenceIds: [] },
+				{ stepIndex: 1, status: "Skipped", evidenceIds: [] },
+			])
+		).toBe("Skipped");
+	});
+
+	it("Fail takes precedence over Blocked", () => {
+		expect(
+			computeGlobalStatus([
+				{ stepIndex: 0, status: "Blocked", evidenceIds: [] },
+				{ stepIndex: 1, status: "Fail", evidenceIds: [] },
+			])
+		).toBe("Fail");
 	});
 });

@@ -7,6 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.33] - 2026-05-28
+
+### Sprint 2.23 -- TestSet / TestPlan / Precondition / TestExecution wiring closing T-0.5.2
+
+#### Added
+
+- **TestSetFormView edit mode** : the `setId` prop is no longer ignored.
+  Same fetch-by-id / populate / Update button pattern as TestCase
+  (Sprint 2.22). Inline TC composition via id + Add was already in place
+  since Sprint 2.5d.
+- **TestPlan Lock / Unlock UX** : Lock button on Draft plans, Unlock
+  button on Locked plans (testids `tp-lock-btn` / `tp-unlock-btn`).
+  Calls into the already-implemented `testPlanService.lock` /
+  `unlock` methods. Locked plans disable the Save button and show a
+  "Test Plan locked. Unlock to modify (Admin only)." notice. Admin role
+  check is deferred (TECH-DEBT-T223).
+- **PreconditionFormView edit mode** : `preconditionId` consumed, fetch
+  via `preconditionService.read`, Update button. Same pattern as
+  TestSet.
+- **TestCaseFormView : Preconditions display** : when the TC carries
+  `TestVault.PreconditionLinks` (Option A : JSON `number[]` field, the
+  one used by the SDK and CLI), the form renders a new "Preconditions"
+  read-only section listing the linked precondition ids (testid
+  `tc-precondition-links`). Resolving titles by id is deferred.
+- **TestExecution display-only mode + Re-run** : when `executionId` is
+  set, the form fetches the immutable record via the new
+  `testExecutionService.read(id)`, renders all fields read-only, and
+  exposes a Re-run button (testid `te-rerun-btn`) instead of Save.
+  Constitution S3.5 enforced at the UI level -- no Update button,
+  no Patch path.
+- **TestCaseFormView : Run Test button** in edit mode (testid
+  `tc-run-btn`) -- placeholder routing to a new TestExecution, full
+  navigate wiring tracked as TECH-DEBT-T223.
+- **argos-sdk** : `computeGlobalStatus` exported as a public pure
+  helper (US-2.1 rules : Fail > Blocked > all-Skipped > Pass > Unexec).
+  `ITestExecutionService.read(id)` new method.
+
+#### Technical
+
+- Regression tests : `T-2.23-testset-crud`, `T-2.23-testplan-lock`,
+  `T-2.23-precondition-crud`, `T-2.23-testexecution-crud`.
+- New RTL files : TestSetFormView.test.tsx, PreconditionFormView.test.tsx.
+- T-0.5.2 wiring closure : all 5 WIT types now have edit mode
+  (TestCase / TestSet / TestPlan / Precondition) or display-only mode
+  (TestExecution).
+
+#### Backward Compatibility
+
+- Existing create paths kept intact. Create mode behaviour identical
+  to v0.5.32 for all four form views.
+
 ## [0.5.32] - 2026-05-28
 
 ### Sprint 2.22 -- WIT display + Steps CRUD + Coverage Panel rich display
