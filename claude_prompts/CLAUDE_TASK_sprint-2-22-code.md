@@ -1,670 +1,834 @@
-# CLAUDE_TASK : Sprint 2.22 — Code implementation
+# CLAUDE_TASK -- Sprint 2.22 : WIT Display + Steps CRUD + Coverage Panel Xray-like
 
-> **Cible :** Claude Code
-> **Date de génération :** lundi 2026-05-25, 8h45
-> **Source de vérité :** `Specs/spec.md` (US-1.1, US-5.1, US-5.1.1, F1), `Specs/tasks.md` (Sprint 2.22), `Specs/constitution.md` §10.4
-> **Durée estimée :** 6-8h dev
-> **Branche cible :** `sprint/2.22-code`
+**Cible :** Claude Code
+**Date :** 2026-05-28
+**Branche cible :** `sprint/2.22-code`
+**Version cible :** 0.5.31 -> 0.5.32
+**Duree estimee :** 12-15h
+**Pattern :** B -- Code Implementation (TDD strict)
 
----
+**Sources de verite :**
+- `Specs/constitution.md` v0.5.2 -- S10.1 TDD, S10.2 doc, S10.4 regressions, S10.5 deps, S10.7 non-regression
+- `Specs/spec.md` -- US-5.1 (Suggest Tests), US-6.2 (LLM config), F1 (AI generation), F3 (coverage matrix)
+- `Specs/plan.md` -- S3.3 (TestStep schema), S3.6 (custom controls), S5.2 (WIQL coverage)
+- `Specs/tasks.md` -- T-0.5.1, T-0.5.2, T-0.5.3 (wiring composants riches)
+- `claude_prompts/sprint-2-21-part-3-code-report.md` -- SuggestTestsDrawer + SuggestStepsDrawer livres en v0.5.31
 
-## CONTEXTE EXÉCUTIF
-
-Sprint 2.22 livre 3 changements couplés sur le composant `TestCaseFormView` et le `CoveragePanel` :
-
-1. **Bugfix régression Sprint 2.19/2.20** : Area Path + Iteration Path absents du formulaire de création de Test Case (vs spec.md US-1.1 qui les liste comme obligatoires/optionnels). **Blocker BCEE-QA actuel** : la création de TC est partiellement cassée.
-2. **Bugfix régression Sprint 2.21 part 1** : le bouton "AI Generate" actuellement dans `TestCaseFormView` crée des WIT à tort (erreur "Area Path manquant" en runtime). Refactor vers la sémantique "AI Suggest Steps" (ne crée aucun WIT, remplit juste la section Steps du formulaire).
-3. **Nouvelle feature US-5.1.1 + repositioning** : ajout du bouton "Suggest Tests" sur le Coverage Panel d'une User Story / Bug / Requirement (conformément à T-6.6 / US-5.1, où le bouton aurait toujours dû être).
-
-Ce sprint **NE TOUCHE PAS** : architecture LLM (déjà no-backend depuis Sprint 2.21), schéma WIT, plan.md, constitution.md, manifeste vss-extension.json.
-
----
-
-## RÈGLES NON-NÉGOCIABLES
-
-### TDD strict (constitution §10.4 — règle déjà en vigueur, pas un amendement)
-
-**Tout bug confirmé en prod ajoute un test à la suite régression AVANT le fix.** Ordre obligatoire :
-
-1. Écrire les tests d'intégration régression (rouges, qui échouent contre le code actuel) → **Commit 1**
-2. Implémenter les fixes qui font passer ces tests au vert → **Commits 2-3-4**
-3. Vérifier qu'au moins **un commit intermédiaire dans l'historique git montre les tests rouges** avant le passage au vert (pour démontrer la rigueur TDD).
-
-**Si un test passe au vert AVANT que le fix correspondant ait été commité, c'est que le test ne teste pas ce qu'il prétend tester.** Abort, retravaille le test.
-
-### Stack de tests imposée (Specs/plan.md §9)
-
-- **Tests d'intégration** : Vitest + React Testing Library + msw (Mock Service Worker) pour mocker l'API ADO REST.
-- **Tests unitaires** : Vitest seul.
-- **PAS de Playwright** dans ce sprint (cf. TECH-DEBT-052, à créer dans tasks.md — Playwright sera monté avant Phase 7 T-7.9 Beta privée).
-
-### Stack technique du projet (rappel)
-
-- TypeScript 5.5+ strict mode
-- React 18+
-- Fluent UI 2 (composants UI)
-- pnpm workspaces + Turborepo
-- Biome pour lint+format (PAS ESLint, PAS Prettier)
-- Commit messages : conventional commits
-
-### Couverture cible (constitution §10.1)
-
-- **90% core / 80% UI**, bloquant en CI.
-- Tu vérifies via `pnpm test --coverage` que les nouveaux composants atteignent ces seuils.
-
-### Pas de scope creep
-
-- Tu **ne refactores pas** du code adjacent qui semble perfectible. Si tu vois un truc qui te démange, tu l'écris dans le rapport final "Anomalies relevées" — Alex décide après.
-- Tu **ne bumps pas** la version pour ajouter une fonctionnalité non spécifiée.
-- Tu **ne touches pas** à la doc Marketplace, au manifeste vss-extension, au licensing.
+**Decisions injectees (session 2026-05-28) :**
+- D-1 : Steps CRUD complet dans TestCaseFormView (add/edit/delete/reorder)
+- D-2 : Coverage Panel Xray-like option C (titre + statut + derniere execution + steps count + assigned + priority + Suggest Tests)
+- D-3 : Suggest Tests depuis Coverage Panel : fonctionnel avec Area Path herite de la US source
+- D-4 : Version bump 0.5.31 -> 0.5.32
 
 ---
 
-## PRÉREQUIS
+## CONTEXTE EXECUTIF
 
-Avant de lancer :
+v0.5.31 livree et installee sur BCEE-QA. Tests manuels revelent deux gaps :
 
-- [ ] Tu es sur `main`, à jour avec `origin/main`
-- [ ] `git status` propre
-- [ ] La PR #96 (Sprint 2.22 spec patch) est bien mergée (vérification : `git log --oneline -10` doit montrer un commit `docs(specs): Sprint 2.22 spec-kit patch...`)
-- [ ] `Specs/spec.md` contient bien la section `#### US-5.1.1` (grep le confirme)
-- [ ] `Specs/tasks.md` contient bien `### Sprint 2.22` et `### T-2.21-postmortem`
+**Gap 1 -- WIT TestCase ne s'affiche pas dans Argos.**
+`TestVault.Steps` est bien alimente (la sauvegarde fonctionne) mais les composants riches
+UI ne sont pas wires dans le hub (T-0.5.2 pendante depuis Phase 0.5).
+Symptome : on peut creer un TestCase, mais l'ouvrir dans Argos montre un formulaire vide.
 
-Si l'un de ces prérequis échoue → abort + rapport.
+**Gap 2 -- Coverage Panel vide.**
+Le panneau "Test Coverage" sur les WITs US ne liste aucun TC lie.
+La query WIQL (plan.md S5.2) n'est pas implementee cote widget.
+Symptome : le panel s'affiche mais ne contient aucune donnee.
+
+Ces deux gaps bloquent tout le reste :
+- Impossible de valider le bug Area Path (Coverage Panel bloque T1)
+- Impossible de tester Suggest Tests en conditions reelles
+- Impossible de demontrer le produit a un client
+
+Ce sprint est le "produit devient utilisable" -- avant il fallait la confiance,
+apres on peut faire une vraie demo.
 
 ---
 
-## WORKFLOW
+## STRUCTURE EN 3 CHECKPOINTS
 
-### ÉTAPE 0 — Setup branche
+**CHECKPOINT A (6-7h)** -- WIT Display + Steps CRUD
+Inventaire des composants non-wires + wiring dans le hub + Steps CRUD dans TestCaseFormView.
+
+**CHECKPOINT B (3-4h)** -- Coverage Panel Xray-like
+Widget coverage-panel : afficher les TCs lies avec donnees riches.
+
+**CHECKPOINT C (2-3h)** -- Suggest Tests depuis Coverage Panel
+Brancher le bouton Suggest Tests sur useAiGeneration + Area Path inheritance + SuggestTestsDrawer.
+
+Chaque checkpoint = branche de validation possible si Claude Code doit s'arreter.
+
+---
+
+## REGLES NON-NEGOCIABLES
+
+1. **TDD strict S10.1** : commit test RED avant commit implementation GREEN. Toujours.
+2. **Non-regression S10.7** : `pnpm test --run` vert apres CHAQUE commit.
+   Si un test existant casse : STOP, investiguer avant de continuer.
+3. **Inventaire avant wiring** : lire les composants existants avant de les remplacer.
+   NE PAS recrire ce qui existe -- wirer ce qui est la.
+4. **No scope creep** : TestExecution, TestPlan, TestSet -- hors scope de ce sprint.
+   On wire UNIQUEMENT le TestCase et le Coverage Panel.
+5. **Pas de push, pas de PR automatique.**
+6. **Termes LLM interdits** : scanner `tools/regression/LLM-*.test.ts` avant tout nouveau
+   fichier qui reference des modeles ou providers.
+
+---
+
+## PRE-FLIGHT (v1.3 -- obligatoire avant le premier commit)
+
+### PF-1 : Vulnerabilites
+```bash
+pnpm audit --audit-level=high
+```
+- 0 HIGH ou CRITICAL attendu (TECH-DEBT-T2213-A resolue en v0.5.31 via pnpm.overrides)
+- Si HIGH detecte : STOP, documenter dans rapport.
+
+### PF-2 : Tests baseline
+```bash
+git checkout main && git pull origin main
+pnpm test --run
+```
+Attendu : 553 tests verts. Si rouge : STOP, identifier la cause avant de brancher.
+
+### PF-3 : Inventaire des composants existants (CRITICAL)
+Avant d'ecrire une seule ligne de code, executer cet inventaire :
 
 ```bash
-git checkout main
-git pull origin main
-git checkout -b sprint/2.22-code
+# Composants riches existants dans le repo
+find apps/argos-extension/src -name "*.tsx" | xargs grep -l "TestCase\|TestPlan\|TestSet" | sort
+
+# Verifier ce qui est actuellement wires dans App.tsx / les hubs
+grep -n "TestCase\|StepsEditor\|StepsList\|TestCaseForm" \
+  apps/argos-extension/src/hub/App.tsx \
+  apps/argos-extension/src/hub/**/*.tsx 2>/dev/null | head -40
+
+# Verifier l'etat du Coverage Panel widget
+find apps/argos-extension/src -path "*/coverage-panel*" -name "*.tsx" | sort
+find apps/argos-extension/src -path "*/widgets*" -name "*.tsx" | sort
+
+# Verifier si StepsEditor existe deja
+find apps/argos-extension/src -name "*Step*" -o -name "*step*" | grep -v test | sort
 ```
 
-### ÉTAPE 1 — Reconnaissance code base (lecture seule, 15-20 min)
+**Documenter dans le rapport final : liste des composants trouves et leur etat (wired/unwired).**
+C'est le delta entre ce qui existe et ce qu'on doit wire.
 
-Tu lis et tu cartographies, **tu ne modifies rien**.
+### PF-4 : Routes API impactees
+Ce sprint touche :
+- ADO REST WorkItems (`_apis/wit/workitems/{id}?fields=...`) -- fetch TC avec steps
+- ADO REST WIQL (`_apis/wit/wiql`) -- query TCs lies via Tested By
+- ADO REST WorkItemLinks -- fetch relations d'un WI US
+- LLM providers (useAiGeneration existant) -- pour Suggest Tests, PAS de modification
 
-1. **Trouve le fichier `TestCaseFormView.tsx`** (probablement `apps/argos-extension/src/components/TestCaseFormView/TestCaseFormView.tsx` ou similaire). Note son chemin exact.
-2. **Trouve le composant `CoveragePanel`** (probablement dans `apps/argos-extension/src/components/CoveragePanel/` ou un widget séparé sous `apps/argos-extension/src/widgets/coverage-panel/`). Note son chemin.
-3. **Trouve le composant `AiGenerateModal`** actuel (celui qui appelle le LLM depuis `TestCaseFormView`). Note son chemin.
-4. **Trouve le service LLM** (probablement `LlmService`, `AiGenerationService`, ou similaire) et la fonction `generateTestCases()` ou équivalente.
-5. **Identifie la fonction qui crée des WIT TestVault.TestCase** (vraisemblablement dans un `TestCaseService` ou `WorkItemClient`). C'est elle qu'il faut **NE PAS appeler** depuis le nouveau bouton "AI Suggest Steps".
-6. **Identifie le pattern actuel d'appel à l'API ADO Classification Nodes** s'il existe déjà (pour Area Path / Iteration Path autoré). Si ça n'existe nulle part, tu vas le créer.
-7. **Identifie le pattern de tests d'intégration existants** : où sont-ils, comment sont mockés les appels ADO via msw, quelle factory `renderWithProviders` est utilisée. Reproduis ce pattern.
-8. **Vérifie la numérotation des bugs existants** dans le dossier des tests régression (typiquement `apps/argos-extension/src/__tests__/regression/` ou `tools/regression/`). Trouve le plus grand `bug-NNN` actuel — tu utiliseras `bug-NNN+1` et `bug-NNN+2`. Remplace les placeholders `bug-051` et `bug-052` du `tasks.md` Sprint 2.22 par les vrais numéros (Alex fera l'ajustement final via PR comment si besoin, mais propose les bons numéros dans ton rapport).
+Verifier que le client ADO existant (services/ado-client.ts ou equivalent) expose :
+- `fetchWorkItem(id, fields[])` -- pour charger les steps d'un TC
+- `queryWiql(query)` -- pour le Coverage Panel
+- `getWorkItemRelations(id)` -- pour les liens Tested By
 
-**Livre ce que tu as trouvé dans le rapport final, section "Reconnaissance".**
+Si ces methodes manquent : les creer en TDD avant les composants qui les consomment.
 
 ---
 
-### ÉTAPE 2 — Commit 1 : tests d'intégration régression (RED)
+## PREREQUIS DE DEMARRAGE
 
-> **Objectif** : démontrer que les régressions existent. Les 3 tests doivent **échouer** contre le code actuel.
+- `main` a jour, CI verte (commit post-cleanup Sprint 2.21 part 3)
+- Version active : 0.5.31
+- SuggestTestsDrawer et SuggestStepsDrawer livres et wires (v0.5.31)
+- Branche : `git checkout -b sprint/2.22-code`
+- PF-3 inventaire execute et documente
 
-#### Test 1 — `bug-NNN-tcform-missing-areapath.integration.test.tsx`
+---
 
-Chemin (à adapter selon ce que tu as trouvé en étape 1) : `apps/argos-extension/src/__tests__/regression/bug-NNN-tcform-missing-areapath.integration.test.tsx`
+## CHECKPOINT A -- WIT Display + Steps CRUD
 
-Comportement attendu du test :
+### COMMIT A1 -- test(regression): [RED] T-2.22-testcase-display
+
+**Fichier cree :**
+`tools/regression/T-2.22-testcase-display.test.ts`
+
+**Tests a ecrire (TOUS ROUGES) :**
 
 ```typescript
-describe('Bug NNN — TestCaseFormView missing Area Path / Iteration Path (regression Sprint 2.19/2.20)', () => {
-  // Setup : mock ADO Classification Nodes API via msw
-  // Render TestCaseFormView en mode "create from list"
+describe("T-2.22 TestCase display in Argos hub", () => {
 
-  it('renders Area Path dropdown', () => {
-    // assertion: getByLabelText(/Area Path/i) is in the document
+  it("TestCaseFormView renders System.Title from fetched WIT", () => {
+    // Mocker fetchWorkItem retournant un TC avec titre
+    // Verifier que le titre s'affiche dans le formulaire
   });
 
-  it('renders Iteration Path dropdown', () => {
-    // assertion: getByLabelText(/Iteration Path/i) is in the document
+  it("TestCaseFormView renders TestVault.Steps as editable list", () => {
+    // TC avec steps JSON : [{index:0,action:"Click",expected:"Button clicked"}]
+    // Verifier que la liste de steps est rendue (pas le JSON brut)
   });
 
-  it('Area Path is required: save without Area Path shows error', async () => {
-    // fill title only
-    // click save
-    // assertion: error message visible (something like /Area Path is required/i)
-    // assertion: no WIT creation API call was made (via msw spy)
+  it("StepsEditor allows adding a new step", () => {
+    // Cliquer "Add Step"
+    // Verifier qu'un nouveau step vide apparait dans la liste
   });
 
-  it('Iteration Path is optional: save without Iteration Path succeeds', async () => {
-    // fill title + Area Path
-    // leave Iteration Path empty
-    // click save
-    // assertion: WIT creation API was called once with correct payload
+  it("StepsEditor allows editing step action", () => {
+    // Modifier le champ action d'un step existant
+    // Verifier que la valeur est mise a jour
+  });
+
+  it("StepsEditor allows editing step expected", () => {
+    // Modifier le champ expected
+    // Verifier mise a jour
+  });
+
+  it("StepsEditor allows deleting a step", () => {
+    // Cliquer delete sur un step
+    // Verifier que le step disparait de la liste
+  });
+
+  it("StepsEditor allows reordering steps via drag or up/down buttons", () => {
+    // Deplacer un step (up/down ou drag)
+    // Verifier le nouvel ordre
+  });
+
+  it("saving TestCase serializes steps to TestVault.Steps JSON", () => {
+    // Modifier les steps, sauvegarder
+    // Verifier que le payload PATCH envoye a ADO contient
+    // TestVault.Steps = JSON.stringify(steps) correct
+  });
+
+  it("backward compat -- TC without steps renders empty steps list (not crash)", () => {
+    // TC avec TestVault.Steps = null ou ""
+    // Verifier que le composant s'affiche sans erreur
+  });
+
+  it("TestVault.Priority picklist renders correctly", () => {
+    // Verifier que le champ Priority (1-4) s'affiche en dropdown
+  });
+
+  it("TestVault.AutomationStatus picklist renders correctly", () => {
+    // Manual / Planned / Automated
   });
 });
 ```
 
-**Ce test doit échouer contre le code actuel** parce que `TestCaseFormView` n'a pas ces champs.
+**Verification :** `pnpm test tools/regression/T-2.22-testcase-display.test.ts`
+Attendu : ROUGE.
 
-#### Test 2 — `bug-MMM-aibutton-wrong-placement.integration.test.tsx`
+---
 
-Chemin : `apps/argos-extension/src/__tests__/regression/bug-MMM-aibutton-wrong-placement.integration.test.tsx`
+### COMMIT A2 -- feat(hub): wire TestCase display + Steps CRUD in TestCaseFormView
+
+**Objectif :** a partir de l'inventaire PF-3, wirer les composants existants et
+implementer le Steps CRUD.
+
+**Schema TestStep (plan.md S4.2) -- a utiliser tel quel :**
+```typescript
+interface TestStep {
+  index: number;      // 0-based
+  action: string;     // format markdown
+  expected: string;   // format markdown
+}
+```
+
+**Composant StepsEditor (creer si absent, wirer si existant) :**
 
 ```typescript
-describe('Bug MMM — AI button wrong placement (regression Sprint 2.21 part 1)', () => {
+// Structure attendue si creation necessaire
+interface StepsEditorProps {
+  steps: TestStep[];
+  onChange: (steps: TestStep[]) => void;
+  readOnly?: boolean;
+}
+```
 
-  describe('CoveragePanel on a User Story', () => {
-    it('renders Suggest Tests button', () => {
-      // mock une User Story comme contexte WIT
-      // render CoveragePanel
-      // assertion: getByRole('button', { name: /Suggest Tests/i }) is in document
-    });
+UX minimale :
+- Liste des steps numerotee (index + 1)
+- Chaque step : champ action (textarea) + champ expected (textarea)
+- Boutons : Add Step (en bas de liste), Delete (par step), Move Up / Move Down
+- Pas de drag-and-drop obligatoire : Up/Down suffisent pour ce sprint
 
-    it('clicking Suggest Tests opens AiSuggestTestsModal', async () => {
-      // click button
-      // assertion: modal visible with title /Suggest Test Cases/i
-    });
+**Integration TestCaseFormView :**
+- Deserialiser `TestVault.Steps` (JSON) au chargement du WIT
+- Serialiser au save (JSON.stringify)
+- Si parse error (JSON invalide dans le champ) : afficher les steps comme texte brut
+  dans un textarea en fallback, avec warning "Could not parse steps -- editing as raw JSON"
+
+**Verification :** `pnpm test --run`
+Attendu : VERT. Couverture StepsEditor : >= 80%.
+
+---
+
+### COMMIT A3 -- test(regression): [RED] T-2.22-testcase-wiring
+
+**Fichier cree :**
+`tools/regression/T-2.22-testcase-wiring.test.ts`
+
+```typescript
+describe("T-2.22 TestCase wiring in Argos hub", () => {
+
+  it("hub routes to TestCaseFormView when WIT type is TestVault.TestCase", () => {
+    // Simuler SDK.getContributionId() retournant le hub cases
+    // Naviguer vers un TC par ID
+    // Verifier que TestCaseFormView est rendu
   });
 
-  describe('TestCaseFormView in edit mode', () => {
-    it('renders AI Suggest Steps button (NOT AI Generate)', () => {
-      // render TestCaseFormView with an existing TC
-      // assertion: button text matches /AI Suggest Steps/i (not /AI Generate/i)
-    });
+  it("TestCase list view renders list of TCs from WIQL", () => {
+    // Mocker queryWiql retournant 3 TCs
+    // Verifier que les 3 TCs apparaissent dans la liste
+  });
 
-    it('clicking AI Suggest Steps does NOT create any new WIT', async () => {
-      // mock LLM response with fake steps
-      // setup msw spy on POST /_apis/wit/workitems/$TestCase (the WIT creation endpoint)
-      // fill title
-      // click AI Suggest Steps
-      // wait for modal preview to appear
-      // click "Accept all"
-      // assertion: msw spy was NEVER called (no WIT creation)
-      // assertion: form state contains new steps
-    });
+  it("clicking a TC in the list opens TestCaseFormView", () => {
+    // Cliquer sur un TC dans la liste
+    // Verifier navigation vers TestCaseFormView avec le bon ID
+  });
+
+  it("TestCaseFormView shows loading state while fetching WIT", () => {
+    // fetchWorkItem pending
+    // Verifier spinner ou skeleton visible
+  });
+
+  it("TestCaseFormView shows error state if fetch fails", () => {
+    // fetchWorkItem rejects (404 ou 500)
+    // Verifier message d'erreur user-friendly
   });
 });
 ```
 
-**Ce test doit échouer contre le code actuel** parce que (a) le Coverage Panel n'a pas de bouton "Suggest Tests" et (b) le bouton "AI Generate" actuel dans TestCaseFormView tente de créer des WIT.
+**Verification :** ROUGE attendu.
 
-#### Commit 1
+---
 
+### COMMIT A4 -- feat(hub): wire TestCase list + routing in hub
+
+**Ce commit wire le routing du hub pour les TestCases.**
+
+Verifier l'architecture hubs (Sprint 4 -- 6 hubs independants via SDK.getContributionId()) :
 ```bash
-# Lance les tests pour confirmer qu'ils sont rouges
-pnpm test bug-
+grep -rn "getContributionId\|argos-hub-cases" apps/argos-extension/src/ | head -20
+```
 
-# Tu DOIS voir des échecs. Si tout est vert, le test ne teste pas ce qu'il devrait.
+**Si hub-cases existe deja :** wirer TestCaseFormView et la liste TCs dedans.
+**Si le routing est monolithique :** etendre le switch existant.
 
-git add apps/argos-extension/src/__tests__/regression/
-git commit -m "test(regression): add bug-NNN, bug-MMM E2E integration tests (RED)
+En aucun cas recrire l'architecture des hubs -- c'est du scope creep.
 
-TDD strict per constitution §10.4: regression tests added BEFORE fix.
+**Verification :** `pnpm test --run`
+Attendu : VERT.
 
-bug-NNN: TestCaseFormView missing Area Path / Iteration Path fields
-        (Sprint 2.19/2.20 regression vs spec.md US-1.1)
-bug-MMM: AI button wrong placement
-        (Sprint 2.21 part 1 regression vs spec.md T-6.6 / US-5.1)
+---
 
-Both tests currently FAIL against main. They will be made GREEN by
-subsequent commits implementing T-2.22.1, T-2.22.2, T-2.22.3.
+## CHECKPOINT B -- Coverage Panel Xray-like
 
-Refs:
-- spec.md US-1.1, US-5.1, US-5.1.1, F1
-- tasks.md Sprint 2.22 + T-2.21-postmortem
-- constitution.md §10.4 (regression tracking, TDD strict)"
+### COMMIT B1 -- test(regression): [RED] T-2.22-coverage-panel-data
+
+**Fichier cree :**
+`tools/regression/T-2.22-coverage-panel-data.test.ts`
+
+```typescript
+describe("T-2.22 Coverage Panel -- Xray-like display", () => {
+
+  // Data loading
+  it("fetches TCs linked via Tested By when panel loads on a User Story", () => {
+    // Mocker SDK.getConfiguration() retournant workItemId d'une US
+    // Mocker getWorkItemRelations retournant 2 liens Tested By
+    // Mocker fetchWorkItems retournant les TCs
+    // Verifier que les 2 TCs sont affiches dans le panel
+  });
+
+  it("shows empty state with CTA when no TCs linked", () => {
+    // Aucun lien Tested By
+    // Verifier message "No test cases linked" + bouton "Suggest Tests"
+  });
+
+  it("shows loading skeleton while fetching", () => {
+    // Fetch en cours
+    // Verifier skeleton visible
+  });
+
+  it("shows error state if ADO fetch fails", () => {
+    // fetch rejects
+    // Verifier message d'erreur + bouton Retry
+  });
+
+  // Data display (option C -- Xray-like)
+  it("displays TC title for each linked TC", () => {});
+
+  it("displays TC state (Design/Ready/Active/Closed/Deprecated)", () => {});
+
+  it("displays TC priority (1-Critical to 4-Trivial)", () => {});
+
+  it("displays TC assigned to (display name)", () => {});
+
+  it("displays TC steps count", () => {
+    // TC avec 3 steps : afficher "3 steps"
+  });
+
+  it("displays last execution status if TestExecution exists", () => {
+    // Mocker derniere TestExecution liee au TC
+    // Verifier badge Pass/Fail/Blocked/Unexecuted
+  });
+
+  it("shows Unexecuted badge if no TestExecution linked", () => {
+    // Pas de TestExecution = Unexecuted (pas d'erreur)
+  });
+
+  // Actions
+  it("clicking TC title opens the TC WIT in ADO (navigation)", () => {
+    // Cliquer titre TC
+    // Verifier appel SDK.getService(IHostNavigationService).openNewWindow ou navigate
+  });
+
+  it("Create Test button opens new TestCase form with Area Path pre-filled from US", () => {
+    // Cliquer "Create Test"
+    // Verifier que le formulaire de creation s'ouvre avec
+    // AreaPath = areaPath de la US source
+  });
+});
+```
+
+**Verification :** ROUGE attendu.
+
+---
+
+### COMMIT B2 -- feat(widget): Coverage Panel data layer -- WIQL + relations
+
+**Ce commit implemente la couche data du Coverage Panel.**
+
+**Requete WIQL pour les TCs lies (plan.md S5.2 adapte) :**
+
+```typescript
+// Depuis le widget coverage-panel, le WI courant est une US/Bug/Requirement
+// On cherche les TCs lies via les link types Tested By / Validates / Covers
+
+async function fetchLinkedTestCases(
+  workItemId: number,
+  witClient: WorkItemTrackingRestClient
+): Promise<LinkedTestCase[]> {
+
+  // Etape 1 : recuperer les relations du WI courant
+  const wi = await witClient.getWorkItem(workItemId, undefined, undefined, WorkItemExpand.Relations);
+  const testedByLinks = (wi.relations ?? []).filter(r =>
+    r.rel === "Microsoft.VSTS.Common.TestedBy-Forward" ||
+    r.rel === "TestVault.TestedBy-Forward" ||
+    r.rel === "TestVault.Validates-Forward" ||
+    r.rel === "TestVault.Covers-Forward"
+  );
+
+  if (testedByLinks.length === 0) return [];
+
+  // Etape 2 : extraire les IDs des TCs
+  const tcIds = testedByLinks.map(r => {
+    const match = r.url?.match(/\/(\d+)$/);
+    return match ? parseInt(match[1]) : null;
+  }).filter(Boolean) as number[];
+
+  // Etape 3 : fetch les TCs avec les champs necessaires
+  const tcs = await witClient.getWorkItems(
+    tcIds,
+    [
+      "System.Id",
+      "System.Title",
+      "System.State",
+      "System.AssignedTo",
+      "System.AreaPath",
+      "TestVault.Priority",
+      "TestVault.Steps",
+      "TestVault.AutomationStatus",
+    ]
+  );
+
+  // Etape 4 : pour chaque TC, chercher la derniere TestExecution
+  // (WIQL ou liens -- voir note ci-dessous)
+  return tcs.map(tc => mapToLinkedTestCase(tc));
+}
+```
+
+**Note sur la derniere execution :**
+Chercher une TestExecution liee au TC est une operation supplementaire (N+1 si fait naivement).
+Approche acceptable pour ce sprint : une WIQL groupee pour toutes les executions des TCs
+du panel en une seule requete :
+
+```sql
+SELECT [System.Id], [TestVault.TestCaseId], [TestVault.GlobalStatus], [System.ChangedDate]
+FROM workitems
+WHERE [System.WorkItemType] = 'TestVault.TestExecution'
+  AND [TestVault.TestCaseId] IN ({tcIds})
+ORDER BY [System.ChangedDate] DESC
+```
+
+Puis grouper par TestCaseId et prendre le plus recent.
+Si la requete echoue (champ TestVault.TestCaseId non indexe) : fallback = afficher
+"Unexecuted" pour tous les TCs sans planter. Documenter dans rapport.
+
+**Verification :** `pnpm test --run` VERT.
+
+---
+
+### COMMIT B3 -- feat(widget): Coverage Panel UI -- Xray-like rendering
+
+**Ce commit implemente l'UI du Coverage Panel.**
+
+**Structure d'un TC dans le panel (Xray-like) :**
+
+```
+[StatusBadge] TC-{id} Titre du Test Case                    [3 steps]
+              Assigned: John Doe | Priority: Critical | State: Active
+```
+
+Statuts avec couleurs Fluent UI :
+- Pass -> Badge vert (Fluent UI Badge severity="success")
+- Fail -> Badge rouge (severity="error")
+- Blocked -> Badge orange (severity="warning")
+- Skipped -> Badge gris (severity="informative")
+- Unexecuted -> Badge bleu (severity="important" ou neutre)
+
+**Header du panel :**
+```
+Test Coverage  [{n} tests]                   [+ Create Test] [Suggest Tests]
+```
+
+- "Create Test" : ouvre formulaire TC vide avec AreaPath pre-rempli depuis la US
+- "Suggest Tests" : declenche la generation AI (CHECKPOINT C)
+
+**Etat vide :**
+```
+No test cases linked to this item yet.
+[+ Create Test]  [Suggest Tests]
+```
+
+**Verification :** `pnpm test --run` VERT. Couverture widget coverage-panel : >= 80%.
+
+---
+
+## CHECKPOINT C -- Suggest Tests depuis Coverage Panel
+
+### COMMIT C1 -- test(regression): [RED] T-2.22-suggest-tests-coverage-panel
+
+**Fichier cree :**
+`tools/regression/T-2.22-suggest-tests-coverage-panel.test.ts`
+
+```typescript
+describe("T-2.22 Suggest Tests from Coverage Panel", () => {
+
+  it("Suggest Tests button triggers AI generation with US content", () => {
+    // Mocker useAiGeneration
+    // Cliquer "Suggest Tests" dans le Coverage Panel
+    // Verifier que useAiGeneration est appele avec :
+    //   - titre de la US source
+    //   - description de la US source
+    //   - criteria d'acceptance si presents
+  });
+
+  it("generated TCs inherit AreaPath from source User Story", () => {
+    // US avec AreaPath = "DEMO\Team A"
+    // Generation retourne 3 TCs candidats
+    // Verifier que SuggestTestsDrawer recoit les TCs avec
+    //   areaPath = "DEMO\Team A" pre-rempli
+  });
+
+  it("accepted TCs are created with correct AreaPath", () => {
+    // Accepter les TCs depuis le Drawer
+    // Verifier que les PATCH/POST vers ADO incluent
+    //   System.AreaPath = areaPath de la US
+  });
+
+  it("accepted TCs appear in Coverage Panel after creation", () => {
+    // Apres acceptation
+    // Verifier que le panel se rafraichit et affiche les nouveaux TCs
+  });
+
+  it("Suggest Tests button is disabled if LLM not configured", () => {
+    // useLlmConfig retourne null / not configured
+    // Verifier que le bouton est disabled avec tooltip explicatif
+  });
+
+  it("shows error if AI generation fails", () => {
+    // useAiGeneration throws
+    // Verifier message d'erreur user-friendly dans le panel (pas crash)
+  });
+
+  // Bug Area Path -- validation explicite
+  it("Area Path bug regression -- generation does NOT attempt to create WIT before user accepts", () => {
+    // Cliquer Suggest Tests
+    // Verifier qu'aucun appel createWorkItem n'est fait pendant la generation
+    // Le createWorkItem doit arriver UNIQUEMENT apres Accept dans le Drawer
+  });
+});
+```
+
+**Verification :** ROUGE attendu.
+**Note :** le dernier test est le test de regression du bug Area Path original.
+S'il passe au GREEN, le bug est officiellement confirme comme corrige.
+
+---
+
+### COMMIT C2 -- feat(widget): wire Suggest Tests -- generation + Area Path inheritance
+
+**Ce commit branche le bouton Suggest Tests sur la generation AI.**
+
+**Architecture :**
+
+```typescript
+// Dans le Coverage Panel widget
+// useAiGeneration est deja implemente (Sprint 2.21.x)
+// SuggestTestsDrawer est deja implemente (Sprint 2.21 part 3)
+// Ce commit les connecte depuis le widget
+
+function CoveragePanelSuggestFlow({ workItemId, workItemAreaPath }) {
+  const [isDrawerOpen, setDrawerOpen] = useState(false);
+  const [generatedTCs, setGeneratedTCs] = useState<GeneratedTestCase[]>([]);
+  const { generate, isGenerating } = useAiGeneration();
+  const { config: llmConfig } = useLlmConfig();
+
+  const handleSuggestTests = async () => {
+    // 1. Fetch la US source (titre + description + acceptance criteria)
+    const usContent = await fetchWorkItemContent(workItemId);
+
+    // 2. Appeler la generation LLM
+    const candidates = await generate({
+      sourceTitle: usContent.title,
+      sourceDescription: usContent.description,
+      acceptanceCriteria: usContent.acceptanceCriteria,
+    });
+
+    // 3. Pre-injecter l'AreaPath de la US dans chaque TC candidat
+    const candidatesWithAreaPath = candidates.map(tc => ({
+      ...tc,
+      areaPath: workItemAreaPath,  // herite de la US source
+    }));
+
+    setGeneratedTCs(candidatesWithAreaPath);
+    setDrawerOpen(true);
+  };
+
+  const handleAccept = async (acceptedTCs: GeneratedTestCase[]) => {
+    // Creer les TCs en ADO avec l'AreaPath pre-rempli
+    // createWorkItem est appele ici -- JAMAIS avant
+    await Promise.all(
+      acceptedTCs.map(tc => createTestCase({
+        ...tc,
+        areaPath: tc.areaPath ?? workItemAreaPath,
+      }))
+    );
+
+    // Rafraichir le panel apres creation
+    await refetchLinkedTestCases();
+    setDrawerOpen(false);
+  };
+
+  return (
+    <>
+      <Button
+        onClick={handleSuggestTests}
+        disabled={!llmConfig || isGenerating}
+        title={!llmConfig ? "Configure AI provider in Settings first" : undefined}
+      >
+        Suggest Tests
+      </Button>
+
+      <SuggestTestsDrawer
+        isOpen={isDrawerOpen}
+        generatedTestCases={generatedTCs}
+        onAccept={handleAccept}
+        onDismiss={() => setDrawerOpen(false)}
+      />
+    </>
+  );
+}
+```
+
+**Verification :** `pnpm test --run` VERT.
+
+---
+
+### COMMIT C3 -- docs: Sprint 2.22 documentation
+
+**Fichiers a mettre a jour :**
+
+**`docs/user-guide.md` :**
+- Section "Test Cases in Argos" : how to create, view, edit steps (add/edit/delete/reorder)
+- Section "Coverage Panel" : what it shows, how to create tests from it, how to use Suggest Tests
+- Note : Area Path automatically inherited from User Story when creating via Coverage Panel
+
+**`docs/operator-guide.md` :**
+- Note sur la requete WIQL des executions (N+1 potentiel si beaucoup de TCs lies)
+- Note sur les link types ADO supportes pour le Coverage Panel
+  (Microsoft.VSTS.Common.TestedBy-Forward, TestVault.TestedBy-Forward, etc.)
+
+**`CHANGELOG.md` -- entree `[0.5.32]` :**
+
+```markdown
+## [0.5.32] - 2026-05-XX
+
+### Added
+- TestCase display in Argos hub : title, state, priority, assigned to, steps CRUD
+- StepsEditor component : add/edit/delete/reorder steps inline in TestCaseFormView
+- Coverage Panel (Xray-like) : displays linked TCs with title, state, priority,
+  assigned to, steps count, last execution status (Pass/Fail/Blocked/Unexecuted/Skipped)
+- Suggest Tests from Coverage Panel : AI generation with Area Path inherited from source US
+  Fixes: "Area Path missing" regression (creation deferred to Accept action)
+- Empty state in Coverage Panel with CTA "Create Test" and "Suggest Tests"
+
+### Fixed
+- Area Path bug: Suggest Tests no longer attempts to create WIT during generation.
+  TestCase WITs are created only when user accepts suggestions in the Drawer.
+
+### Technical
+- Regression tests: T-2.22-testcase-display, T-2.22-testcase-wiring,
+  T-2.22-coverage-panel-data, T-2.22-suggest-tests-coverage-panel
+- T-0.5.1 (inventory) : DONE
+- T-0.5.2 (wiring TestCase) : DONE (Plans/Sets/Preconditions in future sprint)
+```
+
+**`README.md` :** mettre a jour la section Features avec Coverage Panel et Steps CRUD.
+
+---
+
+### COMMIT C4 -- chore: bump 0.5.31 -> 0.5.32
+
+Bumper le groupe Changesets fixed (15 package.json) -- meme pattern que Sprint 2.21 part 3.
+
+Verifier via :
+```bash
+node -e "
+  const ext = require('./apps/argos-extension/package.json');
+  const vss = require('./apps/argos-extension/vss-extension.json');
+  console.log('Coherent:', ext.version === vss.version && ext.version === '0.5.32');
+"
+```
+
+Verification finale :
+```bash
+pnpm test --run
+# Attendu : >= 553 tests verts (+ nouveaux tests de ce sprint)
 ```
 
 ---
 
-### ÉTAPE 3 — Commit 2 : T-2.22.1 (Area Path + Iteration Path)
+## SCENARIO D'ECHEC
 
-> **Objectif** : faire passer au vert le Test 1 (bug-NNN).
+### Coverage Panel -- link types ADO non reconnus
 
-Implémentation détaillée :
+**Symptome :** getWorkItemRelations retourne des liens mais avec des `rel` differents
+de ceux attendus (ex: "Tested By" en minuscules, ou GUID au lieu de nom).
 
-1. **Créer le composant `AreaPathSelector`** (ou réutiliser si existant).
-   - Props : `value`, `onChange`, `required`, `disabled`.
-   - Comportement : **dropdown plat avec full path affiché**. Décision Alex Q1 = option C : pas d'arbre arborescent, pas d'autocomplete plat texte. Un `Dropdown` Fluent UI 2 standard avec, pour chaque option, le texte `TestVault\Sprint 26\QA` (path complet en clair).
-   - Source des données : API ADO `_apis/wit/classificationNodes/Areas?$depth=10` (récupère l'arbre complet en une seule requête, dépth max 10 suffit pour 99% des projets).
-   - Transformation côté client : aplatir l'arbre récursivement en une liste de paths string. Tri alphabétique par path complet.
-   - Caching : appel fait une seule fois par session (mise en cache mémoire dans le service). Pas de refresh automatique.
+**Resolution :**
+1. Logger `wi.relations.map(r => r.rel)` pour voir les vrais noms de relations.
+2. Adapter le filtre avec les vrais noms.
+3. En dernier recours : query WIQL directe avec `MODE (MustContain)` (plan.md S5.2).
+4. Documenter les noms de relations reels dans le rapport -- utile pour TestPulse.
 
-2. **Créer le composant `IterationPathSelector`** : même pattern qu'`AreaPathSelector` mais sur `_apis/wit/classificationNodes/Iterations`. Optionnel (le composant accepte `value` undefined/null).
+### TestExecution last status -- champ TestVault.TestCaseId non indexe
 
-3. **Intégrer dans `TestCaseFormView`** :
-   - Ajouter les 2 dropdowns dans le formulaire, après le champ Description (ou à l'emplacement logique selon le layout existant).
-   - Area Path : **requis** (validation côté client avant save).
-   - Iteration Path : **optionnel**.
-   - Par défaut (Q1 Alex) : **vides** — l'utilisateur DOIT choisir une Area Path explicitement, pas de valeur "racine du projet" en défaut silencieux.
-   - **Exception Q2** : si le formulaire est ouvert depuis le bouton "Suggest Tests" du Coverage Panel (donc avec un WIT source), Area Path et Iteration Path sont **pré-remplis** depuis le WI source mais **modifiables**. À implémenter dans Commit 4.
+**Symptome :** la WIQL pour les executions echoue avec "Field not sortable/filterable".
 
-4. **Mise à jour du service de création de TC** : la fonction qui appelle `POST /_apis/wit/workitems/$TestCase` doit maintenant inclure `System.AreaPath` et (si fourni) `System.IterationPath` dans la payload JSON-Patch.
+**Resolution :** fallback graceful -- afficher "Unexecuted" pour tous les TCs.
+Creer TECH-DEBT dans le rapport : "indexer TestVault.TestCaseId pour la recherche WIQL".
+Ne pas bloquer le sprint pour ca.
 
-5. **Tests unitaires complémentaires** :
-   - `AreaPathSelector.test.tsx` : 4-5 tests sur le rendu, le tri, la sélection, l'erreur de chargement, le state vide.
-   - `IterationPathSelector.test.tsx` : idem (3-4 tests).
-   - Couverture cible 80% sur ces 2 composants UI.
+### StepsEditor -- composant existant incompatible
 
-6. **Lancer les tests** :
-   ```bash
-   pnpm test bug-NNN-tcform-missing-areapath
-   # → DOIT être vert maintenant
-   pnpm test
-   # → Aucune régression sur les autres tests (le test bug-MMM est encore rouge, c'est OK pour ce commit)
-   ```
+**Symptome :** un composant StepsEditor existe mais son interface ne correspond pas
+a ce sprint (props differentes, TypeScript incompatible).
 
-#### Commit 2
-
-```bash
-git add apps/argos-extension/src/components/AreaPathSelector/
-git add apps/argos-extension/src/components/IterationPathSelector/
-git add apps/argos-extension/src/components/TestCaseFormView/  # fichiers modifiés
-git add apps/argos-extension/src/services/  # service TC modifié
-
-git commit -m "fix(TestCaseFormView): T-2.22.1 add Area Path + Iteration Path fields (bug-NNN)
-
-Restores compliance with spec.md US-1.1 which lists Area Path (required)
-and Iteration Path (optional) as Test Case form fields.
-
-These fields were absent from TestCaseFormView since Sprint 2.19/2.20
-generalization refactor, blocking Test Case creation on BCEE-QA.
-
-Implementation:
-- New AreaPathSelector component: Fluent UI 2 Dropdown, flat list with
-  full paths displayed (e.g. 'TestVault\\Sprint 26\\QA'). Data fetched
-  once per session from ADO Classification Nodes API.
-- New IterationPathSelector component: same pattern, optional.
-- TestCaseFormView: integrates both selectors, Area Path required with
-  client-side validation before save.
-- TestCaseService.create(): includes System.AreaPath and
-  System.IterationPath in JSON-Patch payload.
-
-Test bug-NNN-tcform-missing-areapath now passes (was RED in commit 1).
-Test bug-MMM-aibutton-wrong-placement still RED (fixed in next commits).
-
-Coverage: AreaPathSelector 85%, IterationPathSelector 82%.
-
-Refs:
-- spec.md US-1.1
-- tasks.md T-2.22.1
-- bug-NNN regression test (commit 1)"
-```
-
----
-
-### ÉTAPE 4 — Commit 3 : T-2.22.2 (Refactor bouton AI dans TestCaseFormView, sémantique steps-only)
-
-> **Objectif** : transformer l'actuel bouton "AI Generate" dans `TestCaseFormView` en bouton "AI Suggest Steps" avec une sémantique steps-only (aucune création de WIT).
-
-Implémentation :
-
-1. **Renommer le bouton** :
-   - Texte : `AI Generate` → `✨ AI Suggest Steps`
-   - L'icône sparkles `✨` est conservée si déjà présente, sinon ajoutée.
-
-2. **Activation conditionnelle (Q7 Alex — lecture souple)** :
-   - Bouton actif si (`title.trim().length > 0` **OU** `linkedRequirements.length > 0`).
-   - Sinon désactivé avec tooltip : *"Saisis un titre ou lie une exigence pour activer la suggestion AI"*.
-
-3. **Remplacer `AiGenerateModal` par `AiSuggestStepsModal`** :
-   - **Ne pas supprimer `AiGenerateModal`** : il va migrer dans le Coverage Panel à l'étape 5 (commit 4). À ce stade tu peux soit le dupliquer puis renommer le nouveau, soit le déplacer dans un emplacement neutre `apps/argos-extension/src/components/ai/AiGenerateTestsModal.tsx` pour le réutiliser dans Coverage Panel ensuite. Ton choix selon ce qui est plus propre.
-   - `AiSuggestStepsModal` : nouveau composant, **dédié steps-only**, qui :
-     - Prend en props `currentFormState` (title, description, tags, priority, areaPath, linkedWIs).
-     - À l'ouverture, déclenche un appel LLM avec un **nouveau system prompt** dédié à la génération de steps uniquement (pas de title/description/tags génération).
-     - Affiche N steps proposés (N configurable 1-15, défaut 5) éditables inline (`{action, expected}`).
-     - Boutons : "Accept" / "Cancel".
-
-4. **Nouveau system prompt "steps generator"** :
-   - À ajouter dans le fichier qui contient déjà les autres system prompts LLM (probablement `apps/argos-extension/src/services/llm/prompts.ts` ou similaire).
-   - Le prompt doit demander explicitement au LLM de **NE PAS** générer de title, description, tags ou structure WIT. Uniquement la liste `[{action, expected}]`.
-   - Format de sortie JSON strict, schéma `{ steps: [{ action: string, expected: string }] }`.
-   - Tu peux te baser sur le system prompt existant `generateTestCases` et le simplifier.
-
-5. **Contexte source envoyé au LLM (Q5 Alex — option C)** :
-   - title + description + tags + priority + areaPath (en hint domaine) + pour chaque exigence liée : titre + description + criteria d'acceptance.
-   - **Ne JAMAIS** envoyer d'autres données du projet (no exfiltration latérale, conformément à F1).
-
-6. **Gestion des steps existants (Q6 Alex — modal Remplacer / Compléter / Annuler)** :
-   - À la validation du `AiSuggestStepsModal` :
-     - Si `formState.steps.length === 0` → appliquer directement les nouveaux steps.
-     - Sinon → ouvrir une seconde modal `ReplaceOrAppendModal` avec 3 boutons :
-       - **Remplacer** : `formState.steps = newSteps`
-       - **Compléter** : `formState.steps = [...formState.steps, ...newSteps]` (avec re-indexation correcte des `index`)
-       - **Annuler** : retour à la preview du `AiSuggestStepsModal`, rien n'est modifié.
-
-7. **Aucune création de WIT** :
-   - Le bouton ne touche **jamais** au service `TestCaseService.create()` ni à aucune route POST `/_apis/wit/workitems`.
-   - Le résultat de la génération met à jour **uniquement** le state local du formulaire React.
-   - L'utilisateur doit explicitement cliquer "Create Test Case" / "Save" pour persister (comme avant).
-
-8. **Gestion des erreurs** :
-   - Clé LLM invalide → message "Vérifie ta clé API LLM dans Settings".
-   - LLM down / timeout → message "Le provider LLM n'a pas répondu. Réessaie plus tard."
-   - `finish_reason === 'length'` → toast "Réponse tronquée par max_tokens. Augmente le réglage dans Settings ou demande moins de steps." (cohérent avec Sprint 2.21 part 2 max_tokens).
-   - Dans tous les cas d'erreur, **les steps existants ne sont pas modifiés**.
-   - Événement journalisé dans `TestVault.AuditLog` (clé tronquée 4 derniers caractères).
-
-9. **Tests unitaires + intégration** :
-   - `AiSuggestStepsModal.test.tsx` : 5-7 tests sur le rendu, l'appel LLM, le succès, l'échec, la troncature, l'édition inline.
-   - `ReplaceOrAppendModal.test.tsx` : 3 tests sur les 3 actions.
-   - `TestCaseFormView.ai-button.test.tsx` : 4 tests sur activation conditionnelle (title only, lien only, les deux, ni l'un ni l'autre).
-   - Couverture cible 80% UI / 90% sur les services.
-
-10. **Lancer le test régression bug-MMM partie TestCaseFormView** :
-    ```bash
-    pnpm test bug-MMM
-    # → Le test "TestCaseFormView in edit mode" doit maintenant être vert.
-    # → Le test "CoveragePanel on a User Story" est encore rouge (fixé en commit 4).
-    ```
-
-#### Commit 3
-
-```bash
-git add apps/argos-extension/src/components/ai/
-git add apps/argos-extension/src/components/TestCaseFormView/
-git add apps/argos-extension/src/services/llm/
-
-git commit -m "feat(TestCaseFormView): T-2.22.2 AI Suggest Steps (steps-only, no WIT creation)
-
-Refactors the AI button in TestCaseFormView from 'AI Generate' (which
-incorrectly tried to create new WITs and failed with 'Area Path missing'
-error on BCEE-QA) to 'AI Suggest Steps' which only fills the Steps
-section of the current form.
-
-Implements spec.md US-5.1.1 (new user story added in PR #96).
-
-Implementation:
-- New AiSuggestStepsModal: dedicated steps-only generation flow.
-- New 'steps-generator' system prompt: focused on {action, expected}[]
-  output, no title/description/tags generation.
-- Conditional activation (Q7 Alex, lenient reading): button enabled if
-  (title set OR at least 1 requirement link). Disabled with explanatory
-  tooltip otherwise.
-- Replace-or-Append modal when existing steps present (Q6 Alex).
-- LLM context (Q5 Alex option C): title + description + tags + priority
-  + area path + linked WIs full content.
-- NO WIT creation: button updates local form state only.
-- Error handling: invalid key, LLM down, truncation (finish_reason).
-- AuditLog entry on each call (key truncated to last 4 chars).
-
-Test bug-MMM (TestCaseFormView part) now passes.
-Test bug-MMM (CoveragePanel part) still RED (fixed in commit 4).
-
-Coverage: AiSuggestStepsModal 84%, ReplaceOrAppendModal 88%.
-
-Refs:
-- spec.md US-5.1.1, F1
-- tasks.md T-2.22.2
-- decisions Q4-Q7 validées 2026-05-22 evening"
-```
-
----
-
-### ÉTAPE 5 — Commit 4 : T-2.22.3 (Bouton "Suggest Tests" dans Coverage Panel)
-
-> **Objectif** : faire passer au vert la partie CoveragePanel du test bug-MMM. Implémente US-5.1 et T-6.6 (qui avaient toujours dit "bouton dans Coverage Panel" mais n'avaient jamais été correctement appliqués).
-
-Implémentation :
-
-1. **Modifier `CoveragePanel`** :
-   - Ajouter un bouton `✨ Suggest Tests` dans le header du panel, visible uniquement quand le WI hôte est de type `User Story`, `Bug`, ou `Requirement` (et **PAS** sur `Test Case`, `Task`, etc.).
-   - Activation conditionnelle : bouton actif si l'AI est globalement activée (cf. US-6.5) **ET** une clé LLM BYOK est configurée.
-   - Si désactivé : tooltip explicatif.
-
-2. **Au clic** : ouvrir une modal `AiSuggestTestsModal` (probablement issue de la migration/dédoublonnage de l'ancien `AiGenerateModal` qui était dans `TestCaseFormView`).
-   - Source implicite : Work Item ADO courant (récupéré via SDK ADO `getWorkItem(id)`).
-   - **PAS de picker** : c'est implicite que la source est le WI sur lequel le panel s'affiche.
-
-3. **Modal preview** :
-   - Affiche N Test Cases candidats (titre, steps, expected results) — N configurable, défaut 3-7.
-   - Chaque TC est éditable inline.
-   - Sélection individuelle ou en bloc ("Accept all", "Reject all", "Accept selected").
-   - **Area Path / Iteration Path pré-remplis** depuis le WI source (Q2 Alex), modifiables par dropdown dans la modal (réutilisation des composants `AreaPathSelector` / `IterationPathSelector` du Commit 2).
-
-4. **À acceptation** :
-   - Création de N `TestVault.TestCase` WITs (via `TestCaseService.create()` — réutilise le code existant).
-   - Création des liens `Tested By` du nouveau TC vers le WI source.
-   - Toast de succès "3 Test Cases created and linked to {WI.title}".
-
-5. **Gestion erreurs** : identique au Commit 3 (clé invalide, LLM down, truncation).
-
-6. **Tests unitaires + intégration** :
-   - `CoveragePanel.suggest-tests-button.test.tsx` : 3-4 tests (rendu sur US/Bug/Requirement, NON-rendu sur Test Case, activation conditionnelle).
-   - `AiSuggestTestsModal.test.tsx` : 5-7 tests (flow complet, héritage Area Path, accept/reject).
-   - Couverture cible 80% UI / 90% services.
-
-7. **Lancer la suite complète des tests régression** :
-   ```bash
-   pnpm test bug-
-   # → Les 2 tests bug-NNN et bug-MMM doivent maintenant être 100% verts.
-   pnpm test
-   # → Aucune régression sur l'ensemble du suite (372+ tests précédents).
-   ```
-
-#### Commit 4
-
-```bash
-git add apps/argos-extension/src/components/CoveragePanel/
-git add apps/argos-extension/src/components/ai/
-git add apps/argos-extension/src/widgets/  # si CoveragePanel est un widget
-
-git commit -m "feat(CoveragePanel): T-2.22.3 add Suggest Tests button (US-5.1 alignment)
-
-Adds the 'Suggest Tests' button to the Coverage Panel on User Story,
-Bug, and Requirement work items. This is where the button should have
-been since Sprint 2.21 part 1 (per T-6.6 / US-5.1), but was incorrectly
-placed in TestCaseFormView.
-
-Implements spec.md US-5.1 (architecture aligned with no-backend in PR #96).
-
-Implementation:
-- CoveragePanel header: 'Suggest Tests' button visible only on US/Bug/
-  Requirement, hidden on Test Case and other WIT types.
-- Activation: requires AI globally enabled (US-6.5) + LLM BYOK configured.
-- AiSuggestTestsModal: source WI implicit (no picker), preview of 3-7
-  TC candidates, each editable inline, accept individually or in bulk.
-- Area Path / Iteration Path pre-filled from source WI (Q2 Alex),
-  modifiable via dropdown using AreaPathSelector/IterationPathSelector
-  from commit 2.
-- On accept: creates TestVault.TestCase WITs + 'Tested By' links to
-  source WI.
-- Error handling: invalid key, LLM down, truncation (consistent with
-  T-2.22.2).
-
-Test bug-MMM (CoveragePanel part) now passes. Full regression suite
-green: 2 new regression tests + all 372+ pre-existing tests.
-
-Coverage: AiSuggestTestsModal 86%, CoveragePanel updates 81%.
-
-Refs:
-- spec.md US-5.1, F1
-- tasks.md T-2.22.3, T-6.6
-- decision Q2 Alex 2026-05-22 evening"
-```
-
----
-
-### ÉTAPE 6 — Commit 5 : T-2.22.4 (Documentation update)
-
-> **Objectif** : conformité avec la règle Alex "documentation à jour à chaque changement".
-
-Fichiers à mettre à jour :
-
-1. **`docs/user-guide.md`** :
-   - Section "AI Features" : réécrire pour distinguer les 2 boutons :
-     - "Generate Test Cases from a Requirement" → depuis le Coverage Panel sur User Story / Bug / Requirement.
-     - "Suggest Steps for current Test Case" → depuis le formulaire d'un Test Case en cours d'édition.
-   - **Note BREAKING CHANGE** explicite : *"Depuis Sprint 2.22, le bouton AI dans le formulaire de Test Case ne crée plus de nouveaux Test Cases. Pour générer des TC entiers à partir d'une exigence, utilise le Coverage Panel."*
-   - Idéalement 2 captures d'écran (mais SI ALEX N'A PAS DE CAPTURES À DISPO, juste ajoute un placeholder `<!-- TODO Alex: ajouter screenshot du bouton sur Coverage Panel -->` et liste les screenshots à faire dans le rapport final).
-
-2. **`docs/operator-guide.md`** :
-   - Section troubleshooting : ajouter 2 entrées
-     - "AI button greyed out in Test Case form" → expliquer le tooltip (titre ou lien exigence requis).
-     - "Where did the AI button go?" → expliquer le split en 2 boutons.
-
-3. **`README.md` racine** :
-   - Mise à jour de la features list si elle mentionne "AI Generation" : préciser les 2 surfaces (TestCaseFormView pour steps-only, Coverage Panel pour TC complets).
-
-4. **`CHANGELOG.md`** :
-   - Ajouter une entrée Sprint 2.22 avec en **gras** : `**BREAKING CHANGE**: AI button in TestCaseFormView no longer creates Test Cases. Use Coverage Panel to generate TCs from a requirement.`
-
-#### Commit 5
-
-```bash
-git add docs/ README.md CHANGELOG.md
-
-git commit -m "docs: T-2.22.4 update user-guide, operator-guide, README, CHANGELOG
-
-Documents Sprint 2.22 changes:
-- New AI Suggest Steps button in TestCaseFormView (steps-only)
-- Repositioned Suggest Tests button in Coverage Panel (TC creation)
-- Area Path / Iteration Path now present in TC form
-
-Includes explicit BREAKING CHANGE notice for users migrating from
-Sprint 2.21 part 1.
-
-Refs:
-- tasks.md T-2.22.4
-- Alex rule: 'documentation mise à jour à chaque changement'"
-```
-
----
-
-### ÉTAPE 7 — Commit 6 : T-2.22.5 (Audit deps + APIs)
-
-> **Objectif** : conformité avec les règles Alex sur dépendances et APIs externes.
-
-Actions :
-
-1. **`pnpm audit --audit-level=high`** : doit être clean (0 vulnerability HIGH ou CRITICAL).
-   - Si des vulnérabilités sont remontées : tente `pnpm update --recursive` sur les packages concernés.
-   - Si ça ne suffit pas : **NE PAS** tenter de fix automatique aveugle. Liste les vulnérabilités dans le rapport final et laisse Alex décider.
-
-2. **`pnpm outdated`** : revue rapide.
-   - Mise à jour des deps **mineures et patch** sûres (uniquement les `^x.y.z` qui ont un nouveau `x.y.z+1` patch).
-   - **NE PAS** faire de major bump dans ce sprint (ce n'est pas le scope).
-   - Logger ce qui a été updaté dans le rapport.
-
-3. **Smoke test APIs externes** :
-   - Si tu as accès à un script `tools/smoke-test/` ou équivalent, lance-le.
-   - Sinon, juste documenter ce check comme "à faire manuellement par Alex" dans le rapport :
-     - ADO REST API `/_apis/wit/classificationNodes/Areas` : ping → 200 OK
-     - Azure OpenAI `/openai/deployments/{id}/chat/completions` : smoke test léger (1 token)
-     - Azure AI Foundry `/openai/v1/chat/completions` : idem
-
-4. **LLM models deprecation check** :
-   - Ouvre `ARGOS_LLM_PROVIDERS_REFERENCE.md` et `ARGOS_LLM_PROVIDERS_REFERENCE_PATCH_v1_1.md` (cf. project files).
-   - Vérifie que les modèles par défaut Argos (`gpt-4o`, `gpt-4.1`, etc.) ne sont pas marqués deprecated.
-   - Si l'un est deprecated → notice à ajouter au CHANGELOG (mais NE PAS update le défaut dans le code, c'est un sprint à part).
-
-#### Commit 6
-
-```bash
-git add .  # ce qui a bougé dans pnpm-lock.yaml ou package.json
-
-git commit -m "chore(deps): T-2.22.5 audit + minor/patch updates
-
-- pnpm audit --audit-level=high: clean
-- pnpm outdated: updated X minor and Y patch versions (see below)
-- ADO REST + Azure OpenAI + Foundry smoke tests: [pending manual run by Alex]
-- LLM models deprecation check: no deprecation detected in current defaults
-
-Updated packages:
-- (list whatever was bumped)
-
-Refs:
-- constitution.md §10.5
-- tasks.md T-2.22.5"
-```
-
-> **Si rien ne bouge**, ce commit peut être vide (`git commit --allow-empty`) avec un message documentant que le check a été fait et que tout est clean.
-
----
-
-### ÉTAPE 8 — Commit 7 (final) : version bump + CHANGELOG finalisation
-
-1. **Bump de version** : `0.5.28.1` → `0.5.29` (minor bump parce qu'on ajoute une feature US-5.1.1).
-   - `package.json` racine
-   - `apps/argos-extension/package.json`
-   - `apps/argos-extension/vss-extension.json`
-   - Tout autre package qui suit le versioning lié (cf. plan.md §1.3).
-
-2. **CHANGELOG.md** : finaliser l'entrée Sprint 2.22 avec la version `0.5.29` et la date.
-
-#### Commit 7
-
-```bash
-git add package.json apps/argos-extension/package.json apps/argos-extension/vss-extension.json CHANGELOG.md
-
-git commit -m "chore(release): bump 0.5.28.1 → 0.5.29 (Sprint 2.22)
-
-Sprint 2.22 delivers:
-- T-2.22.1: Area Path + Iteration Path fields in TestCaseFormView
-- T-2.22.2: AI Suggest Steps button refactor (steps-only semantics)
-- T-2.22.3: Suggest Tests button repositioned to Coverage Panel
-- T-2.22.4: documentation update with BREAKING CHANGE notice
-- T-2.22.5: dependency audit clean
-- T-2.21-postmortem: 2 regression tests added (bug-NNN, bug-MMM)
-
-Minor bump because US-5.1.1 is a new user-facing feature.
-
-Refs:
-- spec.md US-1.1, US-5.1, US-5.1.1
-- tasks.md Sprint 2.22 + T-2.21-postmortem"
-```
-
----
-
-### ÉTAPE 9 — Rapport final
-
-Écris dans un fichier `sprint-2.22-code-report.md` à la racine du repo (mais **NE PAS le commiter** — c'est juste pour qu'Alex le lise) :
-
-1. **Statut global** : ✅ SUCCESS ou ❌ FAILED
-2. **Reconnaissance code base (étape 1)** :
-   - Chemin exact de `TestCaseFormView`
-   - Chemin exact de `CoveragePanel`
-   - Chemin du service LLM
-   - Pattern actuel de tests d'intégration (où, comment)
-   - Numérotation bugs utilisée (NNN et MMM = ?)
-3. **Commits créés** : liste des 7 commits avec SHA court et résumé.
-4. **Couverture** : `pnpm test --coverage` final, % core et UI.
-5. **Tests régression** : confirmation que bug-NNN et bug-MMM sont verts.
-6. **pnpm audit** : output.
-7. **Anomalies relevées** :
-   - Code que tu as trouvé douteux mais que tu n'as pas touché (scope creep prevention).
-   - Références dans le code qui ne matchent plus avec spec.md (potentiellement orphelines).
-   - Choix de design que tu as dû faire sans guidance claire (et lesquels).
-8. **Test BCEE-QA manuel à faire par Alex (T-2.22.6)** : liste des 4 scenarios à valider manuellement après merge.
-9. **Instructions PR** :
-   ```
-   git push -u origin sprint/2.22-code
-   Ouvrir PR sur main avec template incluant les références spec/tasks.
-   ```
-
----
-
-## SCÉNARIO D'ÉCHEC
-
-Si un commit ne fait pas passer le test attendu au vert (ex: après commit 2, bug-NNN reste rouge), **n'enchaîne pas** sur le commit suivant.
-
-1. `git status` pour voir l'état.
-2. Lance `pnpm test --reporter verbose bug-NNN` pour voir les détails de l'échec.
-3. Analyse, corrige le code (ou le test si tu réalises qu'il testait mal).
-4. Re-tente.
-
-**Pas plus de 3 tentatives** sur un même commit avant d'écrire un rapport d'échec partiel et de t'arrêter. Alex tranchera.
+**Resolution :**
+1. Si l'ecart est mineur (renommage de props) : adapter l'appel, pas le composant.
+2. Si l'ecart est majeur : creer StepsEditorV2 sans modifier l'original
+   (non-regression S10.7). TECH-DEBT pour merger les deux dans un sprint futur.
+3. Ne JAMAIS modifier un composant existant si ca casse des tests existants.
 
 ---
 
 ## CE QUE TU NE FAIS PAS
 
-- ❌ Tu ne touches pas à `Specs/` (déjà patché en PR #96).
-- ❌ Tu ne touches pas au schéma WIT (`testvault-wit-schema/`).
-- ❌ Tu ne touches pas au manifeste `vss-extension.json` SAUF pour le bump de version (commit 7).
-- ❌ Tu ne touches pas au licensing, Stripe, OAuth.
-- ❌ Tu ne pousses pas sur `origin` ni n'ouvres de PR — Alex le fait à la main après revue du rapport.
-- ❌ Tu ne refactores pas de code adjacent qui te semble douteux — tu le signales dans le rapport.
-- ❌ Tu ne crées pas TECH-DEBT-052 (Playwright deadline) dans `tasks.md` — c'est une discussion en chat avec Alex, pas un commit autonome.
+- NE PAS wirer TestPlan, TestSet, TestExecution, Precondition dans ce sprint.
+  Ce sprint wire UNIQUEMENT les TestCases et le Coverage Panel.
+
+- NE PAS reimplementer useAiGeneration, SuggestTestsDrawer, SuggestStepsDrawer.
+  Ils sont livres en v0.5.31. Ce sprint les consomme, ne les modifie pas.
+
+- NE PAS modifier llm-provider.ts, azure-openai-provider.ts, azure-ai-foundry-provider.ts.
+
+- NE PAS implementer les executions de tests (passer un TC en Pass/Fail/Blocked).
+  Afficher le statut de la derniere execution = lecture seule uniquement.
+
+- NE PAS refactorer l'architecture des 6 hubs. Si le routing existe, l'utiliser tel quel.
+
+- NE PAS ajouter de pagination dans la liste des TCs pour ce sprint
+  (acceptable jusqu'a 100 TCs ; au-dela noter en TECH-DEBT).
+
+- NE PAS pousser sur origin ni ouvrir une PR.
 
 ---
 
-## FIN
+## RAPPORT FINAL ATTENDU
 
-Si tu vas jusqu'à l'étape 9 sans abort, Sprint 2.22 code est implémenté. Alex prendra le relais pour push + PR + validation manuelle BCEE-QA (T-2.22.6) + merge + tag éventuel.
+Produire `claude_prompts/sprint-2-22-code-report.md` :
+
+```markdown
+# Sprint 2.22 -- Code Report
+
+## Statut global
+[SUCCES / SUCCES PARTIEL / ECHEC] -- [date]
+
+## PRE-FLIGHT
+- pnpm audit : [CLEAN / CVEs : ...]
+- pnpm test baseline : [X tests verts sur commit ...]
+- Inventaire composants (PF-3) : [liste des composants trouves + etat wired/unwired]
+- Routes API : [link types ADO reels observes]
+
+## Commits livres
+| # | Hash | Checkpoint | Message | Tests |
+|---|------|-----------|---------|-------|
+| A1 | ... | A | test [RED] T-2.22-testcase-display | RED OK |
+| A2 | ... | A | feat: wire TestCase display + Steps CRUD | GREEN |
+| A3 | ... | A | test [RED] T-2.22-testcase-wiring | RED OK |
+| A4 | ... | A | feat: wire TestCase list + routing | GREEN |
+| B1 | ... | B | test [RED] T-2.22-coverage-panel-data | RED OK |
+| B2 | ... | B | feat: Coverage Panel data layer | GREEN |
+| B3 | ... | B | feat: Coverage Panel UI Xray-like | GREEN |
+| C1 | ... | C | test [RED] T-2.22-suggest-tests-coverage-panel | RED OK |
+| C2 | ... | C | feat: wire Suggest Tests + Area Path inheritance | GREEN |
+| C3 | ... | C | docs: Sprint 2.22 | GREEN |
+| C4 | ... | C | chore: bump 0.5.31 -> 0.5.32 | GREEN |
+
+## Couverture finale
+- Suite complete : X tests (etait 553)
+- StepsEditor : X%
+- Coverage Panel widget : X%
+
+## Bug Area Path -- verdict
+[CONFIRME RESOLU via test T-2.22-suggest-tests-coverage-panel / AUTRE : ...]
+
+## Link types ADO reels (a conserver pour TestPulse)
+[liste des rel strings observes en production]
+
+## TECH-DEBT identifies
+[liste]
+
+## Allowlist -- chemins a ajouter post-merge
+[chemins des nouveaux fichiers claude_prompts/ a inscrire dans allowlist.cjs + allowlist.ts]
+```
+
+---
+
+## CLEANUP POST-MERGE
+
+```powershell
+Move-Item "CLAUDE_TASK_sprint-2-22-code.md" "claude_prompts\CLAUDE_TASK_sprint-2-22-code.md"
+```
+
+Puis inscrire dans `tools/regression/allowlist.cjs` et `allowlist.ts` :
+```javascript
+"claude_prompts/CLAUDE_TASK_sprint-2-22-code.md",
+"claude_prompts/sprint-2-22-code-report.md",
+```
+
+Committer :
+```
+chore(allowlist): add Sprint 2.22 code claude_prompts paths
+```
+
+---
+
+*Fin du CLAUDE_TASK -- Sprint 2.22*
+*Genere le 2026-05-28*
+*Structure : 3 checkpoints, 11 commits, 12-15h Claude Code*

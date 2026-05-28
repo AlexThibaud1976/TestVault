@@ -68,12 +68,12 @@ const SHARED_DOC_ALLOWLIST = new Set([
 	"claude_prompts/sprint-2-21-part-3-code-report.md",
 	// Sprint 2.22 brief: lists Argos default models including gpt-4.1 as
 	// the example of a model to check for deprecation. Also describes the
-	// Coverage Panel layout via the "Xray-like" metaphor (10 mentions) --
-	// kept here while the file lives in Specs/ during sprint execution.
-	// The Specs/ entry below will be removed in the post-merge cleanup
-	// once the file moves to claude_prompts/.
-	"Specs/CLAUDE_TASK_sprint-2-22-code.md",
+	// Coverage Panel layout via the "Xray-like" metaphor (10 mentions).
 	"claude_prompts/CLAUDE_TASK_sprint-2-22-code.md",
+	// Sprint 2.22 code report: meta-discussion of the "Xray-like" metaphor
+	// that the regression scan picks up as a violation (the report explains
+	// why the term was neutralised in the produced code/tests/commits).
+	"claude_prompts/sprint-2-22-code-report.md",
 	// Sprint 2.21 part 2 brief: documents the placeholder decision around
 	// gpt-4.1-mini (TECH-DEBT-072 to clarify BYOK strategy in a future sprint)
 	"Specs/CLAUDE_TASK_sprint-2-21-part-2.md",
@@ -83,6 +83,10 @@ const SHARED_DOC_ALLOWLIST = new Set([
 	"Specs/tasks.md",
 	"claude_prompts/CLAUDE_TASK_sprint-2-21-part-3-cleanup.md",
 	"claude_prompts/sprint-2-21-part-3-cleanup-report.md",
+	// Sprint 2.22 cleanup brief: kept while the file lives in Specs/
+	// during cleanup execution. Will be removed in the post-merge
+	// follow-up once the file moves to claude_prompts/.
+	"Specs/CLAUDE_TASK_sprint-2-22-cleanup.md",
 ]);
 
 module.exports = { SHARED_DOC_ALLOWLIST };
