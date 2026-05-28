@@ -4,6 +4,7 @@ import { GherkinEditor } from "../GherkinEditor.js";
 import { AiSuggestStepsModal } from "../components/AiSuggestStepsModal.js";
 import { AreaPathPicker } from "../components/AreaPathPicker.js";
 import { IterationPathPicker } from "../components/IterationPathPicker.js";
+import { StepsEditor } from "../components/StepsEditor/index.js";
 import { SuggestStepsDrawer } from "../components/SuggestStepsDrawer/index.js";
 import { Badge, Button, Input, SectionCollapsible, Select } from "../design-system/index.js";
 import { useArgosCreate } from "../hooks/use-argos-create.js";
@@ -88,18 +89,10 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId: _caseId }: TestC
 		setTags((prev) => prev.filter((x) => x !== t));
 	}
 
-	function addStep() {
-		setSteps((prev) => [...prev, { id: nextStepId, action: "", expected: "" }]);
-		setNextStepId((n) => n + 1);
-	}
-
-	function removeStep(idx: number) {
-		setSteps((prev) => prev.filter((_, i) => i !== idx));
-	}
-
-	function updateStep(idx: number, field: "action" | "expected", value: string) {
-		setSteps((prev) => prev.map((s, i) => (i === idx ? { ...s, [field]: value } : s)));
-	}
+	// Sprint 2.22 -- inline add/remove/update step handlers extracted into
+	// StepsEditor component. The id allocation counter (nextStepId /
+	// setNextStepId) is still owned here because applySteps below mints
+	// ids for steps coming back from the AI Suggest Steps flow.
 
 	// Sprint 2.22 T-2.22.2: lenient activation -- title OR at least one
 	// linked work item id. Decision Q7 (Alex 2026-05-22 evening).
@@ -316,40 +309,7 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId: _caseId }: TestC
 							✨ AI Suggest Steps
 						</Button>
 					</div>
-					<div className="wit-steps-list">
-						{steps.map((step, idx) => (
-							<div key={step.id} className="wit-step-row">
-								<span className="wit-step-index">{idx + 1}</span>
-								<div className="wit-step-fields">
-									<Input
-										type="text"
-										value={step.action}
-										onChange={(e) => updateStep(idx, "action", e.target.value)}
-										placeholder="Action (e.g. Click Login button)"
-									/>
-									<Input
-										type="text"
-										value={step.expected}
-										onChange={(e) => updateStep(idx, "expected", e.target.value)}
-										placeholder="Expected result"
-									/>
-								</div>
-								{steps.length > 1 && (
-									<Button
-										variant="subtle"
-										size="small"
-										onClick={() => removeStep(idx)}
-										aria-label={`Remove step ${idx + 1}`}
-									>
-										x
-									</Button>
-								)}
-							</div>
-						))}
-					</div>
-					<Button variant="secondary" size="small" onClick={addStep}>
-						+ Add Step
-					</Button>
+					<StepsEditor steps={steps} onChange={setSteps} />
 				</SectionCollapsible>
 
 				<SectionCollapsible
