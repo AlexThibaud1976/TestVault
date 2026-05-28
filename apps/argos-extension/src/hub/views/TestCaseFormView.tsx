@@ -3,10 +3,7 @@ import { useCallback, useState } from "react";
 import { AiSuggestStepsModal } from "../components/AiSuggestStepsModal.js";
 import { AreaPathPicker } from "../components/AreaPathPicker.js";
 import { IterationPathPicker } from "../components/IterationPathPicker.js";
-import {
-	type ReplaceOrAppendChoice,
-	ReplaceOrAppendModal,
-} from "../components/ReplaceOrAppendModal.js";
+import { SuggestStepsDrawer } from "../components/SuggestStepsDrawer/index.js";
 import { Badge, Button, Input, SectionCollapsible, Select } from "../design-system/index.js";
 import { useArgosCreate } from "../hooks/use-argos-create.js";
 import type { TestStepSuggestion } from "../llm/llm-provider.js";
@@ -133,13 +130,22 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId: _caseId }: TestC
 		}
 	}
 
-	function handleReplaceOrAppend(choice: ReplaceOrAppendChoice) {
+	// Sprint 2.22 Replace / Append / Cancel logic. Sprint 2.21 part 3 wraps
+	// these in the SuggestStepsDrawer footer buttons -- callbacks only,
+	// merge logic stays here (applySteps).
+	function handleDrawerReplace() {
 		if (!pendingSteps) return;
-		if (choice === "cancel") {
-			setPendingSteps(null);
-			return;
-		}
-		applySteps(pendingSteps, choice);
+		applySteps(pendingSteps, "replace");
+		setPendingSteps(null);
+	}
+
+	function handleDrawerComplete() {
+		if (!pendingSteps) return;
+		applySteps(pendingSteps, "append");
+		setPendingSteps(null);
+	}
+
+	function handleDrawerCancel() {
 		setPendingSteps(null);
 	}
 
@@ -466,13 +472,14 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId: _caseId }: TestC
 				/>
 			)}
 
-			{pendingSteps && (
-				<ReplaceOrAppendModal
-					existingCount={steps.filter((s) => s.action.trim().length > 0).length}
-					newCount={pendingSteps.length}
-					onChoose={handleReplaceOrAppend}
-				/>
-			)}
+			<SuggestStepsDrawer
+				isOpen={pendingSteps !== null}
+				generatedSteps={pendingSteps ?? []}
+				hasExistingSteps={steps.some((s) => s.action.trim().length > 0)}
+				onReplace={handleDrawerReplace}
+				onComplete={handleDrawerComplete}
+				onCancel={handleDrawerCancel}
+			/>
 		</div>
 	);
 }
