@@ -151,11 +151,13 @@ describe("SuggestTestsDrawer -- review phase behaviour", () => {
 	});
 
 	it("disables Accept buttons while a creation is in flight", async () => {
-		let resolveCreate: (() => void) | null = null;
+		// Object container so TypeScript CFA does not narrow the reassignment
+		// inside the Promise constructor callback to `never`.
+		const deferred: { resolve?: () => void } = {};
 		const onAccept = vi.fn().mockImplementation(
 			() =>
 				new Promise<void>((res) => {
-					resolveCreate = res;
+					deferred.resolve = res;
 				})
 		);
 		render(
@@ -173,6 +175,6 @@ describe("SuggestTestsDrawer -- review phase behaviour", () => {
 			const btn = screen.getByTestId("suggest-tests-accept-all") as HTMLButtonElement;
 			expect(btn.disabled).toBe(true);
 		});
-		resolveCreate?.();
+		deferred.resolve?.();
 	});
 });
