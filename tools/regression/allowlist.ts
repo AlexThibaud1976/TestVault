@@ -95,6 +95,8 @@ export const SHARED_DOC_ALLOWLIST: ReadonlySet<string> = new Set([
 	// Specs/tasks.md mentions gpt-4.1 in TECH-DEBT-072 (added Sprint 2.21 part 2)
 	// which exists precisely to track the cleanup work for that pattern.
 	"Specs/tasks.md",
+	"claude_prompts/CLAUDE_TASK_sprint-2-21-part-3-cleanup.md",
+	"claude_prompts/sprint-2-21-part-3-cleanup-report.md",
 ]);
 
 /**
