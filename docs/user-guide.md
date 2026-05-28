@@ -85,7 +85,20 @@ Links are stored as `System.LinkTypes.Related` ADO relations with a `TestVault.L
 
 ### Test Coverage panel (User Story / Bug / Requirement)
 
-The **argos-coverage-panel** widget appears on User Story, Bug, and Requirement Work Item forms. It shows all Test Cases that have a `TestedBy`, `Validates`, or `Covers` link back to the current Work Item, alongside the latest execution status per Test Case.
+The **argos-coverage-panel** widget appears on User Story, Bug, and Requirement Work Item forms. It shows all Test Cases that have a `TestedBy`, `Validates`, or `Covers` link back to the current Work Item, alongside rich row metadata.
+
+Since Sprint 2.22 (v0.5.32) each row exposes:
+
+| Column | Source field | Notes |
+| --- | --- | --- |
+| Test Case | `System.Id` + `System.Title` | Hydrated from `testCaseService.read`. Falls back to id-only when no Services context is available. |
+| State | `System.State` | Design / Ready / Active / Closed / Deprecated. |
+| Priority | `TestVault.Priority` | P1 (Critical) -> P4 (Trivial). |
+| Steps | `TestVault.Steps` length | Count of editable steps. |
+| Assigned | `System.AssignedTo` | "-" when unassigned. |
+| Latest Status | `TestVault.TestExecution.GlobalStatus` | Pass / Fail / Blocked / Skipped / `No executions`. |
+
+Sprint 2.22 also widened the link types the panel recognises: in addition to the Argos custom relations (`TestVault.TestedBy`, `TestVault.Validates`, `TestVault.Covers`), Test Cases linked through the **standard ADO "Tested By" relation type** (`Microsoft.VSTS.Common.TestedBy-Forward`) now appear in the panel too. Reverse links and unrelated link types are ignored.
 
 ---
 
@@ -177,6 +190,27 @@ If the form already contains steps, Argos opens a **side Drawer** (introduced in
 - **Cancel** — closes the Drawer with no modification.
 
 When the form has no existing steps, the Drawer skips the choice and the **Replace** button is rebadged **Insert** for clarity. The merge logic itself is the same as it was in Sprint 2.22 — only the surface has changed.
+
+### Editing a Test Case (Test Case form, edit mode)
+
+Since Sprint 2.22 (v0.5.32), the Test Case form supports both **create mode** (no Test Case id) and **edit mode** (when you open an existing Test Case from the Cases list or from the Coverage Panel). In edit mode:
+
+- The form fetches the existing Work Item via `testCaseService.read` and pre-fills every field: title, description, priority, tags, area path, iteration path, steps, BDD / Gherkin content.
+- A loading placeholder is shown during the fetch (`Loading Test Case #N...`).
+- If the fetch fails (Work Item deleted, permission denied, etc.), the form shows a user-facing error message with a **Back to list** button instead of an empty form.
+- The submit button label switches to **Update Test Case** and the form calls `testCaseService.update` on save.
+
+### Editing Test Case steps (Move Up / Move Down)
+
+The **Test Steps** section is powered by the new `StepsEditor` component (Sprint 2.22). Each step has:
+
+- An **Action** field (free text).
+- An **Expected** field (free text).
+- A **Move Up** arrow (disabled on the first step).
+- A **Move Down** arrow (disabled on the last step).
+- A **Remove (x)** button (hidden when only one step remains, so the form always keeps at least one row).
+
+Use **+ Add Step** at the bottom of the list to append an empty step.
 
 ### BDD / Gherkin editor (Test Case form)
 

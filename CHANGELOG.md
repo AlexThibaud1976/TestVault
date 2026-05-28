@@ -7,6 +7,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.32] - 2026-05-28
+
+### Sprint 2.22 -- WIT display + Steps CRUD + Coverage Panel rich display
+
+#### Added
+
+- **StepsEditor component** (`components/StepsEditor/`) : extracted from
+  the inline steps CRUD that lived in `TestCaseFormView`. Adds Move Up /
+  Move Down reorder buttons (disabled at row 0 / last row). Action and
+  Expected fields stay as before; Remove is hidden when only one row
+  remains.
+- **TestCaseFormView edit mode** : the `caseId` prop is no longer
+  ignored. When defined the view fetches the existing WIT via
+  `testCaseService.read`, populates title / description / priority /
+  tags / area path / iteration path / gherkin / steps, and the submit
+  button switches to "Update Test Case". A loading state
+  (`tc-form-loading`) shows during the fetch and a user-facing error
+  state (`tc-form-error`) is rendered if the fetch rejects.
+- **Coverage Panel rich display** : each linked Test Case row now shows
+  title (id + System.Title), state, priority (P1-P4), steps count,
+  assigned, and the latest execution status. Rows are hydrated by
+  `testCaseService.read`; when no ServicesContext.Provider is mounted
+  the panel falls back to the minimal id-only display.
+- **Widget Coverage Panel : ServicesContext.Provider + buildServices** :
+  the widget entry now mounts a full Services bundle around
+  `CoveragePanel`, which makes the Sprint 2.21 part 3
+  `CoveragePanelSuggestTestsFlow` usable (it requires `useServices`).
+
+#### Fixed
+
+- **Coverage Panel empty on BCEE-QA** : `listLinks` in argos-sdk only
+  matched relations carrying the Argos custom attribute
+  `WI_LINK_TYPE_ATTR`. Test Cases linked through the standard ADO
+  "Tested By" relation type (`Microsoft.VSTS.Common.TestedBy-Forward`)
+  were silently dropped. The filter now also accepts native ADO
+  TestedBy-Forward relations; reverse links are explicitly ignored;
+  custom + native rels targeting the same TC are deduplicated.
+- **Suggest Tests crashed on User Story in BCEE-QA** : the widget entry
+  was missing the ServicesContext.Provider needed by the Sprint 2.21
+  part 3 AI flow sub-component. Wrapped in
+  `<ServicesContext.Provider value={buildServices(...)}>`.
+
+#### Technical
+
+- New regression tests : `T-2.22-testcase-display`,
+  `T-2.22-testcase-wiring`, `T-2.22-coverage-panel-data`,
+  `T-2.22-suggest-tests-coverage-panel`.
+- 11 RTL behaviour tests for StepsEditor + 7 for TestCaseFormView edit
+  mode + 4 for CoveragePanel rich display + 2 for Suggest Tests Area
+  Path inheritance + 3 for the widened `listLinks` filter in argos-sdk.
+
+#### Backward Compatibility
+
+- TestCaseFormView create mode is unchanged (Sprint 2.21 part 3
+  surface). The edit mode is purely additive : `caseId` undefined keeps
+  the original empty-form behaviour.
+- CoveragePanel rich display gracefully falls back to id-only when no
+  ServicesContext.Provider is mounted -- the basic CoveragePanel tests
+  that render without a Provider remain green.
+
 ## [0.5.31] - 2026-05-28
 
 ### Sprint 2.21 part 3 -- Drawer UX for AI Suggestions + Monaco Gherkin editor

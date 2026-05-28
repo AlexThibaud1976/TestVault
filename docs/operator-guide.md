@@ -271,3 +271,61 @@ Sprint 2.21 part 3 (T-5.1). Operational impact to track:
   `dompurify@3.2.7` (Monaco dep). Risk for our usage is low (code editor,
   no markdown rendering of attacker-controlled content). All are patched
   in `dompurify >= 3.4.0`; track Monaco upgrade as TECH-DEBT.
+
+---
+
+## Sprint 2.22 -- Coverage Panel link types and N+1 read concern
+
+Sprint 2.22 (v0.5.32) ships two operational changes around the
+Coverage Panel widget that operators should know about.
+
+### Link types accepted by listLinks
+
+`listLinks` in `@atconseil/argos-sdk` now accepts **two equivalent
+relation sources** :
+
+- **Argos custom relations** (`TestVault.TestedBy`,
+  `TestVault.Validates`, `TestVault.Covers`) tagged with the
+  `TestVault.LinkType` attribute on `System.LinkTypes.Related`.
+- **Native ADO Tested By forward** : `Microsoft.VSTS.Common.TestedBy-Forward`
+  and `TestVault.TestedBy-Forward`.
+
+The reverse side (`TestedBy-Reverse`) is intentionally ignored : it
+would surface the User Story / Bug / Requirement itself in the Test
+Case's coverage panel, not the other way around.
+
+When a target Test Case is linked through both a custom and a native
+relation, only one row is kept (dedup by target id, custom wins so the
+original link type is preserved).
+
+### N+1 read concern on rich display
+
+Each row in the Coverage Panel now calls `testCaseService.read` once
+to hydrate title, state, priority, steps count, and assigned. With N
+linked Test Cases, this is N concurrent `getWorkItem` calls. In
+practice :
+
+- Up to ~50 linked TCs : no observable latency on ADO Cloud.
+- 50-100 linked TCs : 200-500 ms hydration, single render after
+  `Promise.all` settles.
+- 100+ linked TCs : potentially noticeable. No pagination today
+  (TECH-DEBT-T222-A) -- to be revisited when a customer hits the
+  limit.
+
+A failed `read` for any individual row is swallowed (`catch -> null`)
+so a single broken Test Case (deleted, permission denied) does not
+crash the whole panel; that row simply falls back to the id-only
+display.
+
+### Widget Services bundle
+
+The widget entry now mounts a full `Services` bundle through
+`buildServices()`, identical to the hub. Practical consequences :
+
+- The widget pulls in the LLM provider, the LLM config store, the
+  Audit log writer, etc. -- but these are inert until the user clicks
+  **Suggest Tests**.
+- The widget bundle size grew accordingly (~+200 KB minified). Still
+  shipped inline in the VSIX; no additional CDN call.
+- The widget requires the `vso.extension.data_write` scope (already
+  declared) so the LLM config can be read for the BYOK flow.

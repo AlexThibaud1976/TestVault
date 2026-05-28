@@ -21,6 +21,8 @@ Key differentiators:
   - **Suggest Tests** on the Coverage Panel of a User Story / Bug / Requirement opens a multi-step Drawer (configure → generate → review with per-card edit + Accept All / Accept Selected / Dismiss) and creates new Test Cases linked back to the source requirement
   - **AI Suggest Steps** inside the Test Case form drafts a Steps list and opens a Drawer with **Replace** / **Complete** / **Cancel** actions for clear review before applying changes
 - **BDD / Gherkin native editor** in the Test Case form, powered by Monaco (the engine that backs VS Code), with live Gherkin validation (scenario count + per-line errors)
+- **Rich Coverage Panel** on User Story / Bug / Requirement Work Items : displays each linked Test Case with id + title, state, priority, steps count, assigned, and latest execution status. Accepts both Argos custom relations and the standard ADO "Tested By" link type.
+- **In-place Test Case edit** : opening a Test Case from the Cases list or from the Coverage Panel loads the existing Work Item, populates every field (including BDD / Gherkin and steps), and the **Update Test Case** button persists the diff via `testCaseService.update`.
 - Flakiness detection (BYOK)
 - Rich reporting via co-installable TestPulse extension
 - Pricing ~30% below Jira test extensions + generous Free tier
