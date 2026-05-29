@@ -32,11 +32,11 @@ When a Test Case opened in edit mode has `TestVault.PreconditionLinks` set (JSON
 
 ### Run a Test Case and view past executions
 
-A **Run Test** button is now visible on the Test Case form in edit mode. Clicking it triggers a navigation to a fresh Test Execution form scoped to the current Test Case (the routing wiring is partial -- the form opens but the prefilled `testCaseId` requires a follow-up).
+A **Run Test** button is visible on the Test Case form in edit mode. Clicking it navigates to a fresh Test Execution form **pre-filled with the current Test Case** (the Test Case ID field is populated automatically), so you can record a run without re-typing the id.
 
 Opening an existing Test Execution shows it in **display-only mode** (constitution §3.5 immutability) :
 
-- All step results, environment, and global status are read-only.
+- All fields — Test Plan ID, Test Case ID, Environment, Overall result, Actual result and Notes — are read-only (disabled), in addition to step results and global status.
 - A **Re-run** button creates a brand-new Test Execution for the same Test Case. The previous record stays intact.
 
 The global status (`Pass` / `Fail` / `Blocked` / `Skipped` / `Unexecuted`) is computed from the step results via the SDK helper `computeGlobalStatus` (rules : `Fail` wins over `Blocked`, `Skipped` only when every step is Skipped, otherwise `Pass`).
