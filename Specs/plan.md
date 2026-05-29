@@ -628,8 +628,10 @@ paths:
 
 ### 6.3 Génération automatique du contrat
 
-- La spec OpenAPI est **générée depuis le code** des Azure Functions via `@anatine/zod-openapi` (constitution §3.4 : "OpenAPI générée à partir du code")
-- La CI publie la spec sur `https://api.argos.atconseil.io/v1/openapi.json` à chaque release
+> **⚠️ DEFERRED (cf. §7 et constitution §6.0)** — Ce pipeline OpenAPI dépend du backend Azure Functions, lui-même **DEFERRED / non implémenté** (Argos est 100 % client-side). Les points ci-dessous ne s'appliqueront que si ce backend est un jour livré ; aucun n'est actif aujourd'hui.
+
+- La spec OpenAPI serait **générée depuis le code** des Azure Functions via `@anatine/zod-openapi` (constitution §3.4 : "OpenAPI générée à partir du code")
+- La CI publierait la spec sur `https://api.argos.atconseil.io/v1/openapi.json` à chaque release
 - Tests contractuels via Schemathesis ou Dredd dans la CI bloquante (constitution §10.3)
 
 ---
@@ -1087,7 +1089,11 @@ jobs:
           pnpm --filter @atconseil/testvault-sdk publish --access public
           pnpm --filter @atconseil/testvault-cli publish --access public
 
-      - name: Deploy Azure Functions (Cloud-Plus)
+      # ⚠️ DEFERRED (cf. §7 + constitution §6.0) — Argos est 100% client-side.
+      #    Ce step n'est PAS actif ; il ne sera réintroduit que si/quand le
+      #    backend Cloud-Plus DEFERRED est implémenté.
+      - name: Deploy Azure Functions (Cloud-Plus) [DEFERRED — not active]
+        if: false # backend Cloud-Plus DEFERRED (constitution §6.0)
         uses: azure/functions-action@v1
         with:
           app-name: argos-cloud-plus-prod

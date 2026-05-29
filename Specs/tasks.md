@@ -88,7 +88,7 @@ Ce document liste les tâches d'implémentation par phase. Chaque tâche est **a
 
 📚 `plan.md` §2.1
 
-- [x] Créer `apps/argos-extension/` avec `vss-extension.json` configuré : publisher=`ATConseil`, name=`Argos`, target Cloud (`Microsoft.VisualStudio.Services.Cloud`)
+- [x] Créer `apps/argos-extension/` avec `vss-extension.json` configuré : publisher=`ATConseil` *(corrigé en `AlexThibaud` au Sprint 3.1 — cf. constitution changelog v0.4.1)*, name=`Argos`, target Cloud (`Microsoft.VisualStudio.Services.Cloud`)
 - [x] Implémenter un Hub minimal qui dit juste "Argos — Coming soon" avec layout Fluent UI 2
 - [x] Configurer webpack/vite pour le bundle
 - [x] Tester l'init du SDK : `SDK.init()` puis `SDK.notifyLoadSucceeded()`
@@ -680,6 +680,8 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 ### T-3.4 — Snapshot auto au lock du Test Plan 🟡
 
 📚 `spec.md` US-3.4
+
+> **⚠️ Note d'état (audit 2026-05-29)** : la logique d'auto-snapshot est livrée et testée **au niveau SDK** (`lockWithAutoSnapshot` dans `argos-sdk`), mais l'UI (`TestPlanFormView`) appelle encore le `lock()` simple — **en runtime, locker un plan ne crée pas encore de snapshot**. Statut réel : **[SDK done ; wiring UI en cours — Sprint 2.24 code]**. Les cases ci-dessous reflètent le SDK + ses tests, pas le wiring UI complet.
 
 - [x] Au passage Test Plan → `Locked`, snapshot auto-créé pour chaque TC du plan
 - [x] Test Plan locked référence les `TestCaseVersionId` (pas le TC parent)
