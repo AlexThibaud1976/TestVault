@@ -24,17 +24,23 @@ interface TestExecutionFormViewProps {
 	onCancel: () => void;
 	onSuccess: (id: number) => void;
 	executionId?: number;
+	// T223-Routing: when arriving from a Test Case "Run Test" action, the new
+	// execution form opens with this Test Case pre-filled.
+	prefillTestCaseId?: number;
 }
 
 export function TestExecutionFormView({
 	onCancel,
 	onSuccess,
 	executionId,
+	prefillTestCaseId,
 }: TestExecutionFormViewProps) {
 	const { testExecutionService } = useServices();
 
 	const [testPlanId, setTestPlanId] = useState("");
-	const [testCaseId, setTestCaseId] = useState("");
+	const [testCaseId, setTestCaseId] = useState(
+		prefillTestCaseId !== undefined ? String(prefillTestCaseId) : ""
+	);
 	const [environment, setEnvironment] = useState("qa");
 	const [actualResult, setActualResult] = useState("");
 	const [notes, setNotes] = useState("");
