@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.34] - 2026-05-29
+
+### Sprint 2.24 (Part 1) -- T223-Routing + T223-ExecPath
+
+#### Fixed
+
+- **Run Test navigation (T223-Routing)** : the **Run Test** button on a Test
+  Case (edit mode) now navigates to a new Test Execution form pre-filled with
+  that Test Case (`prefillTestCaseId` threaded through `goToRunTestForCase`),
+  instead of returning to the Test Cases list. Resolves the Sprint 2.23
+  placeholder tracked as TECH-DEBT-T223 (routing half). Client-side navigation
+  only -- no new ADO REST calls.
+- **TestExecution display-mode immutability (T223-ExecPath)** : in display mode
+  (consulting an existing execution) the form fields (plan, case, environment,
+  result, actual, notes) are now `disabled`. Previously immutability was only
+  enforced by hiding the Save path; the inputs stayed editable. Enforces
+  constitution §3.5 at the input level. The Save -> Re-run button swap is
+  unchanged.
+
+#### Technical
+
+- New regression tests : `WIRING-2026-05-29-run-test-navigation` (routing +
+  prefill) and `TestExecutionFormView.test.tsx` (T223-ExecPath display-mode
+  disabled fields).
+
 ## [0.5.33] - 2026-05-28
 
 ### Sprint 2.23 -- TestSet / TestPlan / Precondition / TestExecution wiring closing T-0.5.2

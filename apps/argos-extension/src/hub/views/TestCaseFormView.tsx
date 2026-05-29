@@ -29,9 +29,17 @@ interface TestCaseFormViewProps {
 	onCancel: () => void;
 	onSuccess: (caseId: number) => void;
 	caseId?: number;
+	// T223-Routing: navigate to a new Test Execution for this Test Case.
+	// Optional so existing call sites / tests without routing still compile.
+	onRunTest?: (caseId: number) => void;
 }
 
-export function TestCaseFormView({ onCancel, onSuccess, caseId }: TestCaseFormViewProps) {
+export function TestCaseFormView({
+	onCancel,
+	onSuccess,
+	caseId,
+	onRunTest,
+}: TestCaseFormViewProps) {
 	const { testCaseService, project } = useServices();
 	const [aiModalOpen, setAiModalOpen] = useState(false);
 	const [pendingSteps, setPendingSteps] = useState<TestStepSuggestion[] | null>(null);
@@ -273,7 +281,7 @@ export function TestCaseFormView({ onCancel, onSuccess, caseId }: TestCaseFormVi
 					{isEditMode && caseId !== undefined && (
 						<Button
 							variant="secondary"
-							onClick={() => onSuccess(caseId)}
+							onClick={() => onRunTest?.(caseId)}
 							disabled={submitInFlight}
 							data-testid="tc-run-btn"
 							title="Open a new Test Execution for this Test Case"

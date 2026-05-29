@@ -24,17 +24,23 @@ interface TestExecutionFormViewProps {
 	onCancel: () => void;
 	onSuccess: (id: number) => void;
 	executionId?: number;
+	// T223-Routing: when arriving from a Test Case "Run Test" action, the new
+	// execution form opens with this Test Case pre-filled.
+	prefillTestCaseId?: number;
 }
 
 export function TestExecutionFormView({
 	onCancel,
 	onSuccess,
 	executionId,
+	prefillTestCaseId,
 }: TestExecutionFormViewProps) {
 	const { testExecutionService } = useServices();
 
 	const [testPlanId, setTestPlanId] = useState("");
-	const [testCaseId, setTestCaseId] = useState("");
+	const [testCaseId, setTestCaseId] = useState(
+		prefillTestCaseId !== undefined ? String(prefillTestCaseId) : ""
+	);
 	const [environment, setEnvironment] = useState("qa");
 	const [actualResult, setActualResult] = useState("");
 	const [notes, setNotes] = useState("");
@@ -219,6 +225,7 @@ export function TestExecutionFormView({
 							value={testPlanId}
 							onChange={(e) => setTestPlanId(e.target.value)}
 							placeholder="Enter test plan ID"
+							disabled={isDisplayMode}
 						/>
 						<span className="wit-field-hint">Sprint 2.20: real test plan picker from ADO</span>
 					</div>
@@ -233,6 +240,7 @@ export function TestExecutionFormView({
 							value={testCaseId}
 							onChange={(e) => setTestCaseId(e.target.value)}
 							placeholder="Enter test case ID"
+							disabled={isDisplayMode}
 						/>
 					</div>
 
@@ -245,6 +253,7 @@ export function TestExecutionFormView({
 							value={environment}
 							onChange={(e) => setEnvironment(e.target.value)}
 							options={ENV_OPTIONS}
+							disabled={isDisplayMode}
 						/>
 					</div>
 				</SectionCollapsible>
@@ -268,6 +277,7 @@ export function TestExecutionFormView({
 							value={stepStatus}
 							onChange={(e) => setStepStatus(e.target.value)}
 							options={RESULT_OPTIONS}
+							disabled={isDisplayMode}
 						/>
 					</div>
 
@@ -282,6 +292,7 @@ export function TestExecutionFormView({
 							onChange={(e) => setActualResult(e.target.value)}
 							placeholder="What actually happened during execution..."
 							rows={3}
+							disabled={isDisplayMode}
 						/>
 					</div>
 
@@ -296,6 +307,7 @@ export function TestExecutionFormView({
 							onChange={(e) => setNotes(e.target.value)}
 							placeholder="Additional notes or observations..."
 							rows={2}
+							disabled={isDisplayMode}
 						/>
 					</div>
 

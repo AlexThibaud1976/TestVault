@@ -10,7 +10,7 @@ export type ArgosView =
 	| { kind: "preconditions-list" }
 	| { kind: "precondition-form"; preconditionId?: number }
 	| { kind: "test-executions-list" }
-	| { kind: "test-execution-form"; executionId?: number }
+	| { kind: "test-execution-form"; executionId?: number; prefillTestCaseId?: number }
 	| { kind: "test-case-versions-list" }
 	| { kind: "audit-log-list" }
 	| { kind: "reports" }
@@ -77,6 +77,8 @@ export function useArgosRouting(initial: ArgosView = { kind: "test-plans-list" }
 		goToTestExecutionsList: () => setView({ kind: "test-executions-list" }),
 		goToTestExecutionForm: (executionId?: number) =>
 			setView({ kind: "test-execution-form", executionId }),
+		goToRunTestForCase: (testCaseId: number) =>
+			setView({ kind: "test-execution-form", prefillTestCaseId: testCaseId }),
 		goToTestCaseVersionsList: () => setView({ kind: "test-case-versions-list" }),
 		goToAuditLog: () => setView({ kind: "audit-log-list" }),
 		goToReports: () => setView({ kind: "reports" }),

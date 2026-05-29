@@ -341,6 +341,7 @@ function RouteRenderer({
 					onCancel={routing.goToTestCasesList}
 					onSuccess={routing.goToTestCasesList}
 					caseId={(view as { kind: "test-case-form"; caseId?: number }).caseId}
+					onRunTest={(id) => routing.goToRunTestForCase(id)}
 				/>
 			);
 		case "test-sets-list":
@@ -373,6 +374,9 @@ function RouteRenderer({
 					onCancel={routing.goToTestExecutionsList}
 					onSuccess={routing.goToTestExecutionsList}
 					executionId={(view as { kind: "test-execution-form"; executionId?: number }).executionId}
+					prefillTestCaseId={
+						(view as { kind: "test-execution-form"; prefillTestCaseId?: number }).prefillTestCaseId
+					}
 				/>
 			);
 		case "test-case-versions-list":

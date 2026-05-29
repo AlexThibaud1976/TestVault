@@ -57,7 +57,6 @@ const SHARED_DOC_ALLOWLIST = new Set([
 	"tools/claude-prompts/CLAUDE_TASK_sprint-2-6.md",
 	"tools/claude-prompts/CLAUDE_TASK_sprint-2-7.md",
 	// Sprint 2.21 / 2.21.1 task files (contain gpt-4.1-mini as historical doc from Alex setup session)
-	"Specs/CLAUDE_TASK_sprint-2-21-1-foundry.md",
 	"claude_prompts/CLAUDE_TASK_sprint-2-21-1-foundry.md",
 	"claude_prompts/CLAUDE_TASK_sprint-2-21-part-1.md",
 	"claude_prompts/CLAUDE_TASK_sprint-2-20.md",
@@ -75,18 +74,14 @@ const SHARED_DOC_ALLOWLIST = new Set([
 	// why the term was neutralised in the produced code/tests/commits).
 	"claude_prompts/sprint-2-22-code-report.md",
 	// Sprint 2.21 part 2 brief: documents the placeholder decision around
-	// gpt-4.1-mini (TECH-DEBT-072 to clarify BYOK strategy in a future sprint)
-	"Specs/CLAUDE_TASK_sprint-2-21-part-2.md",
-	"claude_prompts/CLAUDE_TASK_sprint-2-21-part-2.md",
+	// gpt-4.1-mini (TECH-DEBT-072 to clarify BYOK strategy in a future sprint).
+	// Both task-file copies have since been removed; only the tasks.md mention remains.
 	// Specs/tasks.md mentions gpt-4.1 in TECH-DEBT-072 (added Sprint 2.21 part 2)
 	// which exists precisely to track the cleanup work for that pattern.
 	"Specs/tasks.md",
 	"claude_prompts/CLAUDE_TASK_sprint-2-21-part-3-cleanup.md",
 	"claude_prompts/sprint-2-21-part-3-cleanup-report.md",
-	// Sprint 2.22 cleanup brief: kept while the file lives in Specs/
-	// during cleanup execution. Will be removed in the post-merge
-	// follow-up once the file moves to claude_prompts/.
-	"Specs/CLAUDE_TASK_sprint-2-22-cleanup.md",
+	// Sprint 2.22 cleanup brief: relocated to claude_prompts/ (allowlisted above).
 	// Sprint 2.22 cleanup report: documents the Sprint 2.22 cleanup steps
 	// (allowlist update, tasks.md patches, constitution v0.5.3). Contains
 	// meta-discussion of the Xray-like metaphor used in the sprint brief.
@@ -94,6 +89,17 @@ const SHARED_DOC_ALLOWLIST = new Set([
 	// TECH-DEBT-T2213-B sprint report: meta-discussion of the Xray pre-flight
 	// blocker that was inherited from the Sprint 2.22 cleanup report.
 	"claude_prompts/tech-debt-T2213-B-report.md",
+	// Sprint 2.22 cleanup report (claude_prompts/ location) + Sprint 2.23 code
+	// report: both quote the "Xray" pre-flight blocker they were unblocking.
+	"claude_prompts/CLAUDE_TASK_sprint-2-22-cleanup.md",
+	"claude_prompts/sprint-2-23-code-report.md",
+	// Sprint 2.24 task prompts: the recon/code briefs embed the grep patterns
+	// ("Server 2022", "xray", "gpt-4") used by the very scans they audit.
+	// recon-audit + code relocated to claude_prompts/; coherence-spec-patch
+	// (task A) is still in Specs/ until that task runs.
+	"claude_prompts/CLAUDE_TASK_sprint-2-24-recon-audit.md",
+	"claude_prompts/CLAUDE_TASK_sprint-2-24-code.md",
+	"Specs/CLAUDE_TASK_sprint-2-24-coherence-spec-patch.md",
 ]);
 
 module.exports = { SHARED_DOC_ALLOWLIST };
