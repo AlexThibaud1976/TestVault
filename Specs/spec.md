@@ -337,7 +337,7 @@ Conséquence : les équipes ADO sérieuses sur la qualité **migrent vers Jira a
 
 ### Epic 5 — Cloud-Plus (AI BYOK & Jobs)
 
-> Features Cloud-uniquement nécessitant un backend Azure Functions.
+> Features AI (BYOK) et features avancées. Les features AI s'exécutent en appel **direct client → provider** (BYOK, cf. constitution §6.0 et US-5.1) — aucun backend requis. Les jobs planifiés / webhooks serveur restent un concept **Cloud-Plus DEFERRED** (cf. constitution §3.2 et `plan.md` §7).
 
 #### US-5.1 : Générer un squelette de Test Cases depuis une exigence (BYOK)
 
@@ -675,7 +675,7 @@ couverte par la feature F1.1 (cf. US-5.1.1).
 **Règles métier :**
 
 - Création explicite par utilisateur (jamais automatique sur sauvegarde).
-- Création automatique opt-in au lock d'un Test Plan (cf. US-3.4).
+- Création automatique **opt-out** au lock d'un Test Plan : le snapshot est créé par défaut au lock pour figer une baseline immuable ; l'Admin peut désactiver cette création (cf. US-3.4).
 - Le nom du snapshot doit être unique parmi les snapshots du même TC parent. Sensible à la casse.
 - Une fois créé, immutable : aucun champ modifiable. Tentatives de modification sont refusées par les API et l'UI.
 - Suppression interdite si une `TestExecution` archivée référence ce snapshot.
