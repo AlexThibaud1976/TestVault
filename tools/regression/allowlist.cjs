@@ -94,6 +94,17 @@ const SHARED_DOC_ALLOWLIST = new Set([
 	// TECH-DEBT-T2213-B sprint report: meta-discussion of the Xray pre-flight
 	// blocker that was inherited from the Sprint 2.22 cleanup report.
 	"claude_prompts/tech-debt-T2213-B-report.md",
+	// Sprint 2.22 cleanup report (claude_prompts/ location) + Sprint 2.23 code
+	// report: both quote the "Xray" pre-flight blocker they were unblocking.
+	"claude_prompts/CLAUDE_TASK_sprint-2-22-cleanup.md",
+	"claude_prompts/sprint-2-23-code-report.md",
+	// Sprint 2.24 task prompts: the recon/code briefs embed the grep patterns
+	// ("Server 2022", "xray", "gpt-4") used by the very scans they audit.
+	// Kept on the Specs/ path during execution; relocated to claude_prompts/
+	// in the post-merge cleanup (CLAUDE_TASK_sprint-2-24-code §8).
+	"Specs/CLAUDE_TASK_sprint-2-24-recon-audit.md",
+	"Specs/CLAUDE_TASK_sprint-2-24-code.md",
+	"Specs/CLAUDE_TASK_sprint-2-24-coherence-spec-patch.md",
 ]);
 
 module.exports = { SHARED_DOC_ALLOWLIST };
