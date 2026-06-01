@@ -1,20 +1,25 @@
-﻿# Tasks — TestVault (Argos) v1.0
+# Tasks — TestVault (Argos) v1.0
 
 > Version 0.1.1 — 10 mai 2026 (resync Sprint 2)
-> Découpage actionnable des phases d'implémentation
+> Découpage actionnable des phases d’implémentation
 > Auteur : Alexandre Thibaud — atconseil.info
 > Réfs : `constitution.md` v0.3.0, `spec.md` v0.1.0, `plan.md` v0.1.0
 > Contexte : développement solo en duo avec Claude Code
 
-> **Resync 2026-05-10 (Sprint 2)** : Cette liste a été déchekée pour refléter l'état réel du
+> **Resync 2026-05-10 (Sprint 2)** : Cette liste a été déchekée pour refléter l’état réel du
 > projet, qui est en Phase 0 (bootstrap + tooling). Les composants UI riches existent en code
 > mais ne sont pas intégrés dans `App.tsx` (Phase 0.5). Décision Cloud-only effective (v0.2.0).
 
+> **Amendement roadmap 2026-06-01** : Ajout de T-2.8 (Q2 — snapshots exécution immuables),
+> T-2.9 (Q3 — tests paramétrés/data-driven) et T-3.8 (Q4 — roll-up couverture par hiérarchie
+> ADO), identifiés lors d’une analyse comparative des capacités Xray. Chaque item nécessite
+> un Pattern A (spec.md + plan.md + schéma WIT si applicable) avant toute implémentation.
+
 ---
 
-## Mode d'emploi
+## Mode d’emploi
 
-Ce document liste les tâches d'implémentation par phase. Chaque tâche est **autonome** (peut être prise comme objectif d'une session Claude Code) et a des **critères de done explicites**.
+Ce document liste les tâches d’implémentation par phase. Chaque tâche est **autonome** (peut être prise comme objectif d’une session Claude Code) et a des **critères de done explicites**.
 
 **Convention :**
 
@@ -37,8 +42,8 @@ Ce document liste les tâches d'implémentation par phase. Chaque tâche est **a
 
 ## Phase 0 — Scaffolding & infrastructure de base
 
-> **Objectif :** disposer d'un monorepo opérationnel, d'une CI verte, d'une extension Argos minimale publiée en preview privée sur le Marketplace.
-> **Done quand :** `pnpm install && pnpm turbo build && pnpm test` passe vert, et un VSIX est installé sur l'org de test ADO Cloud.
+> **Objectif :** disposer d’un monorepo opérationnel, d’une CI verte, d’une extension Argos minimale publiée en preview privée sur le Marketplace.
+> **Done quand :** `pnpm install && pnpm turbo build && pnpm test` passe vert, et un VSIX est installé sur l’org de test ADO Cloud.
 
 ### T-0.1 — Initialiser le monorepo 🔴
 
@@ -67,7 +72,7 @@ Ce document liste les tâches d'implémentation par phase. Chaque tâche est **a
 
 **Done quand :**
 - [x] Une PR triviale (typo dans README) déclenche la CI verte
-- [x] La CI bloque si lint ou typecheck échoue (vérifier avec un fail volontaire qu'on revert ensuite)
+- [x] La CI bloque si lint ou typecheck échoue (vérifier avec un fail volontaire qu’on revert ensuite)
 
 ### T-0.3 — Créer le package `testvault-types` 🔴
 
@@ -84,20 +89,20 @@ Ce document liste les tâches d'implémentation par phase. Chaque tâche est **a
 - [x] Tous les types sont exportés depuis `index.ts`
 - [x] Couverture des schémas Zod ≥ 95%
 
-### T-0.4 — Créer l'extension Argos minimale (Hub vide)
+### T-0.4 — Créer l’extension Argos minimale (Hub vide)
 
 📚 `plan.md` §2.1
 
 - [x] Créer `apps/argos-extension/` avec `vss-extension.json` configuré : publisher=`ATConseil` *(corrigé en `AlexThibaud` au Sprint 3.1 — cf. constitution changelog v0.4.1)*, name=`Argos`, target Cloud (`Microsoft.VisualStudio.Services.Cloud`)
-- [x] Implémenter un Hub minimal qui dit juste "Argos — Coming soon" avec layout Fluent UI 2
+- [x] Implémenter un Hub minimal qui dit juste “Argos — Coming soon” avec layout Fluent UI 2
 - [x] Configurer webpack/vite pour le bundle
-- [x] Tester l'init du SDK : `SDK.init()` puis `SDK.notifyLoadSucceeded()`
+- [x] Tester l’init du SDK : `SDK.init()` puis `SDK.notifyLoadSucceeded()`
 - [x] Builder un VSIX via `tfx-cli`
 
 **Done quand :**
 - [x] Le VSIX est généré sans erreur
-- [x] Le Hub s'affiche correctement dans une org de test ADO Cloud (installation manuelle preview privée)
-- [x] Le Hub s'affiche correctement sur instance ADO Cloud (validation manuelle)
+- [x] Le Hub s’affiche correctement dans une org de test ADO Cloud (installation manuelle preview privée)
+- [x] Le Hub s’affiche correctement sur instance ADO Cloud (validation manuelle)
 
 ### T-0.5 — Détection runtime Cloud vs Server 🟡
 
@@ -117,17 +122,17 @@ Ce document liste les tâches d'implémentation par phase. Chaque tâche est **a
 
 - [x] Workflow `release-publish.yml` configuré (steps : build → SBOM → package VSIX → publish)
 - [x] PAT Marketplace stocké en GitHub Secret
-- [x] Publication réussie d'une v0.0.1-preview en mode privé (visibilité limitée à votre org)
+- [x] Publication réussie d’une v0.0.1-preview en mode privé (visibilité limitée à votre org)
 
 **Done quand :**
 - [x] La v0.0.1-preview est listée sur le Marketplace en privé
-- [x] L'install depuis le Marketplace dans votre org de test fonctionne
+- [x] L’install depuis le Marketplace dans votre org de test fonctionne
 
 ### T-0.7 — Créer `CLAUDE.md` racine 🟢
 
 📚 contrat avec Claude Code (cf. demande utilisateur)
 
-- [x] Rédiger `CLAUDE.md` à la racine, listant : règles non-négociables (extraites de la constitution), structure du monorepo, commandes clés, do/don't, liens vers les 4 fichiers spec-kit
+- [x] Rédiger `CLAUDE.md` à la racine, listant : règles non-négociables (extraites de la constitution), structure du monorepo, commandes clés, do/don’t, liens vers les 4 fichiers spec-kit
 - [x] Format concis (~150-300 lignes max)
 
 **Done quand :**
@@ -138,14 +143,14 @@ Ce document liste les tâches d'implémentation par phase. Chaque tâche est **a
 
 ### T-0.8 — Manifest ADO-conforme : hub group, scopes, widget coverage-panel 🟡
 
-📚 `plan.md` §2.1 — alignement du manifest `vss-extension.json` avec l'architecture cible
+📚 `plan.md` §2.1 — alignement du manifest `vss-extension.json` avec l’architecture cible
 
 - [x] `scopes` → `["vso.work_full", "vso.profile", "vso.code", "vso.extension.data_write", "vso.identity"]`
 - [x] `targets` → `[{ "id": "Microsoft.VisualStudio.Services.Cloud" }]` (Cloud-only, v0.2.0)
 - [x] Hub contribution target → `ms.vss-work-web.work-hub-group` (Boards tab, pas Project hub group)
 - [x] Coverage panel `uri` → `dist/widgets/coverage-panel/index.html`
 - [x] `files` → `{ "path": "dist", "addressable": true }` (packager dist complète, y compris widgets/)
-- [x] Créer point d'entrée `src/widgets/coverage-panel/index.tsx` + `index.html` (TDD)
+- [x] Créer point d’entrée `src/widgets/coverage-panel/index.tsx` + `index.html` (TDD)
 - [x] Adapter `scripts/build.mjs` pour produire `dist/widgets/coverage-panel/` bundle
 - [x] Bump version `0.1.1`
 - [x] CHANGELOG.md + `docs/operator-guide.md` (section hub groups ADO)
@@ -153,14 +158,14 @@ Ce document liste les tâches d'implémentation par phase. Chaque tâche est **a
 
 **Done quand :**
 
-- [x] L'onglet Argos apparaît dans Boards (ms.vss-work-web.work-hub-group)
-- [x] Le panneau Test Coverage s'affiche sur le formulaire Work Item
+- [x] L’onglet Argos apparaît dans Boards (ms.vss-work-web.work-hub-group)
+- [x] Le panneau Test Coverage s’affiche sur le formulaire Work Item
 - [x] unzip -l argos.vsix liste dist/hub/hub.html et dist/widgets/coverage-panel/index.html
 - [x] CI publish-marketplace.yml verte
 
 ---
 
-## Phase 0.5 — Dette d'intégration (Sprint 2.5 ?)
+## Phase 0.5 — Dette d’intégration (Sprint 2.5 ?)
 
 Conséquence de l'audit 2026-05-09 : les composants UI riches existent (40+ fichiers
 React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
@@ -177,8 +182,8 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 ## Phase 1 — Custom WIT et CRUD référentiel
 
-> **Objectif :** créer le Custom Process Inheritance, installer les Custom WIT, et permettre le CRUD complet de `TestCase`, `TestPlan`, `TestSet`, `Precondition` via l'UI Argos.
-> **Done quand :** un User TestVault peut créer, lister, modifier, supprimer ces 4 types de WI dans l'UI Argos sur Cloud.
+> **Objectif :** créer le Custom Process Inheritance, installer les Custom WIT, et permettre le CRUD complet de `TestCase`, `TestPlan`, `TestSet`, `Precondition` via l’UI Argos.
+> **Done quand :** un User TestVault peut créer, lister, modifier, supprimer ces 4 types de WI dans l’UI Argos sur Cloud.
 
 ### T-1.1 — Schéma WIT formalisé en code 🔴
 
@@ -186,8 +191,8 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 - [x] Créer `packages/testvault-wit-schema/` avec les définitions JSON de chaque Custom WIT
 - [x] Inclure les champs (référence, type, contraintes), états et transitions, picklists
-- [x] Générer un fichier `schema.json` exhaustif consommable par le wizard d'installation
-- [x] Tests : validation que le schéma respecte le format attendu par l'API Process ADO
+- [x] Générer un fichier `schema.json` exhaustif consommable par le wizard d’installation
+- [x] Tests : validation que le schéma respecte le format attendu par l’API Process ADO
 
 **Done quand :**
 
@@ -202,17 +207,17 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Créer `packages/testvault-sdk/src/ado-client.ts` avec interface `IAdoClient`
 - [x] Implémenter `fetchWorkItem(id)`, `createWorkItem(type, fields)`, `updateWorkItem(id, fields)`, `deleteWorkItem(id)`
 - [x] Gestion des erreurs ADO standardisée (401, 403, 404, 429, 500) avec mapping vers exceptions typées
-- [x] Tests d'intégration via msw : tous les codes d'erreur, payload malformé, timeout
+- [x] Tests d’intégration via msw : tous les codes d’erreur, payload malformé, timeout
 
 **Done quand :**
 
 - [x] Toutes les opérations CRUD passent les tests msw
 - [x] Couverture ≥ 90%
 
-### T-1.3 — Wizard d'installation du Custom Process [PIVOT 2026-05-15]
+### T-1.3 — Wizard d’installation du Custom Process [PIVOT 2026-05-15]
 
-> ARCHITECTURE PIVOT : Microsoft ne permet pas aux extensions ADO d'appeler Process API.
-> Scope vso.process_write n'existe pas. Install Custom WIT deleguee a argos-cli (D66-A).
+> ARCHITECTURE PIVOT : Microsoft ne permet pas aux extensions ADO d’appeler Process API.
+> Scope vso.process_write n’existe pas. Install Custom WIT deleguee a argos-cli (D66-A).
 > Sprint 2.6 (2026-05-15) : argos-cli install command LIVRE.
 
 📚 `spec.md` US-6.1, `plan.md` §3.1
@@ -229,9 +234,9 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 **Done quand :**
 
-- [x] L'installation depuis zero fonctionne via argos-cli (Sprint 2.6)
+- [x] L’installation depuis zero fonctionne via argos-cli (Sprint 2.6)
 - [x] La detection detecte le schema existant via wit/workitemtypes API
-- [x] L'utilisateur sans schema installe voit guide vers argos-cli
+- [x] L’utilisateur sans schema installe voit guide vers argos-cli
 - [ ] E2E reel valide sur instance ADO test (TECH-DEBT-019)
 
 **TECH-DEBT (Sprint 2.6) :**
@@ -449,8 +454,8 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 **Done quand :**
 
-- [x] Création d'un TC complet sauvegarde correctement dans ADO
-- [x] Édition d'un TC existant fonctionne, History ADO préservé
+- [x] Création d’un TC complet sauvegarde correctement dans ADO
+- [x] Édition d’un TC existant fonctionne, History ADO préservé
 - [x] Suppression demande confirmation
 - [x] Couverture service ≥ 90%
 
@@ -467,7 +472,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 - [x] Composition statique fonctionne
 - [x] Composition dynamique via WIQL fonctionne
-- [x] La suppression d'un Set ne supprime pas les TC contenus
+- [x] La suppression d’un Set ne supprime pas les TC contenus
 
 ### T-1.6 — CRUD Test Plan 🟡
 
@@ -481,7 +486,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 **Done quand :**
 
 - [x] Création de plan avec mix Test Sets + TC fonctionne
-- [x] L'état `Locked` est implémenté (snapshot auto déférré à la phase 3)
+- [x] L’état `Locked` est implémenté (snapshot auto déférré à la phase 3)
 
 ### T-1.7 — CRUD Precondition 🟢
 
@@ -494,7 +499,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 **Done quand :**
 
 - [x] Une Precondition peut être liée à N TC
-- [x] La consultation d'un TC affiche ses Preconditions liées
+- [x] La consultation d’un TC affiche ses Preconditions liées
 
 ### T-1.8 — Hub Argos avec navigation 🟡
 
@@ -506,7 +511,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 **Done quand :**
 
-- [x] Le wireframe `spec.md` §7.1 est implémenté à l'identique fonctionnel (architecture multi-hubs Sprint 4)
+- [x] Le wireframe `spec.md` §7.1 est implémenté à l’identique fonctionnel (architecture multi-hubs Sprint 4)
 - [x] Navigation entre les vues fluide (< 500ms)
 
 ### T-1.9 — Tests E2E phase 1 sur Cloud + Server 🔴
@@ -520,7 +525,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 **Done quand :**
 
 - [x] La suite E2E passe verte sur Cloud (Server OBSOLETE -- Cloud-only depuis v0.2.0)
-- [x] Le temps total d'exécution < 15 min
+- [x] Le temps total d’exécution < 15 min
 
 > **Note 2026-05-14 (TECH-DEBT-026)** : La mention "Server" est OBSOLETE depuis Sprint 0.2.0
 > (décision Cloud-only). T-1.9 est considéré DONE pour Cloud uniquement. Voir TECH-DEBT-031.
@@ -529,7 +534,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 ## Phase 2 — Exécution des tests & evidence
 
-> **Objectif :** un User TestVault peut exécuter manuellement un Test Case, capturer le statut step-by-step, attacher de l'evidence, et créer un Bug ADO depuis un Fail.
+> **Objectif :** un User TestVault peut exécuter manuellement un Test Case, capturer le statut step-by-step, attacher de l’evidence, et créer un Bug ADO depuis un Fail.
 > **Done quand :** une `TestExecution` complète est sauvegardée dans ADO et reste immutable, avec liens vers le Test Plan, le TestCase, et un Bug optionnel.
 
 ### T-2.1 — Service `TestExecutionService` 🔴
@@ -537,36 +542,36 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 📚 `spec.md` US-2.1, `plan.md` §3.5
 
 - [x] Méthodes : `startRun`, `saveStepResult`, `attachEvidence`, `finalizeRun`, `linkBug`
-- [x] Garantie d'immutabilité après save final (refus de tout PATCH ultérieur)
+- [x] Garantie d’immutabilité après save final (refus de tout PATCH ultérieur)
 - [x] Calcul automatique du `globalStatus` depuis les `stepResults`
 - [x] Tests unitaires + intégration
 
 **Done quand :**
-- [x] Une `TestExecution` save passe l'API ADO, est lue immutable
+- [x] Une `TestExecution` save passe l’API ADO, est lue immutable
 - [x] Une tentative de modification post-save renvoie 403 documentée
 - [x] Couverture ≥ 90%
 
-### T-2.2 — UI d'exécution (run interface) 🔴
+### T-2.2 — UI d’exécution (run interface) 🔴
 
 📚 `spec.md` US-2.1, §7.3
 
 - [x] Implémentation du wireframe §7.3 : panneau Precondition, liste des Steps, panneau Evidence
-- [x] Sélecteur d'Environment obligatoire en début de run
+- [x] Sélecteur d’Environment obligatoire en début de run
 - [x] Validation : commentaire obligatoire si Step en Fail
 - [x] Calcul global status en temps réel
 - [x] Bouton "Save Run" (final) + "Cancel"
 - [x] Wired in App.tsx (PlansView tab "Run") — Sprint 2.5b
 
 **Done quand :**
-- [ ] L'utilisateur peut exécuter un TC complet de bout en bout
+- [ ] L’utilisateur peut exécuter un TC complet de bout en bout
 - [x] Le statut global est calculé correctement
 - [x] Tests E2E couvrant les 3 issues : full Pass, partial Fail, Blocked
 
-### T-2.3 — Upload d'evidence (multi-formats) 🟡
+### T-2.3 — Upload d’evidence (multi-formats) 🟡
 
 📚 `spec.md` US-2.2
 
-- [x] Service d'upload utilisant l'API Attachments ADO native
+- [x] Service d’upload utilisant l’API Attachments ADO native
 - [x] Validation des types (PNG, JPG, GIF, PDF, TXT, LOG, MP4, WEBM) et des limites (10/25/5/100 MB)
 - [x] UI drag & drop + bouton fichier
 - [x] Preview pour images, lecteur intégré vidéos, lien pour autres
@@ -576,7 +581,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 **Done quand :**
 - [x] Upload des 4 formats principaux fonctionne
 - [x] Les limites de taille sont appliquées avec messages clairs
-- [x] L'evidence est visible en lecture après save
+- [x] L’evidence est visible en lecture après save
 
 ### T-2.4 — Configuration des Environments par projet 🟡
 
@@ -590,14 +595,14 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 **Done quand :**
 - [x] Un Admin peut gérer la liste
-- [x] Un User n'a pas accès à cette config
+- [x] Un User n’a pas accès à cette config
 - [x] La liste est utilisée comme dropdown dans le run
 
 ### T-2.5 — Création de Bug depuis Fail 🟢
 
 📚 `spec.md` US-2.1 (étape 11)
 
-- [x] Bouton "Create Bug from Failure" sur l'écran de run avec status Fail
+- [x] Bouton "Create Bug from Failure" sur l’écran de run avec status Fail
 - [x] Pré-remplissage : Title, Description (avec lien vers run), Repro Steps (depuis steps Fail), Severity, Environment
 - [x] Création via API ADO standard, lien `Found By` Test Execution → Bug
 - [x] Wired in App.tsx (integrate dans RunInterface via Dialog) — Sprint 2.5b
@@ -610,13 +615,13 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 📚 `spec.md` US-2.3
 
-- [x] Sur la page d'un TC, onglet "Executions" avec liste paginée
+- [x] Sur la page d’un TC, onglet "Executions" avec liste paginée
 - [x] Filtres : par environment, par statut, par période
 - [x] Vue côte à côte des statuts par environment
 - [x] Wired in App.tsx (CasesView tab "Executions") — Sprint 2.5b
 
 **Done quand :**
-- [x] L'historique d'un TC avec >100 exécutions reste fluide
+- [x] L’historique d’un TC avec >100 exécutions reste fluide
 - [x] Filtres fonctionnent
 
 ### T-2.7 — Tests E2E phase 2 🔴
@@ -624,9 +629,52 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [ ] E2E : run complet sur Cloud, run complet sur Server
 - [ ] E2E : upload evidence multi-formats
 - [ ] E2E : création de Bug depuis Fail
+- [ ] E2E à étendre pour T-2.8 (snapshot au run) et T-2.9 (tests paramétrés) quand implémentés
 
 **Done quand :**
 - [ ] Suite E2E phase 2 passe verte sur les 2 environnements
+
+### T-2.8 — Snapshots immuables au démarrage de run (Q2) 🟡
+
+> **Statut :** Roadmap (post-0.6.0) — Pattern A (spec.md + plan.md + schéma WIT) obligatoire avant implémentation.
+
+📚 Extension de `spec.md` US-2.1, `plan.md` §3.5 — distinct de T-3.2 (snapshot manuel) et T-3.4 (snapshot auto au lock du plan)
+
+**Problématique :** sans ce mécanisme, modifier un TestCase après le début d’un run corrompt la lecture de l’historique. Le champ `testCaseVersionId` dans TestExecution est prévu mais pas encore forcé à la création du run.
+
+- [ ] À `startRun`, créer automatiquement un `TestCaseVersion` snapshot si aucun ne correspond à l’état courant du TC (hash des steps)
+- [ ] Stocker le `testCaseVersionId` dans chaque `TestExecution` (lien immuable, champ déjà présent dans le schéma WIT)
+- [ ] RunInterface lit les steps depuis le snapshot, pas depuis le TC parent
+- [ ] Modifications ultérieures du TC source sans effet sur les runs en cours ou terminés
+- [ ] Mode display de TestExecutionFormView lit depuis le snapshot
+- [ ] Tests : modifier un TC après `startRun` → le run affiche les steps d’origine
+
+**Done quand :**
+- [ ] Tout run créé référence son `testCaseVersionId`
+- [ ] Modification post-run du TC source sans effet visible sur les runs existants
+- [ ] Tests service + intégration couvrent le scénario de modification post-run
+
+### T-2.9 — Tests paramétrés / Data-Driven (Q3) 🟢
+
+> **Statut :** Roadmap (post-0.6.0) — Pattern A (spec.md + plan.md + schéma WIT) obligatoire avant implémentation.
+
+📚 Extension de `spec.md` US-2.1, `plan.md` §3.3
+
+**Problématique :** tester la même logique avec N jeux de données (ex : 5 paires login/password) requiert aujourd’hui N TestCases distincts. Le mode paramétrique élimine cette duplication.
+
+- [ ] Syntaxe variables dans les steps : `<username>`, `<password>`, `<montant>` (délimiteurs chevrons)
+- [ ] Nouveau champ WIT `TestVault.TestDataset` (longText, JSON array de rows ; impacte schéma + provisioning)
+- [ ] UI d’édition du dataset : tableau inline dans TestCaseFormView (ajout/suppression de lignes)
+- [ ] RunInterface : duplication de la grille de steps pour chaque row du dataset (N rows = N grilles)
+- [ ] globalStatus = statut le plus défavorable sur l’ensemble des rows
+- [ ] TestExecution : sérialiser les résultats par row dans `stepResults` (`stepIndex` + `rowIndex`)
+- [ ] Export Excel inclut la dimension dataset
+
+**Done quand :**
+- [ ] TC avec 3 rows produit 3 grilles de steps indépendantes dans le RunInterface
+- [ ] globalStatus = Fail si au moins 1 row échoue
+- [ ] Export Excel inclut la dimension dataset
+- [ ] Tests unitaires + E2E
 
 ---
 
@@ -650,7 +698,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 ## Phase 3 — Traçabilité, versioning, snapshots
 
 > **Objectif :** la traçabilité bidirectionnelle Work Items ↔ TestCase fonctionne, les snapshots taggés sont opérationnels, la matrice de couverture est exportable.
-> **Done quand :** Aïcha (Test Manager) peut ouvrir une matrice de couverture, créer un snapshot manuel d'un TC, lock un Test Plan avec snapshot auto.
+> **Done quand :** Aïcha (Test Manager) peut ouvrir une matrice de couverture, créer un snapshot manuel d’un TC, lock un Test Plan avec snapshot auto.
 
 ### T-3.1 — Lien bidirectionnel Work Items ADO ↔ Test Case 🔴
 
@@ -664,7 +712,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 **Done quand :**
 - [x] Un lien créé est visible dans les 2 sens
-- [x] Le widget coverage panel s'affiche sur User Story et liste les TC liés avec leur dernier statut
+- [x] Le widget coverage panel s’affiche sur User Story et liste les TC liés avec leur dernier statut
 
 ### T-3.2 — Snapshots taggés (Custom WIT TestCaseVersion) 🔴
 
@@ -672,14 +720,14 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 - [x] Service `TestCaseVersionService` avec `createSnapshot`, `listSnapshots`, `compareWithCurrent`
 - [x] UI : bouton "Create Snapshot" sur le TC, formulaire (nom, commentaire)
-- [x] Garantie d'immutabilité (champs frozen via règles de transition Process)
+- [x] Garantie d’immutabilité (champs frozen via règles de transition Process)
 - [x] Validation : nom unique par TC parent
 - [x] Tests : tentative de modification post-creation → 403
 - [x] Wired in App.tsx: PlansView "Snapshots" tab → SnapshotPanel (Sprint 2.5c)
 
 **Done quand :**
 - [x] Un snapshot est créé, visible, immutable
-- [x] La liste des snapshots d'un TC est affichée
+- [x] La liste des snapshots d’un TC est affichée
 
 ### T-3.3 — Comparateur de versions (diff) 🟡
 
@@ -691,14 +739,14 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Wired in App.tsx: PlansView "Snapshots" tab → snapshot-diff-panel container always present; SnapshotDiffPanel shown when 2 snapshots selected (Sprint 2.5c)
 
 **Done quand :**
-- [x] Le diff entre 2 versions d'un même TC est visuellement clair
-- [x] Tests unitaires sur l'algo LCS
+- [x] Le diff entre 2 versions d’un même TC est visuellement clair
+- [x] Tests unitaires sur l’algo LCS
 
 ### T-3.4 — Snapshot auto au lock du Test Plan 🟡
 
 📚 `spec.md` US-3.4
 
-> **⚠️ Note d'état (audit 2026-05-29)** : la logique d'auto-snapshot est livrée et testée **au niveau SDK** (`lockWithAutoSnapshot` dans `argos-sdk`), mais l'UI (`TestPlanFormView`) appelle encore le `lock()` simple — **en runtime, locker un plan ne crée pas encore de snapshot**. Statut réel : **[SDK done ; wiring UI en cours — Sprint 2.24 code]**. Les cases ci-dessous reflètent le SDK + ses tests, pas le wiring UI complet.
+> **⚠️ Note d’état (audit 2026-05-29)** : la logique d’auto-snapshot est livrée et testée **au niveau SDK** (`lockWithAutoSnapshot` dans `argos-sdk`), mais l’UI (`TestPlanFormView`) appelle encore le `lock()` simple — **en runtime, locker un plan ne crée pas encore de snapshot**. Statut réel : **[SDK done ; wiring UI en cours — Sprint 2.24 code]**. Les cases ci-dessous reflètent le SDK + ses tests, pas le wiring UI complet.
 
 - [x] Au passage Test Plan → `Locked`, snapshot auto-créé pour chaque TC du plan
 - [x] Test Plan locked référence les `TestCaseVersionId` (pas le TC parent)
@@ -706,15 +754,15 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Tests
 
 **Done quand :**
-- [x] Lock d'un Test Plan crée les snapshots automatiquement
-- [x] L'exécution d'un TC dans un plan locked utilise le snapshot
+- [x] Lock d’un Test Plan crée les snapshots automatiquement
+- [x] L’exécution d’un TC dans un plan locked utilise le snapshot
 
 ### T-3.5 — Matrice de couverture exigences 🔴
 
 📚 `spec.md` US-3.2, F3, §7.5
 
 - [x] Vue dédiée avec tableau croisé Work Items × TC
-- [x] Cellule = dernier statut d'exécution par environment
+- [x] Cellule = dernier statut d’exécution par environment
 - [x] Filtres : Area, Iteration, Tags, Status, Environment
 - [x] Couleurs conditionnelles
 - [x] Virtual scrolling au-delà de 1000 cellules
@@ -741,6 +789,28 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 **Done quand :**
 - [x] Création snapshot, lock plan, vue matrice, export Excel verts sur Cloud (Server OBSOLETE -- Cloud-only depuis v0.2.0)
+- [ ] E2E à étendre pour T-3.8 (roll-up hiérarchie) quand implémenté
+
+### T-3.8 — Roll-up de couverture consolidé par hiérarchie ADO (Q4) 🟡
+
+> **Statut :** Roadmap (post-0.6.0) — Pattern A (spec.md + plan.md) obligatoire avant implémentation.
+
+📚 Extension de `spec.md` US-3.2, `plan.md` §3.5 — dépend de T-3.5 (matrice de couverture)
+
+**Problématique :** T-3.5 calcule la couverture au niveau User Story uniquement. Les managers ont besoin d’une vision agrégée par Feature et Epic, remontant récursivement la hiérarchie native ADO (US → Feature → Epic via `System.Parent`).
+
+- [ ] Étendre `CoverageMatrix` avec un mode "hiérarchie" calculant les métriques par Feature et Epic
+- [ ] Widget Coverage Panel disponible sur les formulaires Feature et Epic (nouvelles contributions dans le manifest)
+- [ ] Métriques par niveau : % Pass / % Fail / % Not Run (agrégation récursive des TC liés via US enfants)
+- [ ] Calcul à la demande (pas en temps réel) ; cache 30s pour les hiérarchies larges
+- [ ] Performance : < 3s pour une Feature avec 200 US enfants
+- [ ] Tests : structure US → Feature → Epic avec exécutions variées → roll-up correct
+
+**Done quand :**
+- [ ] Widget Coverage Panel affiche les métriques agrégées sur une Feature et une Epic
+- [ ] La matrice peut être filtrée par niveau de hiérarchie (US / Feature / Epic)
+- [ ] Performance validée (< 3s / 200 US enfants)
+- [ ] Tests unitaires + E2E
 
 ---
 
@@ -755,15 +825,15 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 - [x] `packages/testvault-importers/` avec parsers : CSV, Excel (xlsx), JUnit XML, NUnit XML, xUnit XML, TestNG XML, Cucumber JSON
 - [x] Schema de mapping configurable (colonnes/champs ↔ champs TestCase)
-- [x] Validation des données entrantes avec rapport d'erreurs ligne par ligne
+- [x] Validation des données entrantes avec rapport d’erreurs ligne par ligne
 - [x] Tests unitaires sur fixtures réelles (au moins 3 fichiers par format)
 
 **Done quand :**
 - [x] Les 7 formats parsent correctement les fixtures
-- [x] Le rapport d'erreurs est exploitable
+- [x] Le rapport d’erreurs est exploitable
 - [x] Couverture ≥ 90%
 
-### T-4.2 — UI d'import wizard 🟡
+### T-4.2 — UI d’import wizard 🟡
 
 📚 `spec.md` US-4.1
 
@@ -772,7 +842,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Mapping interactif des colonnes
 - [x] Preview avant import
 - [x] Progress bar avec batches de 200
-- [x] Rapport d'erreurs téléchargeable
+- [x] Rapport d’erreurs téléchargeable
 - [x] Wired in App.tsx: PlansView "Import" button → ImportWizard dialog (Sprint 2.5c)
 
 **Done quand :**
@@ -784,7 +854,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 📚 `spec.md` US-4.4
 
 - [x] `packages/testvault-exporters/` avec générateurs Excel (SheetJS) et PDF
-- [x] Templates par cas d'usage : référentiel TC, Test Plan release-readiness, Traceability matrix
+- [x] Templates par cas d’usage : référentiel TC, Test Plan release-readiness, Traceability matrix
 - [x] Logo client custom configurable
 
 **Done quand :**
@@ -827,8 +897,8 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Exemples documentés dans `docs/integrations/github-actions.md`
 
 **Done quand :**
-- [ ] L'action est utilisable depuis n'importe quelle pipeline GH Actions
-- [ ] Un workflow d'exemple complet fonctionne end-to-end
+- [ ] L’action est utilisable depuis n’importe quelle pipeline GH Actions
+- [ ] Un workflow d’exemple complet fonctionne end-to-end
 
 ### T-4.7 — Intégration Azure Pipelines (task dédiée) 🟡
 
@@ -839,7 +909,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 **Done quand :**
 - [ ] La task est listée sur le Marketplace ADO Tasks
-- [ ] Un pipeline d'exemple fonctionne
+- [ ] Un pipeline d’exemple fonctionne
 
 ### T-4.8 — Ingestion via webhook (Cloud-Plus) 🟢
 
@@ -849,7 +919,7 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 - [x] Validation HMAC SHA-256
 - [x] Worker queue trigger pour traitement asynchrone
 - [x] UI Admin : génération de tokens, listing, suppression
-- [x] Tests d'intégration
+- [x] Tests d’intégration
 - [x] Wired in App.tsx: SettingsView → WebhookAdmin (stub, TECH-DEBT-017 pending Azure Functions deploy) (Sprint 2.5c)
 
 **Done quand :**
@@ -909,7 +979,7 @@ en `[x]` quand TECH-DEBT-T2213-D est résolu.
 
 📚 `spec.md` US-4.5
 
-- [x] UI Admin : ajout d'un mapping `repoUrl + branch + pathGlob → areaPath`
+- [x] UI Admin : ajout d’un mapping `repoUrl + branch + pathGlob → areaPath`
 - [x] Stockage dans ExtensionDataService scope projet
 - [x] Validation : repo accessible via OAuth scope `vso.code`
 - [x] RepoMappingSettings wire dans SettingsView (Sprint 2.5d)
@@ -931,7 +1001,7 @@ en `[x]` quand TECH-DEBT-T2213-D est résolu.
 
 ### T-5.5 — Sync manuelle (Server compatible) 🟢
 
-- [x] Bouton "Sync now" dans l'UI Admin
+- [x] Bouton "Sync now" dans l’UI Admin
 - [x] Mode CLI : `testvault-cli bdd sync --repo X --branch Y --path Z`
 - [x] Disponible sur Server (sans webhook automatique)
 
@@ -990,7 +1060,7 @@ en Phase 6+ post-launch.
 - [ ] Setup Azure Key Vault pour MasterKey
 
 **Done quand :**
-- [ ] L'endpoint `GET /v1/health` répond 200
+- [ ] L’endpoint `GET /v1/health` répond 200
 - [ ] Les logs sont visibles dans App Insights sans PII
 
 ### T-6.2 — Module crypto BYOK 🔴
@@ -1014,7 +1084,7 @@ en Phase 6+ post-launch.
 📚 `spec.md` US-6.2, F5
 
 - [x] UI Settings > AI > Providers (Admin only)
-- [x] Ajout / rotation / suppression d'un provider (Anthropic, OpenAI, Azure OpenAI)
+- [x] Ajout / rotation / suppression d’un provider (Anthropic, OpenAI, Azure OpenAI)
 - [x] Bouton "Test connection" qui fait un call light au provider
 - [x] Affichage masqué des clés (4 derniers caractères)
 
@@ -1040,7 +1110,7 @@ en Phase 6+ post-launch.
 **Done quand :**
 - [ ] Toutes les opérations Admin laissent une trace
 - [ ] La rétention paramétrée est appliquée
-- [ ] Un audit externe pourrait reconstituer l'historique
+- [ ] Un audit externe pourrait reconstituer l’historique
 
 ### T-6.5 — Endpoint `POST /v1/llm/generate-test-cases` 🟡
 
@@ -1071,7 +1141,7 @@ en Phase 6+ post-launch.
 
 **Done quand :**
 - [ ] Génération + acceptation crée des TC liés à la User Story
-- [ ] L'UX reste fluide (streaming dès le 1er token)
+- [ ] L’UX reste fluide (streaming dès le 1er token)
 
 ### T-6.7 — Quotas AI 🟡
 
@@ -1098,7 +1168,7 @@ en Phase 6+ post-launch.
 
 **Done quand :**
 - [x] Le toggle masque/désactive tous les boutons AI
-- [x] Aucune fuite de données pendant l'annulation
+- [x] Aucune fuite de données pendant l’annulation
 
 ### T-6.9 — Détection de flakiness 🟢
 
@@ -1190,7 +1260,7 @@ en Phase 6+ post-launch.
   GherkinEditor.tsx pré-existant en textarea).
 - Bump étendu à 15 `package.json` (Changesets fixed mode Sprint 8) au lieu
   des 3 listés (TECH-DEBT-T2213-F).
-- `testpulse-ui-shared` n'existe pas dans le repo (TECH-DEBT-T2213-F).
+- `testpulse-ui-shared` n’existe pas dans le repo (TECH-DEBT-T2213-F).
 - `AiSuggestTestsModal` + `ReplaceOrAppendModal` conservés en code mort
   (TECH-DEBT-T2213-B).
 
@@ -1252,12 +1322,12 @@ en Phase 6+ post-launch.
 **Écarts vs CLAUDE_TASK documentés :**
 
 - Plan réduit à 11 commits parce que `TestCasesListView` + routing étaient
-  déjà câblés et l'Area Path inheritance était déjà implémentée en Sprint
+  déjà câblés et l’Area Path inheritance était déjà implémentée en Sprint
   2.21 part 3 — C2 réduit au fix widget plumbing.
 - Bump étendu à 15 `package.json` (Changesets fixed mode) au lieu des 3
   listés dans le brief.
 - `TestCaseFormView` edit mode appelle `testCaseService.update` inline
-  (pas via un `useArgosUpdate` hook qui n'existe pas encore — voir
+  (pas via un `useArgosUpdate` hook qui n’existe pas encore — voir
   TECH-DEBT-T222-B).
 - Terme "Xray-like" neutralisé dans tout le code/tests/CHANGELOG/commits
   produits (rich display / detailed columns / enriched display).
@@ -1302,7 +1372,7 @@ en Phase 6+ post-launch.
 - [ ] Test-first : `TestCaseFormView.test.tsx` — assertion "form renders
       Area Path dropdown and Iteration Path dropdown"
 - [ ] Test-first : assertion "save fails with clear error if Area Path empty"
-- [ ] Composant : sélecteur Area Path (dropdown peuplé via API ADO
+- [ ] Composant : sélecteur Area Path (dropdown peup lé via API ADO
       Classification Nodes, endpoint `_apis/wit/classificationNodes/Areas`)
 - [ ] Composant : sélecteur Iteration Path (dropdown, optionnel)
 - [ ] Default Area Path : vide → user choisit (Q1)
@@ -1322,7 +1392,7 @@ en Phase 6+ post-launch.
 
 - [ ] Test-first : `AiSuggestStepsModal.test.tsx` — flow complet
 - [ ] Renommer label bouton : "AI Generate" → "✨ AI Suggest Steps"
-- [ ] Nouveau composant `AiSuggestStepsModal` (ne pas réutiliser l'ancien
+- [ ] Nouveau composant `AiSuggestStepsModal` (ne pas réutiliser l’ancien
       `AiGenerateModal` qui reste pour le Coverage Panel — voir T-2.22.3)
 - [ ] Nouveau system prompt "steps generator" (extrait, focalisé sur
       `{action, expected}[]` only, pas de title/description/tags génération)
@@ -1340,7 +1410,7 @@ en Phase 6+ post-launch.
 **Done quand :**
 - [ ] Bouton AI Suggest Steps dans `TestCaseFormView` fonctionne
 - [ ] **Aucun WIT créé** par cette action
-- [ ] Erreur "Area Path manquant" n'apparaît plus (le bouton ne crée plus de WIT)
+- [ ] Erreur "Area Path manquant" n’apparaît plus (le bouton ne crée plus de WIT)
 - [ ] Modal Remplacer/Compléter/Annuler fonctionne
 - [ ] Tests verts, couverture ≥ 90% core / 80% UI
 
@@ -1352,10 +1422,10 @@ en Phase 6+ post-launch.
       button visible on User Story / Bug / Requirement"
 - [ ] Composant `CoveragePanel` (existant Phase 0 T-3.1) : ajouter
       bouton "✨ Suggest Tests" en header de panel
-- [ ] Click → modal `AiSuggestTestsModal` (migrer ici l'ancien
+- [ ] Click → modal `AiSuggestTestsModal` (migrer ici l’ancien
       `AiGenerateModal` qui était dans `TestCaseFormView`)
 - [ ] Source : Work Item courant (US/Bug/Requirement) sur lequel le
-      panel s'affiche — pas de picker, c'est implicite
+      panel s’affiche — pas de picker, c’est implicite
 - [ ] Modal preview : TC candidates éditables + Area Path / Iteration Path
       pré-remplis depuis le WI source, modifiables par dropdown (Q2)
 - [ ] À acceptation : création WIT(s) `TestVault.TestCase` + lien
@@ -1399,8 +1469,8 @@ en Phase 6+ post-launch.
 - [ ] Ping API ADO `_apis/wit/classificationNodes/Areas` : 200 OK + schéma attendu
 - [ ] Ping Azure OpenAI `/openai/deployments/{id}/chat/completions` (smoke test)
 - [ ] Ping Azure AI Foundry `/openai/v1/chat/completions` (smoke test)
-- [ ] Vérifier dans `ARGOS_LLM_PROVIDERS_REFERENCE.md` qu'aucun modèle par défaut
-      Argos n'est marqué deprecated
+- [ ] Vérifier dans `ARGOS_LLM_PROVIDERS_REFERENCE.md` qu’aucun modèle par défaut
+      Argos n’est marqué deprecated
 - [ ] Note dans CHANGELOG si modèle deprecated détecté
 
 **Done quand :**
@@ -1416,11 +1486,11 @@ en Phase 6+ post-launch.
 - [ ] **Scenario 1** : créer un TC depuis liste → vérifier que Area Path
       dropdown apparaît, save fonctionne avec Area Path, échoue sans
 - [ ] **Scenario 2** : sur un TC en édition, cliquer "AI Suggest Steps"
-      → vérifier qu'aucun WIT n'est créé, que les steps remplissent le form
+      → vérifier qu’aucun WIT n’est créé, que les steps remplissent le form
 - [ ] **Scenario 3** : sur une User Story, ouvrir Coverage Panel, cliquer
       "Suggest Tests" → vérifier création de TC avec lien Tested By
 - [ ] **Scenario 4** : modal Remplacer/Compléter sur steps existants
-- [ ] Captures d'écran de chaque scenario, archivées dans
+- [ ] Captures d’écran de chaque scenario, archivées dans
       `docs/screenshots/sprint-2.22/`
 
 **Done quand :**
@@ -1440,9 +1510,9 @@ en Phase 6+ post-launch.
 2. Area Path / Iteration Path absents de `TestCaseFormView`
    (vs US-1.1 qui les liste comme obligatoires/optionnels)
 
-**Cause racine :** aucun test E2E n'asserait ni l'emplacement du bouton
+**Cause racine :** aucun test E2E n’asserait ni l’emplacement du bouton
 ni la présence des champs Area Path / Iteration Path. Les 372+ tests unit
-mockaient l'environnement ADO et ne pouvaient pas détecter ces régressions.
+mockaient l’environnement ADO et ne pouvaient pas détecter ces régressions.
 
 **Conformément à constitution §10.4 (chaque bug confirmé en prod ajoute
 un test à la suite régression AVANT le fix — TDD strict §10.1) :**
@@ -1455,7 +1525,7 @@ un test à la suite régression AVANT le fix — TDD strict §10.1) :**
   - Save avec Area Path → asserter WIT créé avec Area Path correct
 
 - [ ] `tests/e2e/regression/bug-052-aibutton-wrong-placement.spec.ts` :
-  - Ouvrir Coverage Panel d'une User Story
+  - Ouvrir Coverage Panel d’une User Story
   - Asserter présence du bouton "Suggest Tests"
   - Cliquer → asserter modal `AiSuggestTestsModal` ouvre
   - Ouvrir TestCaseFormView
@@ -1468,7 +1538,7 @@ un test à la suite régression AVANT le fix — TDD strict §10.1) :**
 
 **Done quand :**
 - [ ] 2 tests E2E ajoutés dans `tests/e2e/regression/`
-- [ ] CI fail si l'un des 2 tests échoue
+- [ ] CI fail si l’un des 2 tests échoue
 - [ ] TECH-DEBT-019 documenté à jour
 
 **Numérotation bug :** ajuster `bug-051` / `bug-052` selon la numérotation
@@ -1502,7 +1572,7 @@ actuelle des bugs Argos. Si le dernier bug enregistré est `bug-NNN`, prendre
 - [x] Webhooks Stripe pour activer/désactiver les licences
 
 **Done quand :**
-- [ ] Un client peut s'abonner, payer, recevoir sa clé, l'installer
+- [ ] Un client peut s’abonner, payer, recevoir sa clé, l’installer
 
 ### T-7.3 — Mode hors-ligne lecture seule 🟢
 
@@ -1523,7 +1593,7 @@ actuelle des bugs Argos. Si le dernier bug enregistré est `bug-NNN`, prendre
 - [ ] Audit avec axe-core sur tous les écrans principaux
 - [ ] Navigation clavier complète + raccourcis (`?` pour aide)
 - [ ] Contraste, ARIA labels, alt text
-- [ ] Tests automatisés axe + tests manuels lecteur d'écran
+- [ ] Tests automatisés axe + tests manuels lecteur d’écran
 
 **Done quand :**
 - [ ] Aucune violation WCAG AA sur les écrans critiques
@@ -1577,13 +1647,13 @@ actuelle des bugs Argos. Si le dernier bug enregistré est `bug-NNN`, prendre
 - [ ] Remédiation des findings hauts/critiques
 
 **Done quand :**
-- [ ] Rapport d'audit avec remédiation complète des findings haut/critique
+- [ ] Rapport d’audit avec remédiation complète des findings haut/critique
 
 ### T-7.9 — Beta privée puis publique 🟡
 
 - [ ] Beta privée : 5-10 organisations volontaires sur Cloud + 2 instances Server
 - [ ] Collecte feedback, correctifs
-- [ ] Beta publique : opt-in via flag d'organisation
+- [ ] Beta publique : opt-in via flag d’organisation
 - [ ] Métriques de conversion suivies
 - [x] BetaOptIn UI wire dans SettingsView (Sprint 2.5d)
 
@@ -1616,8 +1686,9 @@ T-1.1 → T-1.2 → T-1.3 ─────────────────►
                   └─► T-1.4 → T-1.5, T-1.6, T-1.7 → T-1.8 → T-1.9
                               │
 T-2.1 → T-2.2 → T-2.3 → T-2.4 → T-2.5 → T-2.6 → T-2.7 (Phase 2)
+T-2.2 → T-2.8 (snapshot au demarrage run) ; T-2.1 → T-2.9 (tests parametres)
 
-T-3.1 → T-3.2 → T-3.3, T-3.4 → T-3.5 → T-3.6 → T-3.7 (Phase 3)
+T-3.1 → T-3.2 → T-3.3, T-3.4 → T-3.5 → T-3.6, T-3.8 → T-3.7 (Phase 3)
 
 T-4.1 → T-4.2, T-4.3 → T-4.4 → T-4.5 → T-4.6, T-4.7 → T-4.8 → T-4.9 (Phase 4)
 
@@ -1640,13 +1711,13 @@ T-7.1 → T-7.2 → T-7.3, T-7.4, T-7.5 → T-7.6 → T-7.7 → T-7.8 → T-7.9 
 
 **Priorité :** HAUTE
 **Source :** Bug E2E 2026-05-15, Sprint 2.8 prévu
-**Symptôme :** `VS402848: The picklist name TestVault-Priority is already in use` lors d'une réinstallation sans nettoyage préalable.
+**Symptôme :** `VS402848: The picklist name TestVault-Priority is already in use` lors d’une réinstallation sans nettoyage préalable.
 **Plan :** GET-first + skip-if-exists dans `process-install.ts`. — ✅ déjà livré (cf. ligne 250 ci-dessus).
 
 ### TECH-DEBT-052 — Playwright E2E non activé
 
 **Priorité :** MOYENNE
-**Source :** Décision 2026-05-22 — msw + RTL uniquement jusqu'à résolution.
+**Source :** Décision 2026-05-22 — msw + RTL uniquement jusqu’à résolution.
 **Symptôme :** couverture E2E réelle manquante sur parcours critiques.
 **Plan :** activer Playwright quand une instance ADO Cloud de test stable sera disponible.
 
@@ -1668,7 +1739,7 @@ T-7.1 → T-7.2 → T-7.3, T-7.4, T-7.5 → T-7.6 → T-7.7 → T-7.8 → T-7.9 
 
 **Priorité :** RÉSOLUE
 **Source :** Sprint 2.21 part 3 — composants remplacés par les Drawers mais conservés pour ne pas casser `T-2.21-ai-generation-flow.test.ts`.
-**Résolution :** sprint `tech-debt/T2213-B` (2026-05-28) — `T-2.21-ai-generation-flow.test.ts` migré vers les contrats `SuggestTestsDrawer` (et signalant qu'`AiSuggestStepsModal` reste vivant, juste enveloppé par `SuggestStepsDrawer` pour la phase review). Type `AiSuggestTestsSourceWorkItem` inliné dans `CoveragePanel.tsx` pour libérer le dernier import actif. Composants `AiSuggestTestsModal.tsx` (313 lignes) et `ReplaceOrAppendModal.tsx` (143 lignes) supprimés. Voir `claude_prompts/CLAUDE_TASK_tech-debt-T2213-B.md`.
+**Résolution :** sprint `tech-debt/T2213-B` (2026-05-28) — `T-2.21-ai-generation-flow.test.ts` migré vers les contrats `SuggestTestsDrawer` (et signalant qu’`AiSuggestStepsModal` reste vivant, juste envelopé par `SuggestStepsDrawer` pour la phase review). Type `AiSuggestTestsSourceWorkItem` inliné dans `CoveragePanel.tsx` pour libérer le dernier import actif. Composants `AiSuggestTestsModal.tsx` (313 lignes) et `ReplaceOrAppendModal.tsx` (143 lignes) supprimés. Voir `claude_prompts/CLAUDE_TASK_tech-debt-T2213-B.md`.
 
 ### TECH-DEBT-T2213-C — 8 MODERATE `dompurify` via Monaco
 
@@ -1695,21 +1766,21 @@ T-7.1 → T-7.2 → T-7.3, T-7.4, T-7.5 → T-7.6 → T-7.7 → T-7.8 → T-7.9 
 
 **Priorité :** HAUTE
 **Source :** Sprint 2.21 part 3 — écart identifié dans le rapport (`packages/testpulse-ui-shared/package.json` listé dans le CLAUDE_TASK pour le bump mais inexistant dans le repo).
-**Symptôme :** `tasks.md` (TECH-DEBT-T2213-F : ce package n'existe plus dans le repo — à nettoyer) et CLAUDE_TASKs antérieurs référencent `packages/testpulse-ui-shared/` qui a été supprimé/renommé lors d'une refactorisation antérieure.
+**Symptôme :** `tasks.md` (TECH-DEBT-T2213-F : ce package n’existe plus dans le repo — à nettoyer) et CLAUDE_TASKs antérieurs référencent `packages/testpulse-ui-shared/` qui a été supprimé/renommé lors d’une refactorisation antérieure.
 **Plan :** auditer tous les fichiers spec-kit (constitution / spec / plan / tasks) pour éliminer les références à `testpulse-ui-shared`. Corriger en une seule PR. À traiter avant le prochain sprint touchant le versioning.
 
 ### TECH-DEBT-T222-A — N+1 reads Coverage Panel
 
 **Priorité :** MOYENNE
 **Source :** Sprint 2.22, `claude_prompts/sprint-2-22-code-report.md`.
-**Symptôme :** hydratation per-row via `Promise.all` -- chaque row appelle `testCaseService.read` (un `getWorkItem` ADO par TC linké). Acceptable jusqu'à ~50 TCs ; 100+ TCs devient une latence visible.
+**Symptôme :** hydratation per-row via `Promise.all` -- chaque row appelle `testCaseService.read` (un `getWorkItem` ADO par TC linké). Acceptable jusqu’à ~50 TCs ; 100+ TCs devient une latence visible.
 **Plan :** remplacer la boucle `read` par un batch `getWorkItems([ids...])` (un seul appel ADO pour tous les TC ids du panel). Ajouter pagination si nécessaire.
 
 ### TECH-DEBT-T222-B — `useArgosUpdate` hook absent
 
 **Priorité :** MOYENNE
 **Source :** Sprint 2.22 -- TestCaseFormView edit mode appelle `testCaseService.update(caseId, draft)` inline dans `handleSubmit`.
-**Symptôme :** incohérence avec le pattern `useArgosCreate` qui centralise audit log, toast success/error, état `isCreating`. L'edit mode duplique ce flow en local (`isUpdating`).
+**Symptôme :** incohérence avec le pattern `useArgosCreate` qui centralise audit log, toast success/error, état `isCreating`. L’edit mode duplique ce flow en local (`isUpdating`).
 **Plan :** créer `useArgosUpdate<T>` sur le même modèle que `useArgosCreate`. Migrer TestCaseFormView edit mode + futurs TestPlan / TestSet / Precondition edit modes vers ce hook. Sprint dédié ~1h.
 
 ### TECH-DEBT-T222-C — TestPlan / TestSet / Precondition wirings restants
@@ -1733,17 +1804,16 @@ T-7.1 → T-7.2 → T-7.3, T-7.4, T-7.5 → T-7.6 → T-7.7 → T-7.8 → T-7.9 
 |---|---:|---:|---:|---:|
 | 0 — Scaffolding | 7 | 4 | 2 | 1 |
 | 1 — CRUD référentiel | 9 | 4 | 5 | 1 |
-| 2 — Exécution & evidence | 7 | 3 | 3 | 1 |
-| 3 — Traçabilité & versioning | 7 | 3 | 3 | 0 |
+| 2 — Exécution & evidence | 9 | 3 | 4 | 2 |
+| 3 — Traçabilité & versioning | 8 | 3 | 4 | 0 |
 | 4 — Import/Export/CI | 9 | 2 | 5 | 2 |
 | 5 — BDD Gherkin | 6 | 1 | 4 | 1 |
 | 6 — Cloud-Plus AI & admin | 10 | 5 | 4 | 1 |
 | 7 — Polish & GA | 10 | 5 | 2 | 3 |
-| **Total** | **65** | **27** | **28** | **10** |
+| **Total** | **68** | **27** | **30** | **11** |
 
 ---
 
 > — **Cross-references :** voir `constitution.md` v0.3.0 pour les contraintes immuables. `spec.md` v0.1.0 pour le détail fonctionnel. `plan.md` v0.1.0 pour l’architecture technique.
 
 > ⚠️ Toute modification de ce document requiert l’approbation explicite d’Alexandre Thibaud (ATConseil — atconseil.info).
-
