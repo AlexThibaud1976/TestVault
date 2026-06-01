@@ -15,6 +15,7 @@ export {
 	isArgosField,
 	schemaToAdoFieldName,
 	schemaToAdoStateName,
+	schemaFromAdoStateName,
 	validateAdoFieldName,
 	validateAdoStateName,
 } from "./naming.js";
