@@ -20,6 +20,7 @@ type StepStatus = "Pass" | "Fail" | "Blocked" | "Skipped";
 type StepState = {
 	status: StepStatus | null;
 	comment: string;
+	defectIds: number[];
 };
 
 export interface RunInterfaceProps {
@@ -72,14 +73,22 @@ export function RunInterface({
 	function setStepStatus(index: number, status: StepStatus) {
 		setStepStates((prev) => ({
 			...prev,
-			[index]: { status, comment: prev[index]?.comment ?? "" },
+			[index]: {
+				status,
+				comment: prev[index]?.comment ?? "",
+				defectIds: prev[index]?.defectIds ?? [],
+			},
 		}));
 	}
 
 	function setStepComment(index: number, comment: string) {
 		setStepStates((prev) => ({
 			...prev,
-			[index]: { status: prev[index]?.status ?? null, comment },
+			[index]: {
+				status: prev[index]?.status ?? null,
+				comment,
+				defectIds: prev[index]?.defectIds ?? [],
+			},
 		}));
 	}
 
@@ -134,6 +143,7 @@ export function RunInterface({
 					status: state.status,
 					comment: state.comment ?? "",
 					evidenceIds: [],
+					defectIds: state.defectIds ?? [],
 				});
 			}
 

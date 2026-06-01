@@ -48,7 +48,7 @@ function rawCompleted(fieldOverrides?: Record<string, unknown>): RawWorkItem {
 		"System.State": "Completed",
 		"TestVault.GlobalStatus": "Pass",
 		"TestVault.StepResults": JSON.stringify([
-			{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [] },
+			{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [], defectIds: [] },
 		]),
 		...fieldOverrides,
 	});
@@ -124,13 +124,13 @@ describe("saveStepResult", () => {
 	it("appends a step result and writes the updated JSON array", async () => {
 		const existing = rawExecution({
 			"TestVault.StepResults": JSON.stringify([
-				{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [] },
+				{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [], defectIds: [] },
 			]),
 		});
 		const updated = rawExecution({
 			"TestVault.StepResults": JSON.stringify([
-				{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [] },
-				{ stepIndex: 1, status: "Fail", comment: "Observed 500", evidenceIds: [] },
+				{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [], defectIds: [] },
+				{ stepIndex: 1, status: "Fail", comment: "Observed 500", evidenceIds: [], defectIds: [] },
 			]),
 		});
 		const adoClient = makeAdoClient({
@@ -142,6 +142,7 @@ describe("saveStepResult", () => {
 			status: "Fail",
 			comment: "Observed 500",
 			evidenceIds: [],
+			defectIds: [],
 		});
 		expect(run.stepResults).toHaveLength(2);
 		expect(run.stepResults[1]?.status).toBe("Fail");
@@ -157,6 +158,7 @@ describe("saveStepResult", () => {
 				status: "Pass",
 				comment: "",
 				evidenceIds: [],
+				defectIds: [],
 			})
 		).rejects.toThrow(TestExecutionImmutableError);
 	});
@@ -210,8 +212,8 @@ describe("finalizeRun", () => {
 	it("transitions state to Completed and writes globalStatus", async () => {
 		const inProgress = rawExecution({
 			"TestVault.StepResults": JSON.stringify([
-				{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [] },
-				{ stepIndex: 1, status: "Pass", comment: "", evidenceIds: [] },
+				{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [], defectIds: [] },
+				{ stepIndex: 1, status: "Pass", comment: "", evidenceIds: [], defectIds: [] },
 			]),
 		});
 		const finalized = rawCompleted({
@@ -321,7 +323,7 @@ describe("finalizeRun override", () => {
 	it("without override writes computed status and GlobalStatusOverridden=false", async () => {
 		const inProgress = rawExecution({
 			"TestVault.StepResults": JSON.stringify([
-				{ stepIndex: 0, status: "Fail", comment: "", evidenceIds: [] },
+				{ stepIndex: 0, status: "Fail", comment: "", evidenceIds: [], defectIds: [] },
 			]),
 		});
 		const adoClient = makeAdoClient({
@@ -342,7 +344,9 @@ describe("finalizeRun override", () => {
 	});
 
 	it("with override forces the status, sets GlobalStatusOverridden=true, keeps suggestion recomputable", async () => {
-		const steps = [{ stepIndex: 0, status: "Fail" as const, comment: "", evidenceIds: [] }];
+		const steps = [
+			{ stepIndex: 0, status: "Fail" as const, comment: "", evidenceIds: [], defectIds: [] },
+		];
 		const inProgress = rawExecution({ "TestVault.StepResults": JSON.stringify(steps) });
 		const adoClient = makeAdoClient({
 			fetchWorkItem: vi.fn().mockResolvedValue(inProgress),
@@ -474,8 +478,8 @@ describe("globalStatus derivation (via finalizeRun)", () => {
 
 	it("all Pass → Pass", async () => {
 		const { service, adoClient } = makeServiceWithSteps([
-			{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [] },
-			{ stepIndex: 1, status: "Pass", comment: "", evidenceIds: [] },
+			{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [], defectIds: [] },
+			{ stepIndex: 1, status: "Pass", comment: "", evidenceIds: [], defectIds: [] },
 		]);
 		await service.finalizeRun(99);
 		const patches = vi.mocked(adoClient.updateWorkItem).mock.lastCall?.[1] ?? [];
@@ -487,8 +491,8 @@ describe("globalStatus derivation (via finalizeRun)", () => {
 
 	it("one Fail → Fail", async () => {
 		const { service, adoClient } = makeServiceWithSteps([
-			{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [] },
-			{ stepIndex: 1, status: "Fail", comment: "err", evidenceIds: [] },
+			{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [], defectIds: [] },
+			{ stepIndex: 1, status: "Fail", comment: "err", evidenceIds: [], defectIds: [] },
 		]);
 		await service.finalizeRun(99);
 		const patches = vi.mocked(adoClient.updateWorkItem).mock.lastCall?.[1] ?? [];
@@ -500,8 +504,8 @@ describe("globalStatus derivation (via finalizeRun)", () => {
 
 	it("Blocked no Fail → Blocked", async () => {
 		const { service, adoClient } = makeServiceWithSteps([
-			{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [] },
-			{ stepIndex: 1, status: "Blocked", comment: "blocked", evidenceIds: [] },
+			{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [], defectIds: [] },
+			{ stepIndex: 1, status: "Blocked", comment: "blocked", evidenceIds: [], defectIds: [] },
 		]);
 		await service.finalizeRun(99);
 		const patches = vi.mocked(adoClient.updateWorkItem).mock.lastCall?.[1] ?? [];
@@ -513,7 +517,7 @@ describe("globalStatus derivation (via finalizeRun)", () => {
 
 	it("all Skipped → Skipped", async () => {
 		const { service, adoClient } = makeServiceWithSteps([
-			{ stepIndex: 0, status: "Skipped", comment: "", evidenceIds: [] },
+			{ stepIndex: 0, status: "Skipped", comment: "", evidenceIds: [], defectIds: [] },
 		]);
 		await service.finalizeRun(99);
 		const patches = vi.mocked(adoClient.updateWorkItem).mock.lastCall?.[1] ?? [];
@@ -712,8 +716,8 @@ describe("computeGlobalStatus", () => {
 	it("returns Pass when all steps are Pass", () => {
 		expect(
 			computeGlobalStatus([
-				{ stepIndex: 0, status: "Pass", evidenceIds: [] },
-				{ stepIndex: 1, status: "Pass", evidenceIds: [] },
+				{ stepIndex: 0, status: "Pass", evidenceIds: [], defectIds: [] },
+				{ stepIndex: 1, status: "Pass", evidenceIds: [], defectIds: [] },
 			])
 		).toBe("Pass");
 	});
@@ -721,9 +725,9 @@ describe("computeGlobalStatus", () => {
 	it("returns Fail as soon as one step is Fail (even if others Pass)", () => {
 		expect(
 			computeGlobalStatus([
-				{ stepIndex: 0, status: "Pass", evidenceIds: [] },
-				{ stepIndex: 1, status: "Fail", evidenceIds: [] },
-				{ stepIndex: 2, status: "Pass", evidenceIds: [] },
+				{ stepIndex: 0, status: "Pass", evidenceIds: [], defectIds: [] },
+				{ stepIndex: 1, status: "Fail", evidenceIds: [], defectIds: [] },
+				{ stepIndex: 2, status: "Pass", evidenceIds: [], defectIds: [] },
 			])
 		).toBe("Fail");
 	});
@@ -731,8 +735,8 @@ describe("computeGlobalStatus", () => {
 	it("returns Blocked when at least one step is Blocked and none Fail", () => {
 		expect(
 			computeGlobalStatus([
-				{ stepIndex: 0, status: "Pass", evidenceIds: [] },
-				{ stepIndex: 1, status: "Blocked", evidenceIds: [] },
+				{ stepIndex: 0, status: "Pass", evidenceIds: [], defectIds: [] },
+				{ stepIndex: 1, status: "Blocked", evidenceIds: [], defectIds: [] },
 			])
 		).toBe("Blocked");
 	});
@@ -740,8 +744,8 @@ describe("computeGlobalStatus", () => {
 	it("returns Skipped only when ALL steps are Skipped", () => {
 		expect(
 			computeGlobalStatus([
-				{ stepIndex: 0, status: "Skipped", evidenceIds: [] },
-				{ stepIndex: 1, status: "Skipped", evidenceIds: [] },
+				{ stepIndex: 0, status: "Skipped", evidenceIds: [], defectIds: [] },
+				{ stepIndex: 1, status: "Skipped", evidenceIds: [], defectIds: [] },
 			])
 		).toBe("Skipped");
 	});
@@ -749,8 +753,8 @@ describe("computeGlobalStatus", () => {
 	it("Fail takes precedence over Blocked", () => {
 		expect(
 			computeGlobalStatus([
-				{ stepIndex: 0, status: "Blocked", evidenceIds: [] },
-				{ stepIndex: 1, status: "Fail", evidenceIds: [] },
+				{ stepIndex: 0, status: "Blocked", evidenceIds: [], defectIds: [] },
+				{ stepIndex: 1, status: "Fail", evidenceIds: [], defectIds: [] },
 			])
 		).toBe("Fail");
 	});

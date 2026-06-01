@@ -85,7 +85,7 @@ describe("RUNNER-2026-06-01-schema-service-field-guard", () => {
 			environment: "QA",
 			source: "Manual",
 		});
-		const step: TestStepResult = { stepIndex: 0, status: "Pass", evidenceIds: [] };
+		const step: TestStepResult = { stepIndex: 0, status: "Pass", defectIds: [], evidenceIds: [] };
 		await svc.saveStepResult(run.id, step);
 		const evidence: EvidenceRef = {
 			attachmentId: "att-1",

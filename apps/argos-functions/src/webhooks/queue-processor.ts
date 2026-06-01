@@ -91,6 +91,7 @@ export async function processQueueMessage(
 			status: isFail ? "Fail" : "Pass",
 			comment: item.description ?? "",
 			evidenceIds: [],
+			defectIds: [],
 		});
 		await execService.finalizeRun(run.id);
 		matched++;

@@ -162,11 +162,11 @@ describe("TestStep", () => {
 // ─── TestStepResult ───────────────────────────────────────────────────────────
 
 describe("TestStepResult", () => {
-	it("parses a valid step result (defectIds optional, absent when not provided)", () => {
+	it("parses a valid step result and defaults defectIds to []", () => {
 		const r = { stepIndex: 1, status: "Pass" as const, evidenceIds: [] };
 		const parsed = TestStepResultSchema.parse(r);
-		expect(parsed).toEqual(r);
-		expect(parsed.defectIds).toBeUndefined();
+		expect(parsed).toEqual({ ...r, defectIds: [] });
+		expect(parsed.defectIds).toEqual([]);
 	});
 	it("parses result with optional comment", () => {
 		const r = {
@@ -175,7 +175,7 @@ describe("TestStepResult", () => {
 			comment: "Server 500",
 			evidenceIds: ["att-1"],
 		};
-		expect(TestStepResultSchema.parse(r)).toEqual(r);
+		expect(TestStepResultSchema.parse(r)).toEqual({ ...r, defectIds: [] });
 	});
 	it("parses optional actualResult and explicit defectIds", () => {
 		const r = {

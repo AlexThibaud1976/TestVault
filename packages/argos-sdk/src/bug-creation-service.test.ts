@@ -79,8 +79,8 @@ function makeExecution(overrides?: Partial<TestVaultTestExecution>): TestVaultTe
 		environment: "QA",
 		globalStatus: "Fail",
 		stepResults: [
-			{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [] },
-			{ stepIndex: 1, status: "Fail", comment: "Error not shown", evidenceIds: [] },
+			{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [], defectIds: [] },
+			{ stepIndex: 1, status: "Fail", comment: "Error not shown", evidenceIds: [], defectIds: [] },
 		],
 		evidence: [],
 		bugLinks: [],
@@ -124,7 +124,7 @@ describe("buildBugDraft", () => {
 
 	it("reproSteps is empty when no steps failed", () => {
 		const exec = makeExecution({
-			stepResults: [{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [] }],
+			stepResults: [{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [], defectIds: [] }],
 		});
 		const draft = buildBugDraft(exec, makeTestCase());
 		expect(draft.reproSteps).toBe("");

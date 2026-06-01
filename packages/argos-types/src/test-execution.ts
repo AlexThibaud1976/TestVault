@@ -17,11 +17,9 @@ export const TestStepResultSchema = z.object({
 	status: StepStatusSchema,
 	comment: z.string().optional(),
 	actualResult: z.string().optional(),
-	// Optional through B2: the service round-trips defectIds when present, but the
-	// runner UI does not yet populate it. Tightened to a required default([]) in B4
-	// (UI increment) -- tightening now would require touching UI source (out of B2
-	// scope per the increment plan).
-	defectIds: z.array(z.number().int()).optional(),
+	// default [] keeps executions created before 0.6.0 (no defectIds) parsing
+	// backward-compatibly; the runner UI now always populates per-step defect links.
+	defectIds: z.array(z.number().int()).default([]),
 	evidenceIds: z.array(z.string()),
 });
 export type TestStepResult = z.infer<typeof TestStepResultSchema>;
