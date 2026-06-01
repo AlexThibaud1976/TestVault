@@ -4,10 +4,9 @@ export const TEST_EXECUTION_WIT: WitDefinition = {
 	referenceName: "TestVault.TestExecution",
 	displayName: "TestVault Test Execution",
 	description:
-		"Immutable record of a single test run against a Test Case. Never modified after save.",
+		"A single test run against a Test Case. Lifecycle null -> InProgress -> { Completed | Aborted }: mutable while InProgress, frozen at the application level once Completed or Aborted. Config fields fixed at creation are marked immutable per-field.",
 	icon: "icon_check_box",
 	color: "#ff9d00",
-	isImmutableAfterCreate: true,
 	fields: [
 		{ referenceName: "System.Title", displayName: "Title", type: "string", required: true },
 		{
@@ -16,6 +15,7 @@ export const TEST_EXECUTION_WIT: WitDefinition = {
 			type: "integer",
 			required: false,
 			description: "Weak reference — history preserved even if plan is deleted",
+			immutable: true,
 		},
 		{
 			referenceName: "TestVault.TestCaseId",
@@ -23,6 +23,7 @@ export const TEST_EXECUTION_WIT: WitDefinition = {
 			type: "integer",
 			required: true,
 			description: "Strong reference — parent-child link",
+			immutable: true,
 		},
 		{
 			referenceName: "TestVault.TestCaseVersionId",
@@ -30,12 +31,14 @@ export const TEST_EXECUTION_WIT: WitDefinition = {
 			type: "integer",
 			required: false,
 			description: "Set when Test Plan is Locked; references the frozen snapshot",
+			immutable: true,
 		},
 		{
 			referenceName: "TestVault.Environment",
 			displayName: "Environment",
 			type: "string",
 			required: true,
+			immutable: true,
 		},
 		{
 			referenceName: "TestVault.GlobalStatus",
@@ -59,6 +62,7 @@ export const TEST_EXECUTION_WIT: WitDefinition = {
 			required: true,
 			allowedValues: ["Manual", "CI"],
 			defaultValue: "Manual",
+			immutable: true,
 		},
 		{
 			referenceName: "TestVault.CiPipelineRunId",
@@ -85,7 +89,44 @@ export const TEST_EXECUTION_WIT: WitDefinition = {
 			type: "integer",
 			required: false,
 		},
+		{
+			referenceName: "TestVault.Evidence",
+			displayName: "Evidence",
+			type: "longText",
+			required: false,
+			description: "JSON-serialized EvidenceRef[] (run-level)",
+		},
+		{
+			referenceName: "TestVault.BugLinks",
+			displayName: "Bug Links",
+			type: "longText",
+			required: false,
+			description: "JSON-serialized number[] (run-level defect WI ids)",
+		},
+		{
+			referenceName: "TestVault.GlobalStatusOverridden",
+			displayName: "Global Status Overridden",
+			type: "boolean",
+			required: false,
+			defaultValue: false,
+		},
+		{
+			referenceName: "TestVault.PreviousExecutionId",
+			displayName: "Previous Execution ID",
+			type: "integer",
+			required: false,
+			description: "Chaining for re-run lineage",
+			immutable: true,
+		},
 	],
-	states: [{ name: "Completed", color: "#393939", stateCategory: "Completed" }],
-	transitions: [{ from: null, to: "Completed" }],
+	states: [
+		{ name: "InProgress", color: "#007acc", stateCategory: "InProgress" },
+		{ name: "Completed", color: "#393939", stateCategory: "Completed" },
+		{ name: "Aborted", color: "#a4262c", stateCategory: "Removed" },
+	],
+	transitions: [
+		{ from: null, to: "InProgress" },
+		{ from: "InProgress", to: "Completed" },
+		{ from: "InProgress", to: "Aborted" },
+	],
 };

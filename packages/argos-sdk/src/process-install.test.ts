@@ -824,6 +824,13 @@ describe("Sprint 2.14 -- robust state creation", () => {
 						{ id: "s6", name: "TestVault Draft", color: "b2b2b2", stateCategory: "Proposed" },
 						{ id: "s7", name: "TestVault Locked", color: "007acc", stateCategory: "InProgress" },
 						{ id: "s8", name: "TestVault Ready", color: "007acc", stateCategory: "Proposed" },
+						{
+							id: "s9",
+							name: "TestVault InProgress",
+							color: "007acc",
+							stateCategory: "InProgress",
+						},
+						{ id: "s10", name: "TestVault Aborted", color: "a4262c", stateCategory: "Removed" },
 					],
 				})
 			),

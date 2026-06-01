@@ -14,7 +14,13 @@ export const FieldTypeSchema = z.enum([
 ]);
 export type FieldType = z.infer<typeof FieldTypeSchema>;
 
-export const StateCategorySchema = z.enum(["Proposed", "InProgress", "Resolved", "Completed"]);
+export const StateCategorySchema = z.enum([
+	"Proposed",
+	"InProgress",
+	"Resolved",
+	"Completed",
+	"Removed",
+]);
 export type StateCategory = z.infer<typeof StateCategorySchema>;
 
 export const FieldDefinitionSchema = z.object({
