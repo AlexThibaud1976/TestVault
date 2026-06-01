@@ -22,7 +22,7 @@
 	},
 	"devDependencies": {
 		"@changesets/cli": "^2.27.0",
-		"@biomejs/biome": "^1.9.4",
+		"@biomejs/biome": "^2.4.16",
 		"secretlint": "^13.0.0",
 		"@secretlint/secretlint-rule-preset-recommend": "^13.0.0",
 		"@vitest/coverage-v8": "^3.1.0",
