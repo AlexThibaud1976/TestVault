@@ -23,12 +23,12 @@
 	"devDependencies": {
 		"@changesets/cli": "^2.27.0",
 		"@biomejs/biome": "^1.9.4",
-		"secretlint": "^13.0.0",
-		"@secretlint/secretlint-rule-preset-recommend": "^13.0.0",
-		"@vitest/coverage-v8": "^3.1.0",
-		"lint-staged": "^17.0.4",
+		"secretlint": "^13.0.2",
+		"@secretlint/secretlint-rule-preset-recommend": "^13.0.2",
+		"@vitest/coverage-v8": "^3.2.5",
+		"lint-staged": "^17.0.7",
 		"simple-git-hooks": "^2.11.0",
-		"turbo": "^2.9.12",
+		"turbo": "^2.9.16",
 		"typescript": "^6.0.3",
 		"vitest": "^3.1.0"
 	},
