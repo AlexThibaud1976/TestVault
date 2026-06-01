@@ -109,7 +109,7 @@ export function createPreconditionService(
 		},
 
 		async list() {
-			const wiql = `SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'TestVault.Precondition' AND [System.TeamProject] = '${project}' ORDER BY [System.Id] DESC`;
+			const wiql = `SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'TestVault Precondition' AND [System.TeamProject] = '${project}' ORDER BY [System.Id] DESC`;
 			const ids = await adoClient.queryByWiql(wiql);
 			return Promise.all(ids.map(readById));
 		},
@@ -135,7 +135,7 @@ export function createPreconditionService(
 		},
 
 		async getForTestCase(tcId) {
-			const wiql = `SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'TestVault.Precondition' AND [System.TeamProject] = '${project}' ORDER BY [System.Id] DESC`;
+			const wiql = `SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'TestVault Precondition' AND [System.TeamProject] = '${project}' ORDER BY [System.Id] DESC`;
 			const ids = await adoClient.queryByWiql(wiql);
 			const all = await Promise.all(ids.map(readById));
 			return all.filter((p) => p.linkedTestCaseIds.includes(tcId));

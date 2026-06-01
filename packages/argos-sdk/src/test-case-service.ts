@@ -160,7 +160,7 @@ export function createTestCaseService(adoClient: IAdoClient, project: string): I
 
 		async list(options) {
 			const conditions: string[] = [
-				`[System.WorkItemType] = 'TestVault.TestCase'`,
+				`[System.WorkItemType] = 'TestVault Test Case'`,
 				`[System.TeamProject] = '${project}'`,
 			];
 			if (options?.areaPath) conditions.push(`[System.AreaPath] UNDER '${options.areaPath}'`);

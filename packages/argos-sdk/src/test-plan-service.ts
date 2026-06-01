@@ -143,7 +143,7 @@ export function createTestPlanService(adoClient: IAdoClient, project: string): I
 		},
 
 		async list() {
-			const wiql = `SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'TestVault.TestPlan' AND [System.TeamProject] = '${project}' ORDER BY [System.Id] DESC`;
+			const wiql = `SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'TestVault Test Plan' AND [System.TeamProject] = '${project}' ORDER BY [System.Id] DESC`;
 			const ids = await adoClient.queryByWiql(wiql);
 			return Promise.all(ids.map(readById));
 		},

@@ -293,7 +293,7 @@ export function createTestExecutionService(
 			const statusField = schemaToAdoFieldRefName("TestVault.GlobalStatus");
 
 			let wiql =
-				"SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'TestVault.TestExecution'";
+				"SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'TestVault Test Execution'";
 			if (options.testCaseId > 0) {
 				wiql += ` AND [${tcIdField}] = ${options.testCaseId}`;
 			}
