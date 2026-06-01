@@ -19,12 +19,23 @@
 
 ### ADO Cloud
 
-1. Download the latest `argos-*.vsix` from the [GitHub Releases](https://github.com/AlexThibaud1976/TestVault/releases) page or build from source:
+1. Download the latest `ArgosTesting-*.vsix` from the [GitHub Releases](https://github.com/AlexThibaud1976/TestVault/releases) page or build from source:
 
    ```bash
    pnpm install
-   pnpm --filter argos-extension build:vsix
+   pnpm build       # bundle dist/ + static/
+   pnpm package     # produce the versioned VSIX
    ```
+
+   `pnpm package` runs `tfx extension create` and writes
+   `apps/argos-extension/release/ArgosTesting-{version}.vsix` (version read from
+   `apps/argos-extension/package.json`). It requires `tfx-cli` installed globally
+   (`npm install -g tfx-cli`, see Prerequisites above).
+
+   > **Note:** the VSIX is written to `release/`, never to `dist/`. The manifest
+   > `files` glob packages `dist/`, so a `.vsix` placed there would be bundled
+   > recursively into the next release. `*.vsix` is git-ignored, so `release/`
+   > stays untracked.
 
 2. In your ADO organization, go to **Organization Settings → Extensions → Browse Marketplace** and search for **Argos** (publisher: ATConseil), or upload the VSIX manually under **Manage Extensions → Upload**.
 

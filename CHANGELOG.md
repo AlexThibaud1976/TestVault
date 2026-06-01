@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Tooling
+
+- **`pnpm package`** : standardized VSIX packaging command. Produces
+  `apps/argos-extension/release/ArgosTesting-{version}.vsix` (versioned name,
+  dedicated `release/` folder -- never `dist/`, which the manifest `files` glob
+  would bundle recursively). The legacy `build:vsix` script now delegates to the
+  same `scripts/package.mjs` instead of emitting the non-versioned
+  `dist/argos.vsix`. Requires `tfx-cli` installed globally (documented in
+  `docs/operator-guide.md`). No version bump -- the distributed extension
+  (`dist/` + `static/`) is unchanged. Regression test:
+  `CFG-2026-06-01-vsix-output-path`.
+
 ## [0.5.34] - 2026-05-29
 
 ### Sprint 2.24 (Part 1) -- T223-Routing + T223-ExecPath
