@@ -98,6 +98,15 @@ describe("RUNNER-2026-06-01-schema-service-field-guard", () => {
 		await svc.finalizeRun(run.id);
 		await svc.linkBug(run.id, 999);
 
+		// Also exercise the abort branch so System.State=Aborted is captured.
+		const run2 = await svc.startRun({
+			testPlanId: 3,
+			testCaseId: 4,
+			environment: "Dev",
+			source: "Manual",
+		});
+		await svc.abortRun(run2.id);
+
 		const declaredFields = new Set(TEST_EXECUTION_WIT.fields.map((f) => f.referenceName));
 		const declaredStates = new Set(TEST_EXECUTION_WIT.states.map((s) => s.name));
 

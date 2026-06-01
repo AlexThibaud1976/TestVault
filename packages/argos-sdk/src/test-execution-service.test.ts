@@ -342,18 +342,16 @@ describe("finalizeRun override", () => {
 	});
 
 	it("with override forces the status, sets GlobalStatusOverridden=true, keeps suggestion recomputable", async () => {
-		const steps = [{ stepIndex: 0, status: "Fail", comment: "", evidenceIds: [] }];
+		const steps = [{ stepIndex: 0, status: "Fail" as const, comment: "", evidenceIds: [] }];
 		const inProgress = rawExecution({ "TestVault.StepResults": JSON.stringify(steps) });
 		const adoClient = makeAdoClient({
 			fetchWorkItem: vi.fn().mockResolvedValue(inProgress),
-			updateWorkItem: vi
-				.fn()
-				.mockResolvedValue(
-					rawCompleted({
-						"TestVault.GlobalStatus": "Pass",
-						"TestVault.GlobalStatusOverridden": true,
-					})
-				),
+			updateWorkItem: vi.fn().mockResolvedValue(
+				rawCompleted({
+					"TestVault.GlobalStatus": "Pass",
+					"TestVault.GlobalStatusOverridden": true,
+				})
+			),
 		});
 		const exec = await createTestExecutionService(adoClient, PROJECT).finalizeRun(99, "Pass");
 		const patches = vi.mocked(adoClient.updateWorkItem).mock.lastCall?.[1] ?? [];

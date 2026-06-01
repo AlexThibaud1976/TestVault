@@ -42,6 +42,7 @@ export type ExecutionDraft = {
 	environment: string;
 	source?: "Manual" | "CI";
 	testCaseVersionId?: number;
+	previousExecutionId?: number;
 };
 
 export type InProgressExecution = {
@@ -55,13 +56,15 @@ export type InProgressExecution = {
 	bugLinks: number[];
 	source: "Manual" | "CI";
 	executedBy: string;
+	previousExecutionId?: number;
 };
 
 export interface ITestExecutionService {
 	startRun(draft: ExecutionDraft): Promise<InProgressExecution>;
 	saveStepResult(id: number, result: TestStepResult): Promise<InProgressExecution>;
 	attachEvidence(id: number, evidence: EvidenceRef): Promise<InProgressExecution>;
-	finalizeRun(id: number): Promise<TestVaultTestExecution>;
+	finalizeRun(id: number, globalStatusOverride?: GlobalStatus): Promise<TestVaultTestExecution>;
+	abortRun(id: number): Promise<TestVaultTestExecution>;
 	linkBug(id: number, bugId: number): Promise<TestVaultTestExecution>;
 	listExecutions(options: ListExecutionsOptions): Promise<ExecutionPage>;
 	// Sprint 2.23 -- display-only mode for an existing execution. Per
@@ -94,6 +97,7 @@ function fromRawInProgress(wi: RawWorkItem): InProgressExecution {
 		bugLinks: parseJsonArray<number>(f["TestVault.BugLinks"]),
 		source: (f["TestVault.ExecutionSource"] as "Manual" | "CI" | undefined) ?? "Manual",
 		executedBy: f["System.CreatedBy"] as string,
+		previousExecutionId: f["TestVault.PreviousExecutionId"] as number | undefined,
 	};
 }
 
@@ -112,6 +116,8 @@ function fromRawFinalized(wi: RawWorkItem): TestVaultTestExecution {
 		source: (f["TestVault.ExecutionSource"] as "Manual" | "CI") ?? "Manual",
 		executedBy: f["System.CreatedBy"] as string,
 		executedAt: f["System.CreatedDate"] as string,
+		globalStatusOverridden: (f["TestVault.GlobalStatusOverridden"] as boolean | undefined) ?? false,
+		previousExecutionId: f["TestVault.PreviousExecutionId"] as number | undefined,
 		immutable: true,
 	};
 }
@@ -146,6 +152,12 @@ function isCompleted(wi: RawWorkItem): boolean {
 	return wi.fields["System.State"] === "Completed";
 }
 
+// A run is terminal (frozen at the application level) once Completed or Aborted.
+function isTerminal(wi: RawWorkItem): boolean {
+	const state = wi.fields["System.State"];
+	return state === "Completed" || state === "Aborted";
+}
+
 // ─── Factory ──────────────────────────────────────────────────────────────────
 
 export function createTestExecutionService(
@@ -170,6 +182,7 @@ export function createTestExecutionService(
 				{ op: "add", path: "/fields/TestVault.StepResults", value: JSON.stringify([]) },
 				{ op: "add", path: "/fields/TestVault.Evidence", value: JSON.stringify([]) },
 				{ op: "add", path: "/fields/TestVault.BugLinks", value: JSON.stringify([]) },
+				{ op: "add", path: "/fields/TestVault.GlobalStatusOverridden", value: false },
 			];
 
 			if (draft.testCaseVersionId !== undefined) {
@@ -180,13 +193,21 @@ export function createTestExecutionService(
 				});
 			}
 
+			if (draft.previousExecutionId !== undefined) {
+				patches.push({
+					op: "add",
+					path: "/fields/TestVault.PreviousExecutionId",
+					value: draft.previousExecutionId,
+				});
+			}
+
 			const raw = await adoClient.createWorkItem("TestVault.TestExecution", patches);
 			return fromRawInProgress(raw);
 		},
 
 		async saveStepResult(id, result) {
 			const raw = await adoClient.fetchWorkItem(id);
-			if (isCompleted(raw)) throw new TestExecutionImmutableError(id);
+			if (isTerminal(raw)) throw new TestExecutionImmutableError(id);
 
 			const current = parseJsonArray<TestStepResult>(raw.fields["TestVault.StepResults"]);
 			const updated = [...current, result];
@@ -202,7 +223,7 @@ export function createTestExecutionService(
 
 		async attachEvidence(id, evidence) {
 			const raw = await adoClient.fetchWorkItem(id);
-			if (isCompleted(raw)) throw new TestExecutionImmutableError(id);
+			if (isTerminal(raw)) throw new TestExecutionImmutableError(id);
 
 			const current = parseJsonArray<EvidenceRef>(raw.fields["TestVault.Evidence"]);
 			const updated = [...current, evidence];
@@ -216,16 +237,32 @@ export function createTestExecutionService(
 			return fromRawInProgress(updatedRaw);
 		},
 
-		async finalizeRun(id) {
+		async finalizeRun(id, globalStatusOverride) {
 			const raw = await adoClient.fetchWorkItem(id);
-			if (isCompleted(raw)) throw new TestExecutionImmutableError(id);
+			if (isTerminal(raw)) throw new TestExecutionImmutableError(id);
 
 			const stepResults = parseJsonArray<TestStepResult>(raw.fields["TestVault.StepResults"]);
-			const globalStatus = calcGlobalStatus(stepResults);
+			// Without an override the global status is the computed suggestion. With
+			// an explicit override the forced value is written and the run is flagged;
+			// the original suggestion stays auditable (recomputable from the steps).
+			const globalStatus = globalStatusOverride ?? calcGlobalStatus(stepResults);
+			const overridden = globalStatusOverride !== undefined;
 
 			const updatedRaw = await adoClient.updateWorkItem(id, [
 				{ op: "add", path: "/fields/System.State", value: "Completed" },
 				{ op: "add", path: "/fields/TestVault.GlobalStatus", value: globalStatus },
+				{ op: "add", path: "/fields/TestVault.GlobalStatusOverridden", value: overridden },
+			]);
+			return fromRawFinalized(updatedRaw);
+		},
+
+		async abortRun(id) {
+			const raw = await adoClient.fetchWorkItem(id);
+			// A terminal run (Completed or Aborted) cannot be aborted.
+			if (isTerminal(raw)) throw new TestExecutionImmutableError(id);
+
+			const updatedRaw = await adoClient.updateWorkItem(id, [
+				{ op: "add", path: "/fields/System.State", value: "Aborted" },
 			]);
 			return fromRawFinalized(updatedRaw);
 		},
