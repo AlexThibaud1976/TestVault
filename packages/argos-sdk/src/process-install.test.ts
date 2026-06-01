@@ -8,6 +8,7 @@ import {
 	ProcessPermissionError,
 	createProcessInstallService,
 } from "./process-install.js";
+import { TESTVAULT_SCHEMA } from "@atconseil/argos-wit-schema";
 import { schemaToAdoFieldName, schemaToAdoFieldRefName } from "./wit-refname-matcher.js";
 
 const ORG_URL = "https://dev.azure.com/testorg";
@@ -1005,7 +1006,7 @@ describe("upgradeSchema", () => {
 	const upgradeStatesRegex = new RegExp(
 		`${BASE.replace(/\//g, "\\/")}\\/${UPGRADE_PROC}\\/workItemTypes\\/.+\\/states`
 	);
-	const upgradeProcUrl = `${BASE.replace(/\//g, "\\/")}\\/${UPGRADE_PROC}`;
+	const upgradeProcBase = `${BASE}/${UPGRADE_PROC}`;
 
 	function setupUpgradeBase(existingWitFields: string[] = [], existingStates: string[] = []) {
 		server.use(
@@ -1036,7 +1037,7 @@ describe("upgradeSchema", () => {
 			),
 			http.post(upgradeStatesRegex, () => HttpResponse.json({}, { status: 201 })),
 			// PATCH process description (marker update)
-			http.patch(new RegExp(upgradeProcUrl + "\\?"), () => HttpResponse.json({}))
+			http.patch(upgradeProcBase, () => HttpResponse.json({}))
 		);
 	}
 
@@ -1108,17 +1109,19 @@ describe("upgradeSchema", () => {
 		let patchBody: Record<string, unknown> | null = null;
 		setupUpgradeBase([], []);
 		server.use(
-			http.patch(new RegExp(upgradeProcUrl + "\\?"), async ({ request }) => {
+			http.patch(upgradeProcBase, async ({ request }) => {
 				patchBody = (await request.json()) as Record<string, unknown>;
 				return HttpResponse.json({});
 			})
 		);
 		const result = await makeService().upgradeSchema({ processId: UPGRADE_PROC });
 		expect(patchBody).not.toBeNull();
-		const desc = JSON.parse((patchBody?.description as string) ?? "{}") as {
-			"testvault-schema": string;
-		};
-		expect(desc["testvault-schema"]).toBe("1.1.0");
+		if (patchBody) {
+			const desc = JSON.parse((patchBody["description"] as string) ?? "{}") as {
+				"testvault-schema": string;
+			};
+			expect(desc["testvault-schema"]).toBe("1.1.0");
+		}
 		expect(result.markerUpdated).toBe(true);
 	});
 
@@ -1147,7 +1150,7 @@ describe("upgradeSchema", () => {
 			http.post(upgradeWitFieldsRegex, () => HttpResponse.json({}, { status: 200 })),
 			http.get(upgradeStatesRegex, () => HttpResponse.json({ value: [] })),
 			http.post(upgradeStatesRegex, () => HttpResponse.json({}, { status: 201 })),
-			http.patch(new RegExp(upgradeProcUrl + "\\?"), () => HttpResponse.json({}))
+			http.patch(upgradeProcBase, () => HttpResponse.json({}))
 		);
 		await expect(makeService().upgradeSchema({ processId: UPGRADE_PROC })).resolves.toBeDefined();
 	});

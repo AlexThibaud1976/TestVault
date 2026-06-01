@@ -10,6 +10,7 @@ function makeService(overrides?: Partial<IProcessInstallService>): IProcessInsta
 	return {
 		detectInstallState: vi.fn().mockResolvedValue({ status: "not-installed" }),
 		install: vi.fn().mockResolvedValue({ processId: "new-guid", processName: "TestVault - Agile" }),
+		upgradeSchema: vi.fn().mockResolvedValue({ processId: "new-guid", fieldsAdded: 0, statesAdded: 0, markerUpdated: true }),
 		...overrides,
 	};
 }

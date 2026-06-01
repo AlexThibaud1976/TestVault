@@ -52,8 +52,9 @@ export function InstallWizard({ service, onInstalled }: InstallWizardProps) {
 			.then((state) => {
 				if (state.status === "not-installed") {
 					setStep({ id: "not-installed", processName: "TestVault - Agile", baseProcess: "Agile" });
-				} else if (state.status === "installed") {
-					setStep({ id: "already-installed", state });
+				} else if (state.status === "installed" || state.status === "needs-upgrade") {
+					// needs-upgrade is treated as installed until B4 adds the upgrade UI
+					setStep({ id: "already-installed", state: { ...state, status: "installed" as const } });
 				} else {
 					setStep({ id: "partial", state });
 				}

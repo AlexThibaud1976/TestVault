@@ -96,9 +96,22 @@ export interface ProcessInstallResult {
 	processName: string;
 }
 
+export interface UpgradeSchemaOptions {
+	processId: string;
+	onProgress?: (step: InstallProgressStep) => void;
+}
+
+export interface UpgradeSchemaResult {
+	processId: string;
+	fieldsAdded: number;
+	statesAdded: number;
+	markerUpdated: boolean;
+}
+
 export interface IProcessInstallService {
 	detectInstallState(): Promise<ProcessInstallState>;
 	install(options: InstallOptions): Promise<ProcessInstallResult>;
+	upgradeSchema(options: UpgradeSchemaOptions): Promise<UpgradeSchemaResult>;
 }
 
 export interface ProcessInstallServiceConfig {
@@ -721,6 +734,146 @@ export function createProcessInstallService(
 
 			emit({ phase: "done", message: "Installation complete!" });
 			return { processId, processName };
+		},
+
+		async upgradeSchema({ processId, onProgress }) {
+			const emit = onProgress ?? (() => undefined);
+			let fieldsAdded = 0;
+			let statesAdded = 0;
+
+			// 1. Resolve ADO refNames for every WIT in this process
+			const witsRes = await doFetch(
+				`${base}/${processId}/workItemTypes?api-version=${API_VERSION}`
+			);
+			const witsData = await jsonOrThrow<{ value: Array<{ referenceName: string }> }>(witsRes);
+			const adoWits = witsData.value;
+
+			// 2. Fetch org-level fields once for the whole upgrade (pre-flight reuse)
+			emit({ phase: "creating-wits", message: "[UPGRADE] Fetching org-level fields..." });
+			const orgFieldsRes = await doFetch(
+				`${orgUrl}/_apis/wit/fields?api-version=${API_VERSION}`
+			);
+			const orgFieldsData = await jsonOrThrow<{
+				value: Array<{ referenceName: string; type: string }>;
+			}>(orgFieldsRes);
+			const orgFieldRefNames = new Set(orgFieldsData.value.map((f) => f.referenceName));
+
+			for (const schemaWit of TESTVAULT_SCHEMA.wits) {
+				// Find the ADO WIT corresponding to this schema WIT
+				const adoWit = adoWits.find((w) => isArgosWit(w.referenceName, schemaWit.referenceName));
+				if (!adoWit) {
+					emit({
+						phase: "creating-wits",
+						message: `[UPGRADE-SKIP] ${schemaWit.referenceName} not found in process — skipping`,
+					});
+					continue;
+				}
+				const adoRefName = adoWit.referenceName;
+
+				// 3. Fields: get what's already attached to this WIT
+				const witFieldsRes = await doFetch(
+					`${base}/${processId}/workItemTypes/${encodeURIComponent(adoRefName)}/fields?api-version=${API_VERSION}`
+				);
+				const witFieldsData = await jsonOrThrow<{
+					value: Array<{ referenceName: string }>;
+				}>(witFieldsRes);
+				const attachedRefs = new Set(witFieldsData.value.map((f) => f.referenceName));
+
+				for (const field of schemaWit.fields.filter((f) =>
+					f.referenceName.startsWith("TestVault.")
+				)) {
+					const adoFieldRefName = schemaToAdoFieldRefName(field.referenceName);
+					const adoFieldName = schemaToAdoFieldName(field.referenceName);
+
+					// STEP A: ensure the field exists at org level
+					if (!orgFieldRefNames.has(adoFieldRefName)) {
+						await createFieldAtOrg(field, adoFieldRefName, adoFieldName);
+						orgFieldRefNames.add(adoFieldRefName);
+						emit({
+							phase: "creating-wits",
+							message: `  [UPGRADE-FIELD-CREATE] org-level ${adoFieldRefName}`,
+						});
+					}
+
+					// STEP B: attach to WIT if not already present
+					if (!attachedRefs.has(adoFieldRefName)) {
+						const attachBody: Record<string, unknown> = {
+							referenceName: adoFieldRefName,
+							required: field.required,
+						};
+						if (field.defaultValue !== undefined) {
+							attachBody.defaultValue = String(field.defaultValue);
+						}
+						const attachRes = await doFetch(
+							`${base}/${processId}/workItemTypes/${encodeURIComponent(adoRefName)}/fields?api-version=${API_VERSION}`,
+							{
+								method: "POST",
+								headers: { "Content-Type": "application/json" },
+								body: JSON.stringify(attachBody),
+							}
+						);
+						if (attachRes.status !== 409) {
+							await throwForStatus(attachRes);
+						}
+						attachedRefs.add(adoFieldRefName);
+						fieldsAdded++;
+						emit({
+							phase: "creating-wits",
+							message: `  [UPGRADE-FIELD-ATTACH] ${adoFieldName} -> ${schemaWit.referenceName}`,
+						});
+					}
+				}
+
+				// 4. States: sync missing states
+				const existingStates = await getExistingStates(processId, adoRefName);
+				const existingStateNames = new Set(existingStates.map((s) => s.name));
+
+				for (const state of schemaWit.states) {
+					const adoStateName = schemaToAdoStateName(state.name);
+					if (existingStateNames.has(adoStateName)) {
+						emit({
+							phase: "creating-wits",
+							message: `  [UPGRADE-STATE-SKIP] "${adoStateName}" already exists in ${schemaWit.referenceName}`,
+						});
+						continue;
+					}
+					const stateRes = await doFetch(
+						`${base}/${processId}/workItemTypes/${encodeURIComponent(adoRefName)}/states?api-version=${API_VERSION}`,
+						{
+							method: "POST",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({
+								name: adoStateName,
+								color: state.color.replace("#", ""),
+								stateCategory: state.stateCategory,
+							}),
+						}
+					);
+					if (stateRes.status !== 409) {
+						await throwForStatus(stateRes);
+					}
+					statesAdded++;
+					emit({
+						phase: "creating-wits",
+						message: `  [UPGRADE-STATE-CREATE] "${adoStateName}" -> ${schemaWit.referenceName}`,
+					});
+				}
+			}
+
+			// 5. Update the schema version marker in the process description
+			const markerRes = await doFetch(
+				`${base}/${processId}?api-version=${API_VERSION}`,
+				{
+					method: "PATCH",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						description: JSON.stringify({ "testvault-schema": TESTVAULT_SCHEMA.version }),
+					}),
+				}
+			);
+			await throwForStatus(markerRes);
+
+			return { processId, fieldsAdded, statesAdded, markerUpdated: true };
 		},
 	};
 }
