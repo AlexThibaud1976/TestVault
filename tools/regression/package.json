@@ -8,6 +8,9 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"devDependencies": {
+		"@atconseil/argos-sdk": "workspace:*",
+		"@atconseil/argos-types": "workspace:*",
+		"@atconseil/argos-wit-schema": "workspace:*",
 		"@types/node": "^25.7.0",
 		"typescript": "^6.0.3",
 		"vitest": "^3.1.0"
