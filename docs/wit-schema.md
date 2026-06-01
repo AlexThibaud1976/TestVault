@@ -1,6 +1,6 @@
 # TestVault WIT Schema Contract
 
-> Version: 1.0.0 | Stability: STABLE
+> Version: 1.1.0 | Stability: STABLE
 > Consumed by: TestPulse 2.0+
 
 This document defines the public Custom Work Item Type contract between TestVault (Argos) and TestPulse. Any breaking change to field reference names, types, or cardinality requires a major version bump of **both** extensions and a tested migration script in `tools/migration-scripts/`.
@@ -60,8 +60,23 @@ This document defines the public Custom Work Item Type contract between TestVaul
 | Environment | TestVault.TestExecution.Environment | string | |
 | Started At | TestVault.TestExecution.StartedAt | dateTime | |
 | Completed At | TestVault.TestExecution.CompletedAt | dateTime | |
-| Step Results | TestVault.TestExecution.StepResults | plainText | JSON array of step outcomes |
+| Step Results | TestVault.TestExecution.StepResults | plainText | JSON array of step outcomes (per-step actualResult and defectIds carried inside this JSON) |
 | Duration Ms | TestVault.TestExecution.DurationMs | integer | Wall-clock duration |
+| Evidence | TestVault.TestExecution.Evidence | plainText | JSON array of EvidenceRef (added 1.1.0) |
+| Bug Links | TestVault.TestExecution.BugLinks | plainText | JSON array of run-level bug Work Item IDs (added 1.1.0) |
+| Global Status Overridden | TestVault.TestExecution.GlobalStatusOverridden | boolean | default false; true if the global status was manually forced (added 1.1.0) |
+| Previous Execution Id | TestVault.TestExecution.PreviousExecutionId | integer | Re-run lineage; references the prior execution, NULL otherwise (added 1.1.0) |
+
+The `InProgress` / `Completed` lifecycle states (column `Status` above) are part of the
+contract: a run is mutable while `InProgress` and frozen once `Completed`. Re-runs create a
+new execution linked via `PreviousExecutionId` rather than mutating a completed run.
+
+**TestPulse impact (1.0.0 -> 1.1.0, additive minor).** All four new fields are optional and
+read-compatible: TestPulse continues to function unchanged and must keep handling them as
+possibly-absent. To exploit the new signals, TestPulse should be informed so it can read
+`GlobalStatusOverridden` (statistical quality of the global status -- distinguish a computed
+global from a manually forced one) and `PreviousExecutionId` (re-run lineage, basis for flaky
+analysis). No data migration of historical executions is required.
 
 ### TestVault.AuditLog
 
@@ -106,6 +121,7 @@ TestPulse reads the following ADO link types to reconstruct the test hierarchy:
 | Version | Date | Change |
 | --- | --- | --- |
 | 1.0.0 | 2026-05-08 | Initial stable release — all 7 WITs locked |
+| 1.1.0 | 2026-06-01 | TestExecution: +Evidence, +BugLinks, +GlobalStatusOverridden, +PreviousExecutionId (additive, read-compatible minor). Lifecycle InProgress -> Completed documented. |
 
 ---
 

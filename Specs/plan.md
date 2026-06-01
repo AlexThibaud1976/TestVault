@@ -314,8 +314,30 @@ Règles de transition :
 | `TestVault.CiPipelineUrl` | String (500) | URL cliquable du run CI |
 | `TestVault.CiPayloadHash` | String (64) | SHA-256 du payload reçu, anti-rejeu |
 | `TestVault.DurationSeconds` | Integer | optionnel |
+| `TestVault.Evidence` | LongText | JSON serialise `EvidenceRef[]` (refs attachments + stepIndex/url) |
+| `TestVault.BugLinks` | LongText | JSON serialise des bugs lies au niveau run (miroir des relations ADO) |
+| `TestVault.GlobalStatusOverridden` | Boolean | default false ; true si le global a ete force par l'utilisateur |
+| `TestVault.PreviousExecutionId` | Integer | run d'origine si re-run (lignee flaky) ; NULL sinon |
 
-**Immutabilité.** Une `TestExecution` est immutable après save (constitution §3.3 et spec §3.5). Implémentation : règle de Process ADO interdisant tout `PATCH` après le premier save (`AllowExistingValue=false` sur tous les champs sauf `System.Tags` qui reste éditable pour permettre le tag manuel "Re-reviewed"). Tentative d'édition côté API → 403.
+> Note : `actualResult` et `defectIds` par step vivent dans le JSON `TestVault.StepResults` -- pas de champ WIT dedie.
+
+**Cycle de vie d'une `TestExecution`.** Machine a etats :
+
+```
+null -> InProgress -> Completed
+```
+
+- `null -> InProgress` : creation de la run (start). Etat **mutable** : saisie des step results, actual result, evidence, defects/bugs, choix du global.
+- `InProgress -> Completed` : finalisation (`finalizeRun`). L'etat **Completed est fige (immuable)** : tout `PATCH` ulterieur de champ est refuse cote API (403), seul `System.Tags` reste editable. Les liens ADO (defects/bugs) restent ajoutables car ce sont des relations, pas des champs figes du WI.
+- **Re-run** : ne mute jamais une run Completed. Cree une **nouvelle** `TestExecution` portant `TestVault.PreviousExecutionId` vers la run d'origine.
+
+> Reconciliation (2026-06-01) : l'ancienne formulation "immutable des le premier save" est remplacee par ce cycle de vie. La run est mutable tant qu'elle est `InProgress` et ne se fige qu'a `Completed`. Le principe d'immutabilite vit dans spec US-2.1 ; la constitution n'impose pas l'immutabilite-des-la-creation pour TestExecution (S3.5 = integration TestPulse).
+
+**Statut global suggere vs force.** `finalizeRun(globalStatusOverride?)` : sans override, le service calcule `computeGlobalStatus(stepResults)` (regle Fail > Blocked > Skipped > Pass) et ecrit `globalStatusOverridden = false`. Avec override explicite, le global force est ecrit et `globalStatusOverridden = true` ; la suggestion d'origine reste auditable.
+
+**Provisioning.** L'ajout de ces champs + etats impose de **re-provisionner tous les process Argos** (champs `TestVault.Evidence`, `TestVault.BugLinks`, `TestVault.GlobalStatusOverridden`, `TestVault.PreviousExecutionId` ; etats `InProgress` / `Completed`, transitions `null -> InProgress -> Completed`). Impact migration : additif et **retro-compatible** -- les executions existantes restent valides (les nouveaux champs sont optionnels / defaut, l'etat `Completed` couvre les runs deja finalisees). Aucune reecriture de donnee historique requise.
+
+**Test de garde cross-package (a implementer en Pattern B, `tools/regression`).** Invariant : tout `refName` de champ et tout `System.State` ecrit par un service SDK doit appartenir au schema WIT du WIT cible. Ce garde-fou previent la regression de type TFS1535 (un service ecrivant un champ/etat non declare au schema).
 
 ### 3.6 Custom Controls dans le formulaire WI ADO natif
 
@@ -358,12 +380,12 @@ Le schéma Custom WIT est le **point d'intégration unique** entre TestVault (qu
 
 ```yaml
 # TestVault WIT Schema Contract
-# Version: 1.0.0
+# Version: 1.1.0
 # Stability: STABLE — breaking changes require major version bump
 # Consumed by: TestPulse 2.0+
 
 schema:
-  version: "1.0.0"
+  version: "1.1.0"
 
   workItemTypes:
     - refName: TestVault.TestCase
@@ -388,8 +410,14 @@ schema:
         - type: TestVault.SnapshotOf      # to TestVault.TestCaseVersion
 
     - refName: TestVault.TestExecution
-      immutability: "after-first-save"
-      # ...
+      immutability: "frozen-on-Completed"   # mutable while InProgress
+      optionalFields:
+        - TestVault.Evidence                # JSON serialized EvidenceRef[]
+        - TestVault.BugLinks                # JSON serialized run-level bug links
+        - TestVault.GlobalStatusOverridden  # boolean, default false
+        - TestVault.PreviousExecutionId     # integer, re-run lineage
+      stateValues: [InProgress, Completed]
+      stateTransitions: ["null -> InProgress", "InProgress -> Completed"]
 
   jsonContracts:
     TestStep:
@@ -404,8 +432,10 @@ schema:
       type: object
       properties:
         stepIndex: { type: integer }
-        status: { enum: [Pass, Fail, Blocked, Skipped] }
+        status: { enum: [Unexecuted, Pass, Fail, Blocked, Skipped] }
         comment: { type: string, optional: true }
+        actualResult: { type: string, optional: true }
+        defectIds: { type: array, items: integer }
         evidenceIds: { type: array, items: string }
       required: [stepIndex, status]
 

@@ -630,6 +630,23 @@ React + .test.tsx) mais ne sont pas wirés dans (App.tsx). La Phase 0.5 corrige
 
 ---
 
+## Runner 0.6.0 -- reconciliation TestExecution (Xray-like)
+
+> **Objectif :** aligner le runner sur la vision cible (global suggere + override, defects/actual result par step, historique + detection flaky) et reconcilier le schema WIT TestExecution avec le type et le service. Reference : spec US-2.1 (amende), US-2.4, US-2.5, US-2.6 ; plan S3.5 (cycle de vie InProgress -> Completed).
+> **Done quand :** une run passe par `null -> InProgress -> Completed`, le global est suggere puis surchargeable, les defects/actual result/evidence sont saisis par step, l'historique liste les runs et signale les flaky, et un test de garde cross-package verifie schema <-> service.
+
+### Increments
+
+1. [ ] **Spec-kit amende (Pattern A)** -- spec.md (US-2.1 + US-2.4/2.5/2.6 + modele), plan.md (cycle de vie + schema cible + provisioning + garde), tasks.md (cette section), docs/wit-schema.md (evolution contrat TestPulse).
+2. [ ] **Schema WIT + types** -- champs `TestVault.Evidence`, `TestVault.BugLinks`, `TestVault.GlobalStatusOverridden`, `TestVault.PreviousExecutionId` + etats `InProgress`/`Completed` ; types `actualResult` / `defectIds` (step), `globalStatusOverridden` / `previousExecutionId` (run) ; source `Manual | CI`. + **test de garde cross-package** (refName/state ecrits par le SDK appartiennent au schema WIT cible).
+3. [ ] **Service SDK** -- `finalizeRun(globalStatusOverride?)` (override + flag), `saveStepResult` portant `actualResult` + `defectIds`, propagation `previousExecutionId` au re-run. Corriger la reference erronee "constitution S3.5" (cycle de vie reel).
+4. [ ] **Provisioning** -- re-provisionner les process Argos (champs/etats ajoutes), documenter l'impact migration (additif, retro-compatible), verifier sur DEMO et BCEE-QA.
+5. [ ] **UI Runner** -- grille steps (statut + actual result + commentaire + defects/step + evidence/step), global suggere avec override explicite, validation commentaire obligatoire sur Fail.
+6. [ ] **UI Historique + flaky (US-2.6)** -- liste des runs (date, environment, global, executedBy) triee desc, lignee `previousExecutionId`, badge flaky selon la regle (5 runs, meme env + meme version, alternance Pass<->Fail ; Blocked/Skipped/Unexecuted ignores).
+7. [ ] **Doc + release** -- user-guide a jour, bump 0.6.0, release, re-smoke createur.
+
+---
+
 ## Phase 3 — Traçabilité, versioning, snapshots
 
 > **Objectif :** la traçabilité bidirectionnelle Work Items ↔ TestCase fonctionne, les snapshots taggés sont opérationnels, la matrice de couverture est exportable.
