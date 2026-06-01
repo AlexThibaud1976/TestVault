@@ -324,18 +324,19 @@ Règles de transition :
 **Cycle de vie d'une `TestExecution`.** Machine a etats :
 
 ```
-null -> InProgress -> Completed
+null -> InProgress -> { Completed | Aborted }
 ```
 
 - `null -> InProgress` : creation de la run (start). Etat **mutable** : saisie des step results, actual result, evidence, defects/bugs, choix du global.
 - `InProgress -> Completed` : finalisation (`finalizeRun`). L'etat **Completed est fige (immuable)** : tout `PATCH` ulterieur de champ est refuse cote API (403), seul `System.Tags` reste editable. Les liens ADO (defects/bugs) restent ajoutables car ce sont des relations, pas des champs figes du WI.
-- **Re-run** : ne mute jamais une run Completed. Cree une **nouvelle** `TestExecution` portant `TestVault.PreviousExecutionId` vers la run d'origine.
+- `InProgress -> Aborted` : run demarre puis **abandonne sans finalisation**. Etat **terminal et fige**. Pas de `globalStatus` exploitable (Aborted est un `System.State`, distinct de l'enum globalStatus). Une run Aborted est **exclue des agregations de resultats et du calcul flaky** (au meme titre que Blocked / Skipped / Unexecuted).
+- **Re-run** : ne mute jamais une run Completed ni Aborted. Cree une **nouvelle** `TestExecution` portant `TestVault.PreviousExecutionId` vers la run d'origine.
 
 > Reconciliation (2026-06-01) : l'ancienne formulation "immutable des le premier save" est remplacee par ce cycle de vie. La run est mutable tant qu'elle est `InProgress` et ne se fige qu'a `Completed`. Le principe d'immutabilite vit dans spec US-2.1 ; la constitution n'impose pas l'immutabilite-des-la-creation pour TestExecution (S3.5 = integration TestPulse).
 
 **Statut global suggere vs force.** `finalizeRun(globalStatusOverride?)` : sans override, le service calcule `computeGlobalStatus(stepResults)` (regle Fail > Blocked > Skipped > Pass) et ecrit `globalStatusOverridden = false`. Avec override explicite, le global force est ecrit et `globalStatusOverridden = true` ; la suggestion d'origine reste auditable.
 
-**Provisioning.** L'ajout de ces champs + etats impose de **re-provisionner tous les process Argos** (champs `TestVault.Evidence`, `TestVault.BugLinks`, `TestVault.GlobalStatusOverridden`, `TestVault.PreviousExecutionId` ; etats `InProgress` / `Completed`, transitions `null -> InProgress -> Completed`). Impact migration : additif et **retro-compatible** -- les executions existantes restent valides (les nouveaux champs sont optionnels / defaut, l'etat `Completed` couvre les runs deja finalisees). Aucune reecriture de donnee historique requise.
+**Provisioning.** L'ajout de ces champs + etats impose de **re-provisionner tous les process Argos** (champs `TestVault.Evidence`, `TestVault.BugLinks`, `TestVault.GlobalStatusOverridden`, `TestVault.PreviousExecutionId` ; etats `InProgress` / `Completed` / `Aborted`, transitions `null -> InProgress -> { Completed | Aborted }`). Impact migration : additif et **retro-compatible** -- les executions existantes restent valides (les nouveaux champs sont optionnels / defaut, l'etat `Completed` couvre les runs deja finalisees). Aucune reecriture de donnee historique requise.
 
 **Test de garde cross-package (a implementer en Pattern B, `tools/regression`).** Invariant : tout `refName` de champ et tout `System.State` ecrit par un service SDK doit appartenir au schema WIT du WIT cible. Ce garde-fou previent la regression de type TFS1535 (un service ecrivant un champ/etat non declare au schema).
 
@@ -416,8 +417,8 @@ schema:
         - TestVault.BugLinks                # JSON serialized run-level bug links
         - TestVault.GlobalStatusOverridden  # boolean, default false
         - TestVault.PreviousExecutionId     # integer, re-run lineage
-      stateValues: [InProgress, Completed]
-      stateTransitions: ["null -> InProgress", "InProgress -> Completed"]
+      stateValues: [InProgress, Completed, Aborted]
+      stateTransitions: ["null -> InProgress", "InProgress -> Completed", "InProgress -> Aborted"]
 
   jsonContracts:
     TestStep:

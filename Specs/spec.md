@@ -189,6 +189,7 @@ Conséquence : les équipes ADO sérieuses sur la qualité **migrent vers Jira a
 - **Given** tous les steps sont en Pass, **Then** le statut global du Test Case dans cette execution est automatiquement Pass. Si au moins un step est Fail, le statut global est Fail. Si au moins un step est Blocked sans aucun Fail, le statut global est Blocked.
 - **Given** des steps ont un statut, **Then** le statut global est SUGGERE par la regle (Fail > Blocked > Skipped > Pass). **When** l'utilisateur choisit explicitement un autre global, **Then** ce global force est enregistre, l'execution porte globalStatusOverridden=true, et la suggestion d'origine reste visible et auditable.
 - **Given** une exécution est terminée, **Then** elle est immutable et un nouvel essai requiert de "Re-run" (qui crée une nouvelle exécution liée à la précédente).
+- **Given** une execution est en cours (InProgress), **When** je l'abandonne sans la finaliser, **Then** elle passe a l'etat terminal Aborted (fige, sans resultat de test exploitable) ; reprendre le test requiert un nouveau "Run".
 
 **Priorité :** 🔴 Haute
 
@@ -246,7 +247,7 @@ Conséquence : les équipes ADO sérieuses sur la qualité **migrent vers Jira a
 
 - **Given** un Test Case execute plusieurs fois, **When** j'ouvre sa vue historique, **Then** je vois la liste des runs (date, environment, global, executedBy) triee par date desc.
 - **Given** un re-run, **Then** la nouvelle execution porte previousExecutionId vers la run d'origine.
-- **Regle FLAKY :** un Test Case est signale flaky si, sur ses 5 dernieres executions au MEME environment et avec le MEME testCaseVersionId, la sous-sequence des runs Pass/Fail presente au moins une alternance Pass<->Fail. Les runs Blocked / Skipped / Unexecuted sont ignores dans le calcul d'alternance. Un echec apres changement de version (testCaseVersionId different) n'est PAS du flake (c'est une regression legitime).
+- **Regle FLAKY :** un Test Case est signale flaky si, sur ses 5 dernieres executions au MEME environment et avec le MEME testCaseVersionId, la sous-sequence des runs Pass/Fail presente au moins une alternance Pass<->Fail. Les runs Blocked / Skipped / Unexecuted, ainsi que les runs en etat Aborted (abandonnes sans resultat), sont ignores dans le calcul d'alternance. Un echec apres changement de version (testCaseVersionId different) n'est PAS du flake (c'est une regression legitime).
 
 **Priorite :** Haute
 

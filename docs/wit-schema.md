@@ -67,9 +67,12 @@ This document defines the public Custom Work Item Type contract between TestVaul
 | Global Status Overridden | TestVault.TestExecution.GlobalStatusOverridden | boolean | default false; true if the global status was manually forced (added 1.1.0) |
 | Previous Execution Id | TestVault.TestExecution.PreviousExecutionId | integer | Re-run lineage; references the prior execution, NULL otherwise (added 1.1.0) |
 
-The `InProgress` / `Completed` lifecycle states (column `Status` above) are part of the
-contract: a run is mutable while `InProgress` and frozen once `Completed`. Re-runs create a
-new execution linked via `PreviousExecutionId` rather than mutating a completed run.
+The `InProgress` / `Completed` / `Aborted` lifecycle states (column `Status` above) are part of
+the contract (`null -> InProgress -> { Completed | Aborted }`): a run is mutable while
+`InProgress`, frozen once `Completed`, and `Aborted` is a terminal frozen state for a run started
+then abandoned before finalization (no exploitable global result; excluded from result
+aggregation and flaky detection). Re-runs create a new execution linked via `PreviousExecutionId`
+rather than mutating a completed or aborted run.
 
 **TestPulse impact (1.0.0 -> 1.1.0, additive minor).** All four new fields are optional and
 read-compatible: TestPulse continues to function unchanged and must keep handling them as
