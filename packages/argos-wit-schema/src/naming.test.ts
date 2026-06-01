@@ -3,6 +3,7 @@ import {
 	findSchemaWitByAdoRefName,
 	isArgosField,
 	isArgosWit,
+	schemaFromAdoStateName,
 	schemaToAdoFieldName,
 	schemaToAdoFieldRefName,
 	schemaToAdoStateName,
@@ -136,6 +137,19 @@ describe("schemaToAdoStateName (Sprint 2.14)", () => {
 
 	it("throws for name exceeding 100 chars", () => {
 		expect(() => schemaToAdoStateName("X".repeat(101))).toThrow("100 chars");
+	});
+});
+
+describe("schemaFromAdoStateName", () => {
+	it("strips the TestVault prefix", () => {
+		expect(schemaFromAdoStateName("TestVault Active")).toBe("Active");
+		expect(schemaFromAdoStateName("TestVault InProgress")).toBe("InProgress");
+		expect(schemaFromAdoStateName("TestVault Completed")).toBe("Completed");
+	});
+
+	it("is idempotent on names without the prefix", () => {
+		expect(schemaFromAdoStateName("Active")).toBe("Active");
+		expect(schemaFromAdoStateName("Design")).toBe("Design");
 	});
 });
 
