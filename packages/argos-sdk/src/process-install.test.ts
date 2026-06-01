@@ -130,6 +130,76 @@ describe("detectInstallState", () => {
 		server.use(http.get(BASE, () => new HttpResponse(null, { status: 403 })));
 		await expect(makeService().detectInstallState()).rejects.toThrow(ProcessPermissionError);
 	});
+
+	// Runner 0.6.0 B3 -- needs-upgrade tests
+	it("returns needs-upgrade when installed version is older than current schema", async () => {
+		server.use(
+			http.get(BASE, () =>
+				HttpResponse.json({
+					value: [
+						{
+							typeId: "tv-guid",
+							name: "TestVault - Agile",
+							description: '{"testvault-schema":"1.0.0"}',
+						},
+					],
+				})
+			),
+			http.get(`${BASE}/tv-guid/workItemTypes`, () =>
+				HttpResponse.json({ value: ALL_WIT_REFS.map((ref) => ({ referenceName: ref })) })
+			)
+		);
+		const state = await makeService().detectInstallState();
+		expect(state.status).toBe("needs-upgrade");
+		if (state.status === "needs-upgrade") {
+			expect(state.processId).toBe("tv-guid");
+			expect(state.processName).toBe("TestVault - Agile");
+			expect(state.schemaVersion).toBe("1.0.0");
+			expect(state.expectedVersion).toBe("1.1.0");
+		}
+	});
+
+	it("returns installed (not needs-upgrade) when version equals current schema", async () => {
+		server.use(
+			http.get(BASE, () =>
+				HttpResponse.json({
+					value: [
+						{
+							typeId: "tv-guid",
+							name: "TestVault - Agile",
+							description: '{"testvault-schema":"1.1.0"}',
+						},
+					],
+				})
+			),
+			http.get(`${BASE}/tv-guid/workItemTypes`, () =>
+				HttpResponse.json({ value: ALL_WIT_REFS.map((ref) => ({ referenceName: ref })) })
+			)
+		);
+		const state = await makeService().detectInstallState();
+		expect(state.status).toBe("installed");
+	});
+
+	it("returns installed (not needs-upgrade) when installed version is ahead of current schema", async () => {
+		server.use(
+			http.get(BASE, () =>
+				HttpResponse.json({
+					value: [
+						{
+							typeId: "tv-guid",
+							name: "TestVault - Agile",
+							description: '{"testvault-schema":"2.0.0"}',
+						},
+					],
+				})
+			),
+			http.get(`${BASE}/tv-guid/workItemTypes`, () =>
+				HttpResponse.json({ value: ALL_WIT_REFS.map((ref) => ({ referenceName: ref })) })
+			)
+		);
+		const state = await makeService().detectInstallState();
+		expect(state.status).toBe("installed");
+	});
 });
 
 // ─── install ──────────────────────────────────────────────────────────────────
