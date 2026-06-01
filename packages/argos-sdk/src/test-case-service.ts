@@ -1,4 +1,5 @@
 import type { AutomationStatus, TestVaultTestCase } from "@atconseil/argos-types";
+import { schemaFromAdoStateName } from "@atconseil/argos-wit-schema";
 import type { IAdoClient, RawWorkItem, WorkItemFieldPatch } from "./ado-client.js";
 
 export type TestCaseDraft = {
@@ -68,7 +69,7 @@ function fromRaw(wi: RawWorkItem): TestVaultTestCase {
 		id: wi.id,
 		title: f["System.Title"] as string,
 		description: (f["System.Description"] as string | undefined) ?? "",
-		state: f["System.State"] as TestVaultTestCase["state"],
+		state: schemaFromAdoStateName(f["System.State"] as string) as TestVaultTestCase["state"],
 		areaPath: f["System.AreaPath"] as string,
 		iterationPath: (f["System.IterationPath"] as string | undefined) ?? "",
 		tags,
@@ -160,7 +161,7 @@ export function createTestCaseService(adoClient: IAdoClient, project: string): I
 
 		async list(options) {
 			const conditions: string[] = [
-				`[System.WorkItemType] = 'TestVault.TestCase'`,
+				`[System.WorkItemType] = 'TestVault Test Case'`,
 				`[System.TeamProject] = '${project}'`,
 			];
 			if (options?.areaPath) conditions.push(`[System.AreaPath] UNDER '${options.areaPath}'`);

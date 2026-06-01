@@ -1,4 +1,5 @@
 import type { TestVaultTestCase, TestVaultTestPlan } from "@atconseil/argos-types";
+import { schemaFromAdoStateName, schemaToAdoStateName } from "@atconseil/argos-wit-schema";
 import type { IAdoClient, RawWorkItem, WorkItemFieldPatch } from "./ado-client.js";
 import type { ITestCaseVersionService } from "./test-case-version-service.js";
 import type { ITestSetService } from "./test-set-service.js";
@@ -54,7 +55,7 @@ function fromRaw(wi: RawWorkItem): TestVaultTestPlan {
 		id: wi.id,
 		name: f["System.Title"] as string,
 		description: (f["System.Description"] as string | undefined) ?? "",
-		state: f["System.State"] as TestVaultTestPlan["state"],
+		state: schemaFromAdoStateName(f["System.State"] as string) as TestVaultTestPlan["state"],
 		iterationPath: (f["System.IterationPath"] as string | undefined) ?? "",
 		owner: f["System.AssignedTo"] as string,
 		environments: parseJsonArray<string>(f["TestVault.Environments"]),
@@ -143,21 +144,21 @@ export function createTestPlanService(adoClient: IAdoClient, project: string): I
 		},
 
 		async list() {
-			const wiql = `SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'TestVault.TestPlan' AND [System.TeamProject] = '${project}' ORDER BY [System.Id] DESC`;
+			const wiql = `SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'TestVault Test Plan' AND [System.TeamProject] = '${project}' ORDER BY [System.Id] DESC`;
 			const ids = await adoClient.queryByWiql(wiql);
 			return Promise.all(ids.map(readById));
 		},
 
 		async lock(id) {
 			const raw = await adoClient.updateWorkItem(id, [
-				{ op: "add", path: "/fields/System.State", value: "Locked" },
+				{ op: "add", path: "/fields/System.State", value: schemaToAdoStateName("Locked") },
 			]);
 			return fromRaw(raw);
 		},
 
 		async unlock(id) {
 			const raw = await adoClient.updateWorkItem(id, [
-				{ op: "add", path: "/fields/System.State", value: "Draft" },
+				{ op: "add", path: "/fields/System.State", value: schemaToAdoStateName("Draft") },
 			]);
 			return fromRaw(raw);
 		},
@@ -185,7 +186,7 @@ export function createTestPlanService(adoClient: IAdoClient, project: string): I
 
 			// Lock the plan with snapshot IDs stored
 			const patches: WorkItemFieldPatch[] = [
-				{ op: "add", path: "/fields/System.State", value: "Locked" },
+				{ op: "add", path: "/fields/System.State", value: schemaToAdoStateName("Locked") },
 				{
 					op: "add",
 					path: "/fields/TestVault.LockedSnapshotIds",

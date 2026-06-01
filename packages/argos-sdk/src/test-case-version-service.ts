@@ -1,4 +1,5 @@
 import type { TestVaultTestCase } from "@atconseil/argos-types";
+import { schemaToAdoFieldRefName, schemaToAdoStateName } from "@atconseil/argos-wit-schema";
 import { AdoForbiddenError } from "./ado-client.js";
 import type { IAdoClient, RawWorkItem, WorkItemFieldPatch } from "./ado-client.js";
 
@@ -78,7 +79,7 @@ export function createTestCaseVersionService(adoClient: IAdoClient): ITestCaseVe
 			}
 
 			const patches: WorkItemFieldPatch[] = [
-				{ op: "add", path: "/fields/System.State", value: "Frozen" },
+				{ op: "add", path: "/fields/System.State", value: schemaToAdoStateName("Frozen") },
 				{ op: "add", path: "/fields/TestVault.ParentTestCaseId", value: testCase.id },
 				{ op: "add", path: "/fields/TestVault.SnapshotName", value: draft.name },
 				{
@@ -114,7 +115,8 @@ export function createTestCaseVersionService(adoClient: IAdoClient): ITestCaseVe
 		},
 
 		async listSnapshots(testCaseId) {
-			const wiql = `SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'TestVault.TestCaseVersion' AND [TestVault.ParentTestCaseId] = ${testCaseId} ORDER BY [System.CreatedDate] DESC`;
+			const parentField = schemaToAdoFieldRefName("TestVault.ParentTestCaseId");
+			const wiql = `SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'TestVault Test Case Version' AND [${parentField}] = ${testCaseId} ORDER BY [System.CreatedDate] DESC`;
 			const ids = await adoClient.queryByWiql(wiql);
 			const items = await Promise.all(ids.map((id) => adoClient.fetchWorkItem(id)));
 			return items.map(fromRaw);

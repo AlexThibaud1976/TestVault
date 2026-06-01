@@ -25,7 +25,7 @@ function rawTestCase(fieldOverrides?: Record<string, unknown>): RawWorkItem {
 		fields: {
 			"System.Title": "Login flow",
 			"System.Description": "<p>Test description</p>",
-			"System.State": "Design",
+			"System.State": "TestVault Design",
 			"System.AreaPath": "MyProject\\Auth",
 			"System.IterationPath": "MyProject\\Sprint 1",
 			"System.Tags": "auth; login",
@@ -211,7 +211,7 @@ describe("list", () => {
 		const adoClient = makeAdoClient({ queryByWiql: vi.fn().mockResolvedValue([]) });
 		await createTestCaseService(adoClient, PROJECT).list();
 		const wiql = vi.mocked(adoClient.queryByWiql).mock.lastCall?.[0] ?? "";
-		expect(wiql).toContain("TestVault.TestCase");
+		expect(wiql).toContain("TestVault Test Case");
 	});
 
 	it("filters by areaPath when provided", async () => {

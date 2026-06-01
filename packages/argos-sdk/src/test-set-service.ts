@@ -118,7 +118,7 @@ export function createTestSetService(adoClient: IAdoClient, project: string): IT
 
 		async list(options) {
 			const conditions: string[] = [
-				`[System.WorkItemType] = 'TestVault.TestSet'`,
+				`[System.WorkItemType] = 'TestVault Test Set'`,
 				`[System.TeamProject] = '${project}'`,
 			];
 			if (options?.areaPath) conditions.push(`[System.AreaPath] UNDER '${options.areaPath}'`);

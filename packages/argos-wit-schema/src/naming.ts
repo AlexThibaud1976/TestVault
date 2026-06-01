@@ -136,6 +136,19 @@ export function schemaToAdoStateName(schemaStateName: string): string {
 	return `TestVault ${schemaStateName}`;
 }
 
+/**
+ * Reverse-translate an ADO state name back to its schema counterpart.
+ * "TestVault Active" -> "Active"
+ * "Active"           -> "Active"  (idempotent on already-stripped names)
+ */
+export function schemaFromAdoStateName(adoStateName: string): string {
+	const PREFIX = "TestVault ";
+	if (adoStateName.startsWith(PREFIX)) {
+		return adoStateName.slice(PREFIX.length);
+	}
+	return adoStateName;
+}
+
 // ─── Validation helpers ───────────────────────────────────────────────────────
 
 const ADO_NAME_FORBIDDEN = /[.,;':~\\/*|?"&%$!+=()[\]{}<>]/;

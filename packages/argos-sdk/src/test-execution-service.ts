@@ -4,7 +4,7 @@ import type {
 	TestStepResult,
 	TestVaultTestExecution,
 } from "@atconseil/argos-types";
-import { schemaToAdoFieldRefName } from "@atconseil/argos-wit-schema";
+import { schemaToAdoFieldRefName, schemaToAdoStateName } from "@atconseil/argos-wit-schema";
 import { AdoForbiddenError } from "./ado-client.js";
 import type { IAdoClient, RawWorkItem, WorkItemFieldPatch } from "./ado-client.js";
 
@@ -150,13 +150,13 @@ export function computeGlobalStatus(results: TestStepResult[]): GlobalStatus {
 const calcGlobalStatus = computeGlobalStatus;
 
 function isCompleted(wi: RawWorkItem): boolean {
-	return wi.fields["System.State"] === "Completed";
+	return wi.fields["System.State"] === schemaToAdoStateName("Completed");
 }
 
 // A run is terminal (frozen at the application level) once Completed or Aborted.
 function isTerminal(wi: RawWorkItem): boolean {
 	const state = wi.fields["System.State"];
-	return state === "Completed" || state === "Aborted";
+	return state === schemaToAdoStateName("Completed") || state === schemaToAdoStateName("Aborted");
 }
 
 // ─── Factory ──────────────────────────────────────────────────────────────────
@@ -170,7 +170,12 @@ export function createTestExecutionService(
 			if (!draft.environment?.trim()) throw new Error("Environment is required");
 
 			const patches: WorkItemFieldPatch[] = [
-				{ op: "add", path: "/fields/System.State", value: "InProgress" },
+				{
+					op: "add",
+					path: "/fields/System.Title",
+					value: `Run TC-${draft.testCaseId} | ${draft.environment}`,
+				},
+				{ op: "add", path: "/fields/System.State", value: schemaToAdoStateName("InProgress") },
 				{ op: "add", path: "/fields/TestVault.TestPlanId", value: draft.testPlanId },
 				{ op: "add", path: "/fields/TestVault.TestCaseId", value: draft.testCaseId },
 				{ op: "add", path: "/fields/TestVault.Environment", value: draft.environment },
@@ -250,7 +255,7 @@ export function createTestExecutionService(
 			const overridden = globalStatusOverride !== undefined;
 
 			const updatedRaw = await adoClient.updateWorkItem(id, [
-				{ op: "add", path: "/fields/System.State", value: "Completed" },
+				{ op: "add", path: "/fields/System.State", value: schemaToAdoStateName("Completed") },
 				{ op: "add", path: "/fields/TestVault.GlobalStatus", value: globalStatus },
 				{ op: "add", path: "/fields/TestVault.GlobalStatusOverridden", value: overridden },
 			]);
@@ -263,7 +268,7 @@ export function createTestExecutionService(
 			if (isTerminal(raw)) throw new TestExecutionImmutableError(id);
 
 			const updatedRaw = await adoClient.updateWorkItem(id, [
-				{ op: "add", path: "/fields/System.State", value: "Aborted" },
+				{ op: "add", path: "/fields/System.State", value: schemaToAdoStateName("Aborted") },
 			]);
 			return fromRawFinalized(updatedRaw);
 		},
@@ -293,7 +298,7 @@ export function createTestExecutionService(
 			const statusField = schemaToAdoFieldRefName("TestVault.GlobalStatus");
 
 			let wiql =
-				"SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'TestVault.TestExecution'";
+				"SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'TestVault Test Execution'";
 			if (options.testCaseId > 0) {
 				wiql += ` AND [${tcIdField}] = ${options.testCaseId}`;
 			}

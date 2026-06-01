@@ -31,7 +31,7 @@ function rawTestPlan(fieldOverrides?: Record<string, unknown>): RawWorkItem {
 		fields: {
 			"System.Title": "Sprint 42 Plan",
 			"System.Description": "",
-			"System.State": "Draft",
+			"System.State": "TestVault Draft",
 			"System.IterationPath": "MyProject\\Sprint 42",
 			"System.AssignedTo": "alice@example.com",
 			"System.CreatedBy": "alice@example.com",
@@ -158,7 +158,7 @@ describe("update", () => {
 
 	it("throws 'Test Plan is locked' when patching testSetIds on a Locked plan", async () => {
 		const adoClient = makeAdoClient({
-			fetchWorkItem: vi.fn().mockResolvedValue(rawTestPlan({ "System.State": "Locked" })),
+			fetchWorkItem: vi.fn().mockResolvedValue(rawTestPlan({ "System.State": "TestVault Locked" })),
 		});
 		const service = createTestPlanService(adoClient, PROJECT);
 		await expect(service.update(20, { testSetIds: [99] })).rejects.toThrow("Test Plan is locked");
@@ -166,7 +166,7 @@ describe("update", () => {
 
 	it("throws 'Test Plan is locked' when patching additionalTestCaseIds on a Locked plan", async () => {
 		const adoClient = makeAdoClient({
-			fetchWorkItem: vi.fn().mockResolvedValue(rawTestPlan({ "System.State": "Locked" })),
+			fetchWorkItem: vi.fn().mockResolvedValue(rawTestPlan({ "System.State": "TestVault Locked" })),
 		});
 		const service = createTestPlanService(adoClient, PROJECT);
 		await expect(service.update(20, { additionalTestCaseIds: [42] })).rejects.toThrow(
@@ -203,7 +203,7 @@ describe("list", () => {
 		const adoClient = makeAdoClient({ queryByWiql: vi.fn().mockResolvedValue([]) });
 		await createTestPlanService(adoClient, PROJECT).list();
 		const wiql = vi.mocked(adoClient.queryByWiql).mock.lastCall?.[0] ?? "";
-		expect(wiql).toContain("TestVault.TestPlan");
+		expect(wiql).toContain("TestVault Test Plan");
 	});
 
 	it("fetches each returned ID", async () => {
@@ -221,20 +221,24 @@ describe("list", () => {
 describe("lock", () => {
 	it("calls updateWorkItem with State=Locked", async () => {
 		const adoClient = makeAdoClient({
-			updateWorkItem: vi.fn().mockResolvedValue(rawTestPlan({ "System.State": "Locked" })),
+			updateWorkItem: vi
+				.fn()
+				.mockResolvedValue(rawTestPlan({ "System.State": "TestVault Locked" })),
 		});
 		await createTestPlanService(adoClient, PROJECT).lock(20);
 		expect(vi.mocked(adoClient.updateWorkItem)).toHaveBeenCalledWith(
 			20,
 			expect.arrayContaining([
-				expect.objectContaining({ path: "/fields/System.State", value: "Locked" }),
+				expect.objectContaining({ path: "/fields/System.State", value: "TestVault Locked" }),
 			])
 		);
 	});
 
 	it("does NOT create snapshots (deferred to T-3.x)", async () => {
 		const adoClient = makeAdoClient({
-			updateWorkItem: vi.fn().mockResolvedValue(rawTestPlan({ "System.State": "Locked" })),
+			updateWorkItem: vi
+				.fn()
+				.mockResolvedValue(rawTestPlan({ "System.State": "TestVault Locked" })),
 		});
 		await createTestPlanService(adoClient, PROJECT).lock(20);
 		expect(vi.mocked(adoClient.createWorkItem)).not.toHaveBeenCalled();
@@ -252,7 +256,7 @@ describe("unlock", () => {
 		expect(vi.mocked(adoClient.updateWorkItem)).toHaveBeenCalledWith(
 			20,
 			expect.arrayContaining([
-				expect.objectContaining({ path: "/fields/System.State", value: "Draft" }),
+				expect.objectContaining({ path: "/fields/System.State", value: "TestVault Draft" }),
 			])
 		);
 	});
@@ -329,7 +333,7 @@ describe("lockWithAutoSnapshot", () => {
 				.mockResolvedValue(rawTestPlan({ "TestVault.AdditionalTestCaseIds": JSON.stringify([6]) })),
 			updateWorkItem: vi.fn().mockResolvedValue(
 				rawTestPlan({
-					"System.State": "Locked",
+					"System.State": "TestVault Locked",
 					"TestVault.LockedSnapshotIds": JSON.stringify([100, 101]),
 				})
 			),
@@ -351,7 +355,7 @@ describe("lockWithAutoSnapshot", () => {
 			fetchWorkItem: vi.fn().mockResolvedValue(rawTestPlan()),
 			updateWorkItem: vi.fn().mockResolvedValue(
 				rawTestPlan({
-					"System.State": "Locked",
+					"System.State": "TestVault Locked",
 					"TestVault.LockedSnapshotIds": JSON.stringify([100]),
 				})
 			),
@@ -375,7 +379,7 @@ describe("lockWithAutoSnapshot", () => {
 		const patches = vi.mocked(adoClient.updateWorkItem).mock.lastCall?.[1] ?? [];
 		const statePatch = patches.find((p) => p.path === "/fields/System.State");
 		const snapshotPatch = patches.find((p) => p.path === "/fields/TestVault.LockedSnapshotIds");
-		expect(statePatch?.value).toBe("Locked");
+		expect(statePatch?.value).toBe("TestVault Locked");
 		expect(JSON.parse(snapshotPatch?.value as string)).toContain(100);
 	});
 
@@ -387,7 +391,9 @@ describe("lockWithAutoSnapshot", () => {
 					"TestVault.AdditionalTestCaseIds": JSON.stringify([]),
 				})
 			),
-			updateWorkItem: vi.fn().mockResolvedValue(rawTestPlan({ "System.State": "Locked" })),
+			updateWorkItem: vi
+				.fn()
+				.mockResolvedValue(rawTestPlan({ "System.State": "TestVault Locked" })),
 		});
 		const testSetService = makeTestSetService([]);
 		const versionService = makeVersionService({});
@@ -401,7 +407,7 @@ describe("lockWithAutoSnapshot", () => {
 		expect(vi.mocked(adoClient.updateWorkItem)).toHaveBeenCalledWith(
 			20,
 			expect.arrayContaining([
-				expect.objectContaining({ path: "/fields/System.State", value: "Locked" }),
+				expect.objectContaining({ path: "/fields/System.State", value: "TestVault Locked" }),
 			])
 		);
 	});
@@ -416,7 +422,7 @@ describe("lockWithAutoSnapshot", () => {
 			),
 			updateWorkItem: vi.fn().mockResolvedValue(
 				rawTestPlan({
-					"System.State": "Locked",
+					"System.State": "TestVault Locked",
 					"TestVault.LockedSnapshotIds": JSON.stringify([100]),
 				})
 			),

@@ -52,7 +52,7 @@ function rawVersion(id: number, name: string): RawWorkItem {
 		rev: 1,
 		url: `https://dev.azure.com/org/MyProject/_apis/wit/workitems/${id}`,
 		fields: {
-			"System.State": "Frozen",
+			"System.State": "TestVault Frozen",
 			"System.CreatedBy": "alice@example.com",
 			"System.CreatedDate": NOW,
 			"TestVault.ParentTestCaseId": 42,
@@ -89,7 +89,7 @@ describe("createSnapshot", () => {
 		await service.createSnapshot(makeTestCase(), { name: "v1.0", parentTestCaseId: 42 });
 		const patches = vi.mocked(adoClient.createWorkItem).mock.lastCall?.[1] ?? [];
 		const statePatch = patches.find((p) => p.path === "/fields/System.State");
-		expect(statePatch?.value).toBe("Frozen");
+		expect(statePatch?.value).toBe("TestVault Frozen");
 	});
 
 	it("stores the snapshot name and parent TC ID", async () => {
@@ -167,8 +167,11 @@ describe("listSnapshots", () => {
 		const service = createTestCaseVersionService(adoClient);
 		await service.listSnapshots(42);
 		const wiql = vi.mocked(adoClient.queryByWiql).mock.lastCall?.[0] ?? "";
-		expect(wiql).toContain("TestVault.TestCaseVersion");
+		expect(wiql).toContain("TestVault Test Case Version");
 		expect(wiql).toContain("42");
+		// TECH-DEBT-070: must use the ADO-translated field ref, not the schema ref
+		expect(wiql).toContain("Custom.TestVaultParentTestCaseId");
+		expect(wiql).not.toContain("[TestVault.ParentTestCaseId]");
 	});
 
 	it("returns snapshots with name and immutable=true", async () => {
