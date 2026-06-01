@@ -609,9 +609,11 @@ export function createProcessInstallService(
 					}
 
 					// ETAPE B : attach field to WIT
+					// ADO VS403099: boolean fields must be required:true at attach time
+					// (a boolean has no "empty" state; defaultValue handles the UI default)
 					const attachBody: Record<string, unknown> = {
 						referenceName: adoFieldRefName,
-						required: field.required,
+						required: field.type === "boolean" ? true : field.required,
 					};
 					if (field.defaultValue !== undefined) {
 						attachBody.defaultValue = String(field.defaultValue);
@@ -781,7 +783,7 @@ export function createProcessInstallService(
 					f.referenceName.startsWith("TestVault.")
 				)) {
 					const adoFieldRefName = schemaToAdoFieldRefName(field.referenceName);
-					const adoFieldName = schemaToAdoFieldName(field.referenceName);
+					const adoFieldName = schemaToAdoFieldName(field.displayName);
 
 					// STEP A: ensure the field exists at org level
 					if (!orgFieldRefNames.has(adoFieldRefName)) {
@@ -795,9 +797,11 @@ export function createProcessInstallService(
 
 					// STEP B: attach to WIT if not already present
 					if (!attachedRefs.has(adoFieldRefName)) {
+						// ADO VS403099: boolean fields must be required:true at attach time
+						// (a boolean has no "empty" state; defaultValue handles the UI default)
 						const attachBody: Record<string, unknown> = {
 							referenceName: adoFieldRefName,
-							required: field.required,
+							required: field.type === "boolean" ? true : field.required,
 						};
 						if (field.defaultValue !== undefined) {
 							attachBody.defaultValue = String(field.defaultValue);
