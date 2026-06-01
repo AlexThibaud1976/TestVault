@@ -1,7 +1,7 @@
 {
 	"name": "@atconseil/argos-e2e",
 	"private": true,
-	"version": "0.5.34",
+	"version": "0.6.0",
 	"type": "module",
 	"description": "Playwright E2E suite against real ADO instances",
 	"scripts": {

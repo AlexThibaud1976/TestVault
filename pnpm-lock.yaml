@@ -340,6 +340,15 @@ importers:
 
   tools/regression:
     devDependencies:
+      '@atconseil/argos-sdk':
+        specifier: workspace:*
+        version: link:../../packages/argos-sdk
+      '@atconseil/argos-types':
+        specifier: workspace:*
+        version: link:../../packages/argos-types
+      '@atconseil/argos-wit-schema':
+        specifier: workspace:*
+        version: link:../../packages/argos-wit-schema
       '@types/node':
         specifier: ^25.7.0
         version: 25.7.0

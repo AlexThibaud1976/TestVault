@@ -40,6 +40,7 @@ function makeExecService(overrides?: Partial<ITestExecutionService>): ITestExecu
 		saveStepResult: vi.fn(),
 		attachEvidence: vi.fn().mockResolvedValue(inProgressExec),
 		finalizeRun: vi.fn(),
+		abortRun: vi.fn(),
 		linkBug: vi.fn(),
 		listExecutions: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 }),
 		read: vi.fn(),

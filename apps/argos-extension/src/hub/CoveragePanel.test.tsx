@@ -50,6 +50,7 @@ function makeExec(
 		source: "Manual",
 		executedBy: "tester@example.com",
 		executedAt: NOW,
+		globalStatusOverridden: false,
 		immutable: true,
 	};
 }
@@ -74,6 +75,7 @@ function makeExecService(overrides?: Partial<ITestExecutionService>): ITestExecu
 		saveStepResult: vi.fn(),
 		attachEvidence: vi.fn(),
 		finalizeRun: vi.fn(),
+		abortRun: vi.fn(),
 		linkBug: vi.fn(),
 		listExecutions: vi
 			.fn()

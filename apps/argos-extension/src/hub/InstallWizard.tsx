@@ -25,6 +25,9 @@ type WizardStep =
 	| { id: "installing"; progress: InstallProgressStep[] }
 	| { id: "done"; processId: string; processName: string }
 	| { id: "already-installed"; state: Extract<ProcessInstallState, { status: "installed" }> }
+	| { id: "needs-upgrade"; state: Extract<ProcessInstallState, { status: "needs-upgrade" }> }
+	| { id: "upgrading" }
+	| { id: "upgrade-done" }
 	| { id: "partial"; state: Extract<ProcessInstallState, { status: "partial" }> }
 	| { id: "error"; message: string; noPermission?: boolean };
 
@@ -52,6 +55,8 @@ export function InstallWizard({ service, onInstalled }: InstallWizardProps) {
 			.then((state) => {
 				if (state.status === "not-installed") {
 					setStep({ id: "not-installed", processName: "TestVault - Agile", baseProcess: "Agile" });
+				} else if (state.status === "needs-upgrade") {
+					setStep({ id: "needs-upgrade", state });
 				} else if (state.status === "installed") {
 					setStep({ id: "already-installed", state });
 				} else {
@@ -92,11 +97,72 @@ export function InstallWizard({ service, onInstalled }: InstallWizardProps) {
 
 	if (step.id === "already-installed") {
 		return (
-			<MessageBar intent="success">
+			<MessageBar data-testid="already-installed-screen" intent="success">
 				<MessageBarTitle>TestVault already installed</MessageBarTitle>
 				<MessageBarBody>
 					Process: <strong>{step.state.processName}</strong> — Schema{" "}
 					<strong>v{step.state.schemaVersion}</strong>. No action needed.
+				</MessageBarBody>
+			</MessageBar>
+		);
+	}
+
+	if (step.id === "needs-upgrade") {
+		return (
+			<div data-testid="needs-upgrade-screen" style={{ padding: "24px" }}>
+				<MessageBar intent="warning">
+					<MessageBarTitle>Schema Upgrade Available</MessageBarTitle>
+					<MessageBarBody>
+						Installed: <strong>v{step.state.schemaVersion}</strong> — Expected:{" "}
+						<strong>v{step.state.expectedVersion}</strong>. The process schema must be upgraded to
+						use new 0.6.0 fields (Evidence, BugLinks, GlobalStatusOverridden, PreviousExecutionId)
+						and states (InProgress, Aborted).
+					</MessageBarBody>
+				</MessageBar>
+				<div style={{ marginTop: "16px", display: "flex", gap: "12px" }}>
+					<Button
+						data-testid="upgrade-now-button"
+						appearance="primary"
+						onClick={async () => {
+							setStep({ id: "upgrading" });
+							await service.upgradeSchema({ processId: step.state.processId });
+							setStep({ id: "upgrade-done" });
+						}}
+					>
+						Upgrade Now
+					</Button>
+					<Button
+						data-testid="upgrade-skip-button"
+						appearance="secondary"
+						onClick={() =>
+							setStep({
+								id: "already-installed",
+								state: { ...step.state, status: "installed" as const },
+							})
+						}
+					>
+						Skip (use as is)
+					</Button>
+				</div>
+			</div>
+		);
+	}
+
+	if (step.id === "upgrading") {
+		return (
+			<div style={{ padding: "32px", textAlign: "center" }}>
+				<Spinner label="Upgrading schema..." />
+			</div>
+		);
+	}
+
+	if (step.id === "upgrade-done") {
+		return (
+			<MessageBar data-testid="upgrade-done-screen" intent="success">
+				<MessageBarTitle>Schema upgraded to v1.1.0</MessageBarTitle>
+				<MessageBarBody>
+					Reload required to use new fields (Evidence, BugLinks, GlobalStatusOverridden,
+					PreviousExecutionId) and states (InProgress, Aborted).
 				</MessageBarBody>
 			</MessageBar>
 		);

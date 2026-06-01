@@ -154,8 +154,43 @@ describe("TestVault.TestSet", () => {
 // ─── TestExecution ────────────────────────────────────────────────────────────
 
 describe("TestVault.TestExecution", () => {
-	it("is marked isImmutableAfterCreate", () => {
-		expect(TEST_EXECUTION_WIT.isImmutableAfterCreate).toBe(true);
+	it("has the lifecycle states InProgress / Completed / Aborted and is not immutable-after-create", () => {
+		// Lifecycle null -> InProgress -> { Completed | Aborted }: the WIT is mutable
+		// while InProgress and frozen at the application level once Completed/Aborted,
+		// so it is no longer marked immutable-from-creation.
+		expect(TEST_EXECUTION_WIT.isImmutableAfterCreate).toBeFalsy();
+		expect(TEST_EXECUTION_WIT.states.map((s) => s.name)).toEqual([
+			"InProgress",
+			"Completed",
+			"Aborted",
+		]);
+		expect(TEST_EXECUTION_WIT.transitions).toEqual([
+			{ from: null, to: "InProgress" },
+			{ from: "InProgress", to: "Completed" },
+			{ from: "InProgress", to: "Aborted" },
+		]);
+	});
+
+	it("declares Evidence / BugLinks / GlobalStatusOverridden / PreviousExecutionId fields", () => {
+		const refs = new Set(TEST_EXECUTION_WIT.fields.map((f) => f.referenceName));
+		expect(refs.has("TestVault.Evidence")).toBe(true);
+		expect(refs.has("TestVault.BugLinks")).toBe(true);
+		expect(refs.has("TestVault.GlobalStatusOverridden")).toBe(true);
+		expect(refs.has("TestVault.PreviousExecutionId")).toBe(true);
+	});
+
+	it("marks config fields fixed at creation as immutable", () => {
+		const immutable = TEST_EXECUTION_WIT.fields
+			.filter((f) => f.immutable)
+			.map((f) => f.referenceName);
+		expect(immutable).toEqual([
+			"TestVault.TestPlanId",
+			"TestVault.TestCaseId",
+			"TestVault.TestCaseVersionId",
+			"TestVault.Environment",
+			"TestVault.ExecutionSource",
+			"TestVault.PreviousExecutionId",
+		]);
 	});
 
 	it("GlobalStatus is a picklistString with Pass/Fail/Blocked/Unexecuted/Skipped", () => {

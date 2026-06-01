@@ -28,6 +28,7 @@ function makeFinalizedExec(
 		source: "Manual",
 		executedBy: "tester@example.com",
 		executedAt: date,
+		globalStatusOverridden: false,
 		immutable: true,
 	};
 }
@@ -45,6 +46,7 @@ function makeService(overrides?: Partial<ITestExecutionService>): ITestExecution
 		saveStepResult: vi.fn(),
 		attachEvidence: vi.fn(),
 		finalizeRun: vi.fn(),
+		abortRun: vi.fn(),
 		linkBug: vi.fn(),
 		listExecutions: vi
 			.fn()

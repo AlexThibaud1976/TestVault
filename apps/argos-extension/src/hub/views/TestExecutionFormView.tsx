@@ -47,7 +47,7 @@ export function TestExecutionFormView({
 	const [stepStatus, setStepStatus] = useState("");
 
 	// Sprint 2.23 -- display-only mode for an existing execution. Per
-	// constitution S3.5 the TestExecution is IMMUTABLE after creation.
+	// spec US-2.1: TestExecution is immutable at finalization (applicative, not WIT-level).
 	// When executionId is set we render the run as read-only and expose
 	// a Re-run button (creates a brand-new TestExecution for the same
 	// TC) instead of Save / Update.

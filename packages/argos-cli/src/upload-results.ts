@@ -99,6 +99,7 @@ export async function processUploadResults(
 			status: isFail ? "Fail" : "Pass",
 			comment: item.description,
 			evidenceIds: [],
+			defectIds: [],
 		});
 		await execService.finalizeRun(run.id);
 		matched++;

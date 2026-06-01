@@ -16,6 +16,10 @@ export const TestStepResultSchema = z.object({
 	stepIndex: z.number().int(),
 	status: StepStatusSchema,
 	comment: z.string().optional(),
+	actualResult: z.string().optional(),
+	// default [] keeps executions created before 0.6.0 (no defectIds) parsing
+	// backward-compatibly; the runner UI now always populates per-step defect links.
+	defectIds: z.array(z.number().int()).default([]),
 	evidenceIds: z.array(z.string()),
 });
 export type TestStepResult = z.infer<typeof TestStepResultSchema>;
@@ -38,6 +42,10 @@ export const TestVaultTestExecutionSchema = z.object({
 	executedBy: z.string(),
 	executedAt: z.string().datetime(),
 	bugLinks: z.array(z.number().int()),
+	// default false keeps executions created before 0.6.0 (no overridden flag)
+	// parsing backward-compatibly while finalizeRun now writes it explicitly.
+	globalStatusOverridden: z.boolean().default(false),
+	previousExecutionId: z.number().int().optional(),
 	source: ExecutionSourceSchema,
 	ciMetadata: CiMetadataSchema.optional(),
 	immutable: z.literal(true),

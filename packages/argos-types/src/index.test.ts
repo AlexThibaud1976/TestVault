@@ -162,9 +162,11 @@ describe("TestStep", () => {
 // ─── TestStepResult ───────────────────────────────────────────────────────────
 
 describe("TestStepResult", () => {
-	it("parses a valid step result", () => {
+	it("parses a valid step result and defaults defectIds to []", () => {
 		const r = { stepIndex: 1, status: "Pass" as const, evidenceIds: [] };
-		expect(TestStepResultSchema.parse(r)).toEqual(r);
+		const parsed = TestStepResultSchema.parse(r);
+		expect(parsed).toEqual({ ...r, defectIds: [] });
+		expect(parsed.defectIds).toEqual([]);
 	});
 	it("parses result with optional comment", () => {
 		const r = {
@@ -172,6 +174,16 @@ describe("TestStepResult", () => {
 			status: "Fail" as const,
 			comment: "Server 500",
 			evidenceIds: ["att-1"],
+		};
+		expect(TestStepResultSchema.parse(r)).toEqual({ ...r, defectIds: [] });
+	});
+	it("parses optional actualResult and explicit defectIds", () => {
+		const r = {
+			stepIndex: 2,
+			status: "Fail" as const,
+			actualResult: "Got 500 instead of 200",
+			defectIds: [101, 102],
+			evidenceIds: [],
 		};
 		expect(TestStepResultSchema.parse(r)).toEqual(r);
 	});
@@ -405,6 +417,18 @@ describe("TestVaultTestExecution", () => {
 		expect(TestVaultTestExecutionSchema.parse(validExecution)).toMatchObject({
 			globalStatus: "Pass",
 		});
+	});
+	it("defaults globalStatusOverridden to false and accepts previousExecutionId", () => {
+		const base = TestVaultTestExecutionSchema.parse(validExecution);
+		expect(base.globalStatusOverridden).toBe(false);
+		expect(base.previousExecutionId).toBeUndefined();
+		const rerun = TestVaultTestExecutionSchema.parse({
+			...validExecution,
+			globalStatusOverridden: true,
+			previousExecutionId: 555,
+		});
+		expect(rerun.globalStatusOverridden).toBe(true);
+		expect(rerun.previousExecutionId).toBe(555);
 	});
 	it("parses execution with CI metadata", () => {
 		const ciExec = {

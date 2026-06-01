@@ -39,6 +39,7 @@ function makeExecService(overrides?: Partial<ITestExecutionService>): ITestExecu
 		saveStepResult: vi.fn(),
 		attachEvidence: vi.fn(),
 		finalizeRun: vi.fn(),
+		abortRun: vi.fn().mockResolvedValue({} as TestVaultTestExecution),
 		linkBug: vi.fn().mockResolvedValue({} as TestVaultTestExecution),
 		listExecutions: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 }),
 		read: vi.fn().mockResolvedValue({} as TestVaultTestExecution),
@@ -78,14 +79,15 @@ function makeExecution(overrides?: Partial<TestVaultTestExecution>): TestVaultTe
 		environment: "QA",
 		globalStatus: "Fail",
 		stepResults: [
-			{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [] },
-			{ stepIndex: 1, status: "Fail", comment: "Error not shown", evidenceIds: [] },
+			{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [], defectIds: [] },
+			{ stepIndex: 1, status: "Fail", comment: "Error not shown", evidenceIds: [], defectIds: [] },
 		],
 		evidence: [],
 		bugLinks: [],
 		source: "Manual",
 		executedBy: "alice@example.com",
 		executedAt: NOW,
+		globalStatusOverridden: false,
 		immutable: true,
 		...overrides,
 	};
@@ -122,7 +124,7 @@ describe("buildBugDraft", () => {
 
 	it("reproSteps is empty when no steps failed", () => {
 		const exec = makeExecution({
-			stepResults: [{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [] }],
+			stepResults: [{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [], defectIds: [] }],
 		});
 		const draft = buildBugDraft(exec, makeTestCase());
 		expect(draft.reproSteps).toBe("");

@@ -1,3 +1,4 @@
+import { TESTVAULT_SCHEMA } from "@atconseil/argos-wit-schema";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
@@ -65,7 +66,7 @@ describe("detectInstallState", () => {
 		expect(state.status).toBe("not-installed");
 	});
 
-	it("returns installed when all 7 WITs are present", async () => {
+	it("returns installed when all 7 WITs are present and version is current", async () => {
 		server.use(
 			http.get(BASE, () =>
 				HttpResponse.json({
@@ -73,7 +74,7 @@ describe("detectInstallState", () => {
 						{
 							typeId: "tv-guid",
 							name: "TestVault - Agile",
-							description: '{"testvault-schema":"1.0.0"}',
+							description: '{"testvault-schema":"1.1.0"}',
 						},
 					],
 				})
@@ -87,7 +88,7 @@ describe("detectInstallState", () => {
 		if (state.status === "installed") {
 			expect(state.processId).toBe("tv-guid");
 			expect(state.processName).toBe("TestVault - Agile");
-			expect(state.schemaVersion).toBe("1.0.0");
+			expect(state.schemaVersion).toBe("1.1.0");
 		}
 	});
 
@@ -129,6 +130,76 @@ describe("detectInstallState", () => {
 	it("throws ProcessPermissionError on 403", async () => {
 		server.use(http.get(BASE, () => new HttpResponse(null, { status: 403 })));
 		await expect(makeService().detectInstallState()).rejects.toThrow(ProcessPermissionError);
+	});
+
+	// Runner 0.6.0 B3 -- needs-upgrade tests
+	it("returns needs-upgrade when installed version is older than current schema", async () => {
+		server.use(
+			http.get(BASE, () =>
+				HttpResponse.json({
+					value: [
+						{
+							typeId: "tv-guid",
+							name: "TestVault - Agile",
+							description: '{"testvault-schema":"1.0.0"}',
+						},
+					],
+				})
+			),
+			http.get(`${BASE}/tv-guid/workItemTypes`, () =>
+				HttpResponse.json({ value: ALL_WIT_REFS.map((ref) => ({ referenceName: ref })) })
+			)
+		);
+		const state = await makeService().detectInstallState();
+		expect(state.status).toBe("needs-upgrade");
+		if (state.status === "needs-upgrade") {
+			expect(state.processId).toBe("tv-guid");
+			expect(state.processName).toBe("TestVault - Agile");
+			expect(state.schemaVersion).toBe("1.0.0");
+			expect(state.expectedVersion).toBe("1.1.0");
+		}
+	});
+
+	it("returns installed (not needs-upgrade) when version equals current schema", async () => {
+		server.use(
+			http.get(BASE, () =>
+				HttpResponse.json({
+					value: [
+						{
+							typeId: "tv-guid",
+							name: "TestVault - Agile",
+							description: '{"testvault-schema":"1.1.0"}',
+						},
+					],
+				})
+			),
+			http.get(`${BASE}/tv-guid/workItemTypes`, () =>
+				HttpResponse.json({ value: ALL_WIT_REFS.map((ref) => ({ referenceName: ref })) })
+			)
+		);
+		const state = await makeService().detectInstallState();
+		expect(state.status).toBe("installed");
+	});
+
+	it("returns installed (not needs-upgrade) when installed version is ahead of current schema", async () => {
+		server.use(
+			http.get(BASE, () =>
+				HttpResponse.json({
+					value: [
+						{
+							typeId: "tv-guid",
+							name: "TestVault - Agile",
+							description: '{"testvault-schema":"2.0.0"}',
+						},
+					],
+				})
+			),
+			http.get(`${BASE}/tv-guid/workItemTypes`, () =>
+				HttpResponse.json({ value: ALL_WIT_REFS.map((ref) => ({ referenceName: ref })) })
+			)
+		);
+		const state = await makeService().detectInstallState();
+		expect(state.status).toBe("installed");
 	});
 });
 
@@ -824,6 +895,13 @@ describe("Sprint 2.14 -- robust state creation", () => {
 						{ id: "s6", name: "TestVault Draft", color: "b2b2b2", stateCategory: "Proposed" },
 						{ id: "s7", name: "TestVault Locked", color: "007acc", stateCategory: "InProgress" },
 						{ id: "s8", name: "TestVault Ready", color: "007acc", stateCategory: "Proposed" },
+						{
+							id: "s9",
+							name: "TestVault InProgress",
+							color: "007acc",
+							stateCategory: "InProgress",
+						},
+						{ id: "s10", name: "TestVault Aborted", color: "a4262c", stateCategory: "Removed" },
 					],
 				})
 			),
@@ -914,5 +992,168 @@ describe("Sprint 2.14 -- robust state creation", () => {
 		);
 		// Other states (Ready, Active, Closed, Deprecated) -> CREATE
 		expect(steps.some((m) => m.includes("[STATE-CREATE]"))).toBe(true);
+	});
+});
+
+// ─── upgradeSchema (Runner 0.6.0 B3) ──────────────────────────────────────────
+
+describe("upgradeSchema", () => {
+	const UPGRADE_PROC = "upgrade-proc-guid";
+	const upgradeWitsUrl = `${BASE}/${UPGRADE_PROC}/workItemTypes`;
+	const upgradeWitFieldsRegex = new RegExp(
+		`${BASE.replace(/\//g, "\\/")}\\/${UPGRADE_PROC}\\/workItemTypes\\/.+\\/fields`
+	);
+	const upgradeStatesRegex = new RegExp(
+		`${BASE.replace(/\//g, "\\/")}\\/${UPGRADE_PROC}\\/workItemTypes\\/.+\\/states`
+	);
+	const upgradeProcBase = `${BASE}/${UPGRADE_PROC}`;
+
+	function setupUpgradeBase(existingWitFields: string[] = [], existingStates: string[] = []) {
+		server.use(
+			// WITs present in the process
+			http.get(upgradeWitsUrl, () =>
+				HttpResponse.json({
+					value: ALL_WIT_REFS.map((ref) => ({ referenceName: ref })),
+				})
+			),
+			// Org-level fields (empty by default -> all need creating)
+			http.get(ORG_FIELDS_URL, () => HttpResponse.json({ value: [] })),
+			http.post(ORG_FIELDS_URL, () =>
+				HttpResponse.json({ referenceName: "Custom.TestVaultX" }, { status: 201 })
+			),
+			// WIT-level fields already attached
+			http.get(upgradeWitFieldsRegex, () =>
+				HttpResponse.json({
+					value: existingWitFields.map((ref) => ({ referenceName: ref })),
+				})
+			),
+			// POST attach field to WIT
+			http.post(upgradeWitFieldsRegex, () => HttpResponse.json({}, { status: 200 })),
+			// States
+			http.get(upgradeStatesRegex, () =>
+				HttpResponse.json({
+					value: existingStates.map((n) => ({
+						id: "s1",
+						name: n,
+						color: "007acc",
+						stateCategory: "InProgress",
+					})),
+				})
+			),
+			http.post(upgradeStatesRegex, () => HttpResponse.json({}, { status: 201 })),
+			// PATCH process description (marker update)
+			http.patch(upgradeProcBase, () => HttpResponse.json({}))
+		);
+	}
+
+	it("attaches a missing field to an existing WIT", async () => {
+		let attachCount = 0;
+		setupUpgradeBase([], []);
+		server.use(
+			http.post(upgradeWitFieldsRegex, () => {
+				attachCount++;
+				return HttpResponse.json({}, { status: 200 });
+			})
+		);
+		await makeService().upgradeSchema({ processId: UPGRADE_PROC });
+		expect(attachCount).toBeGreaterThan(0);
+	});
+
+	it("skips attaching a field that is already present on the WIT", async () => {
+		let attachCount = 0;
+		// Pre-populate every TestVault.* field as already attached
+		const allFieldRefs = TESTVAULT_SCHEMA.wits
+			.flatMap((w) => w.fields)
+			.filter((f) => f.referenceName.startsWith("TestVault."))
+			.map((f) => {
+				const parts = f.referenceName.split(".");
+				return `Custom.TestVault${parts[1]}`;
+			});
+		setupUpgradeBase(allFieldRefs, []);
+		server.use(
+			http.post(upgradeWitFieldsRegex, () => {
+				attachCount++;
+				return HttpResponse.json({}, { status: 200 });
+			})
+		);
+		await makeService().upgradeSchema({ processId: UPGRADE_PROC });
+		expect(attachCount).toBe(0);
+	});
+
+	it("creates a missing state", async () => {
+		let statePostCount = 0;
+		setupUpgradeBase([], []);
+		server.use(
+			http.post(upgradeStatesRegex, () => {
+				statePostCount++;
+				return HttpResponse.json({}, { status: 201 });
+			})
+		);
+		await makeService().upgradeSchema({ processId: UPGRADE_PROC });
+		expect(statePostCount).toBeGreaterThan(0);
+	});
+
+	it("skips creating a state that already exists", async () => {
+		// Pre-populate ALL translated state names for ALL WITs
+		const allStateNames = TESTVAULT_SCHEMA.wits
+			.flatMap((w) => w.states)
+			.map((s) => `TestVault ${s.name}`);
+		let statePostCount = 0;
+		setupUpgradeBase([], allStateNames);
+		server.use(
+			http.post(upgradeStatesRegex, () => {
+				statePostCount++;
+				return HttpResponse.json({}, { status: 201 });
+			})
+		);
+		await makeService().upgradeSchema({ processId: UPGRADE_PROC });
+		expect(statePostCount).toBe(0);
+	});
+
+	it("updates the schema version marker via PATCH", async () => {
+		let patchBody: { description: string } | null = null;
+		setupUpgradeBase([], []);
+		server.use(
+			http.patch(upgradeProcBase, async ({ request }) => {
+				patchBody = (await request.json()) as { description: string };
+				return HttpResponse.json({});
+			})
+		);
+		const result = await makeService().upgradeSchema({ processId: UPGRADE_PROC });
+		expect(patchBody).not.toBeNull();
+		const body = patchBody as unknown as { description: string };
+		const desc = JSON.parse(body.description ?? "{}") as { "testvault-schema": string };
+		expect(desc["testvault-schema"]).toBe("1.1.0");
+		expect(result.markerUpdated).toBe(true);
+	});
+
+	it("returns correct fieldsAdded, statesAdded counts", async () => {
+		// Use empty existing fields/states so everything is added
+		setupUpgradeBase([], []);
+		const result = await makeService().upgradeSchema({ processId: UPGRADE_PROC });
+		expect(result.fieldsAdded).toBeGreaterThan(0);
+		expect(result.statesAdded).toBeGreaterThan(0);
+		expect(result.processId).toBe(UPGRADE_PROC);
+	});
+
+	it("does not throw when a WIT is missing from the process", async () => {
+		server.use(
+			// Only one WIT present (TestCase) — all others absent
+			http.get(upgradeWitsUrl, () =>
+				HttpResponse.json({
+					value: [{ referenceName: "MockProcess.TestVaultTestCase" }],
+				})
+			),
+			http.get(ORG_FIELDS_URL, () => HttpResponse.json({ value: [] })),
+			http.post(ORG_FIELDS_URL, () =>
+				HttpResponse.json({ referenceName: "Custom.TestVaultX" }, { status: 201 })
+			),
+			http.get(upgradeWitFieldsRegex, () => HttpResponse.json({ value: [] })),
+			http.post(upgradeWitFieldsRegex, () => HttpResponse.json({}, { status: 200 })),
+			http.get(upgradeStatesRegex, () => HttpResponse.json({ value: [] })),
+			http.post(upgradeStatesRegex, () => HttpResponse.json({}, { status: 201 })),
+			http.patch(upgradeProcBase, () => HttpResponse.json({}))
+		);
+		await expect(makeService().upgradeSchema({ processId: UPGRADE_PROC })).resolves.toBeDefined();
 	});
 });
