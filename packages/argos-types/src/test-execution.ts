@@ -16,6 +16,11 @@ export const TestStepResultSchema = z.object({
 	stepIndex: z.number().int(),
 	status: StepStatusSchema,
 	comment: z.string().optional(),
+	actualResult: z.string().optional(),
+	// optional for the 0.6.0 socle: executions created before 0.6.0 (no defectIds)
+	// still parse. Tightened to a required default([]) in increment 2, once the
+	// service/UI populate it (kept optional here to leave the service untouched).
+	defectIds: z.array(z.number().int()).optional(),
 	evidenceIds: z.array(z.string()),
 });
 export type TestStepResult = z.infer<typeof TestStepResultSchema>;
@@ -38,6 +43,11 @@ export const TestVaultTestExecutionSchema = z.object({
 	executedBy: z.string(),
 	executedAt: z.string().datetime(),
 	bugLinks: z.array(z.number().int()),
+	// optional for the 0.6.0 socle: executions created before 0.6.0 (no overridden
+	// flag) still parse. Tightened to a required default(false) in increment 2, once
+	// the service writes it (kept optional here to leave the service untouched).
+	globalStatusOverridden: z.boolean().optional(),
+	previousExecutionId: z.number().int().optional(),
 	source: ExecutionSourceSchema,
 	ciMetadata: CiMetadataSchema.optional(),
 	immutable: z.literal(true),
