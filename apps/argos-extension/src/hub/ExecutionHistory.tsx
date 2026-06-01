@@ -6,6 +6,7 @@ import type {
 import type { GlobalStatus } from "@atconseil/argos-types";
 import { Button, Text } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
+import { computeFlaky } from "./computeFlaky.js";
 
 export interface ExecutionHistoryProps {
 	testCaseId: number;
@@ -70,6 +71,9 @@ export function ExecutionHistory({
 			latestByEnv[exec.environment] = exec.globalStatus;
 		}
 	}
+	const flakyEnvs = computeFlaky(
+		items.map((e) => ({ globalStatus: e.globalStatus, environment: e.environment }))
+	);
 
 	return (
 		<div data-testid="execution-history" style={{ padding: "16px" }}>
@@ -175,7 +179,25 @@ export function ExecutionHistory({
 							>
 								<td style={{ padding: "8px" }}>{new Date(exec.executedAt).toLocaleDateString()}</td>
 								<td style={{ padding: "8px" }}>{exec.environment}</td>
-								<td style={{ padding: "8px" }}>{exec.globalStatus}</td>
+								<td style={{ padding: "8px" }}>
+									{exec.globalStatus}
+									{flakyEnvs.has(exec.environment) && (
+										<span
+											data-testid={`flaky-badge-${exec.environment}`}
+											style={{
+												marginLeft: "6px",
+												padding: "1px 5px",
+												background: "#fff4ce",
+												border: "1px solid #f4b942",
+												borderRadius: "3px",
+												fontSize: "11px",
+												color: "#805900",
+											}}
+										>
+											Flaky
+										</span>
+									)}
+								</td>
 								<td style={{ padding: "8px" }}>{exec.bugLinks.length}</td>
 								<td style={{ padding: "8px" }}>{exec.executedBy}</td>
 							</tr>
