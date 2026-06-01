@@ -67,9 +67,10 @@ export interface ITestExecutionService {
 	abortRun(id: number): Promise<TestVaultTestExecution>;
 	linkBug(id: number, bugId: number): Promise<TestVaultTestExecution>;
 	listExecutions(options: ListExecutionsOptions): Promise<ExecutionPage>;
-	// Sprint 2.23 -- display-only mode for an existing execution. Per
-	// constitution S3.5 the returned TestExecution is immutable from the
-	// UI side; this method only reads it.
+	// Sprint 2.23 -- display-only mode for an existing execution. The
+	// finalized TestExecution is immutable per spec US-2.1 (a completed run
+	// is frozen; re-running creates a new execution); this method only reads
+	// it. (Constitution S3.5 covers the TestPulse integration, not this.)
 	read(id: number): Promise<TestVaultTestExecution>;
 }
 
@@ -125,7 +126,7 @@ function fromRawFinalized(wi: RawWorkItem): TestVaultTestExecution {
 /**
  * Compute the global execution status from the per-step results.
  *
- * Rules (US-2.1 / constitution S3.5) :
+ * Rules (US-2.1) :
  *   - empty -> Unexecuted
  *   - any step Fail -> Fail (Fail wins over Blocked)
  *   - any step Blocked (no Fail) -> Blocked

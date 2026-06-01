@@ -445,7 +445,13 @@ describe("saveStepResult enrichment", () => {
 
 describe("globalStatus derivation (via finalizeRun)", () => {
 	function makeServiceWithSteps(
-		steps: Array<{ stepIndex: number; status: string; comment: string; evidenceIds: string[] }>
+		steps: Array<{
+			stepIndex: number;
+			status: string;
+			comment: string;
+			evidenceIds: string[];
+			defectIds?: number[];
+		}>
 	) {
 		const stepsJson = JSON.stringify(steps);
 		const inProgress = rawExecution({ "TestVault.StepResults": stepsJson });

@@ -28,6 +28,7 @@ function makeFinalizedExec(
 		source: "Manual",
 		executedBy: "tester@example.com",
 		executedAt: date,
+		globalStatusOverridden: false,
 		immutable: true,
 	};
 }

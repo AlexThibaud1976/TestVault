@@ -17,9 +17,10 @@ export const TestStepResultSchema = z.object({
 	status: StepStatusSchema,
 	comment: z.string().optional(),
 	actualResult: z.string().optional(),
-	// optional for the 0.6.0 socle: executions created before 0.6.0 (no defectIds)
-	// still parse. Tightened to a required default([]) in increment 2, once the
-	// service/UI populate it (kept optional here to leave the service untouched).
+	// Optional through B2: the service round-trips defectIds when present, but the
+	// runner UI does not yet populate it. Tightened to a required default([]) in B4
+	// (UI increment) -- tightening now would require touching UI source (out of B2
+	// scope per the increment plan).
 	defectIds: z.array(z.number().int()).optional(),
 	evidenceIds: z.array(z.string()),
 });
@@ -43,10 +44,9 @@ export const TestVaultTestExecutionSchema = z.object({
 	executedBy: z.string(),
 	executedAt: z.string().datetime(),
 	bugLinks: z.array(z.number().int()),
-	// optional for the 0.6.0 socle: executions created before 0.6.0 (no overridden
-	// flag) still parse. Tightened to a required default(false) in increment 2, once
-	// the service writes it (kept optional here to leave the service untouched).
-	globalStatusOverridden: z.boolean().optional(),
+	// default false keeps executions created before 0.6.0 (no overridden flag)
+	// parsing backward-compatibly while finalizeRun now writes it explicitly.
+	globalStatusOverridden: z.boolean().default(false),
 	previousExecutionId: z.number().int().optional(),
 	source: ExecutionSourceSchema,
 	ciMetadata: CiMetadataSchema.optional(),

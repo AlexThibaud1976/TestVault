@@ -418,9 +418,9 @@ describe("TestVaultTestExecution", () => {
 			globalStatus: "Pass",
 		});
 	});
-	it("accepts optional globalStatusOverridden and previousExecutionId (absent when not provided)", () => {
+	it("defaults globalStatusOverridden to false and accepts previousExecutionId", () => {
 		const base = TestVaultTestExecutionSchema.parse(validExecution);
-		expect(base.globalStatusOverridden).toBeUndefined();
+		expect(base.globalStatusOverridden).toBe(false);
 		expect(base.previousExecutionId).toBeUndefined();
 		const rerun = TestVaultTestExecutionSchema.parse({
 			...validExecution,

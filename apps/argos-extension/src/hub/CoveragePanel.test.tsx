@@ -50,6 +50,7 @@ function makeExec(
 		source: "Manual",
 		executedBy: "tester@example.com",
 		executedAt: NOW,
+		globalStatusOverridden: false,
 		immutable: true,
 	};
 }
