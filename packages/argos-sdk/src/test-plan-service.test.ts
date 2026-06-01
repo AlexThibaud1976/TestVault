@@ -203,7 +203,7 @@ describe("list", () => {
 		const adoClient = makeAdoClient({ queryByWiql: vi.fn().mockResolvedValue([]) });
 		await createTestPlanService(adoClient, PROJECT).list();
 		const wiql = vi.mocked(adoClient.queryByWiql).mock.lastCall?.[0] ?? "";
-		expect(wiql).toContain("TestVault.TestPlan");
+		expect(wiql).toContain("TestVault Test Plan");
 	});
 
 	it("fetches each returned ID", async () => {

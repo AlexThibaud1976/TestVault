@@ -573,7 +573,7 @@ describe("listExecutions", () => {
 		const service = createTestExecutionService(adoClient, PROJECT);
 		await service.listExecutions({ testCaseId: 5 });
 		const wiql = vi.mocked(adoClient.queryByWiql).mock.lastCall?.[0] ?? "";
-		expect(wiql).toContain("TestVault.TestExecution");
+		expect(wiql).toContain("TestVault Test Execution");
 		expect(wiql).toContain("Custom.TestVaultTestCaseId");
 		expect(wiql).not.toContain("[TestVault.TestCaseId]");
 		expect(wiql).toContain("5");
@@ -586,7 +586,7 @@ describe("listExecutions", () => {
 		const service = createTestExecutionService(adoClient, PROJECT);
 		await service.listExecutions({ testCaseId: 0 });
 		const wiql = vi.mocked(adoClient.queryByWiql).mock.lastCall?.[0] ?? "";
-		expect(wiql).toContain("TestVault.TestExecution");
+		expect(wiql).toContain("TestVault Test Execution");
 		expect(wiql).not.toContain("Custom.TestVaultTestCaseId");
 		expect(wiql).not.toContain("= 0");
 	});

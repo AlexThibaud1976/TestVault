@@ -211,7 +211,7 @@ describe("list", () => {
 		const adoClient = makeAdoClient({ queryByWiql: vi.fn().mockResolvedValue([]) });
 		await createTestCaseService(adoClient, PROJECT).list();
 		const wiql = vi.mocked(adoClient.queryByWiql).mock.lastCall?.[0] ?? "";
-		expect(wiql).toContain("TestVault.TestCase");
+		expect(wiql).toContain("TestVault Test Case");
 	});
 
 	it("filters by areaPath when provided", async () => {

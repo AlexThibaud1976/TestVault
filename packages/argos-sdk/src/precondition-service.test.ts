@@ -164,7 +164,7 @@ describe("list", () => {
 		const adoClient = makeAdoClient({ queryByWiql: vi.fn().mockResolvedValue([]) });
 		await createPreconditionService(adoClient, PROJECT).list();
 		const wiql = vi.mocked(adoClient.queryByWiql).mock.lastCall?.[0] ?? "";
-		expect(wiql).toContain("TestVault.Precondition");
+		expect(wiql).toContain("TestVault Precondition");
 	});
 
 	it("fetches each returned ID", async () => {

@@ -167,8 +167,11 @@ describe("listSnapshots", () => {
 		const service = createTestCaseVersionService(adoClient);
 		await service.listSnapshots(42);
 		const wiql = vi.mocked(adoClient.queryByWiql).mock.lastCall?.[0] ?? "";
-		expect(wiql).toContain("TestVault.TestCaseVersion");
+		expect(wiql).toContain("TestVault Test Case Version");
 		expect(wiql).toContain("42");
+		// TECH-DEBT-070: must use the ADO-translated field ref, not the schema ref
+		expect(wiql).toContain("Custom.TestVaultParentTestCaseId");
+		expect(wiql).not.toContain("[TestVault.ParentTestCaseId]");
 	});
 
 	it("returns snapshots with name and immutable=true", async () => {
