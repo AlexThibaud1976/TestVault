@@ -1,4 +1,5 @@
 import type { AutomationStatus, TestVaultTestCase } from "@atconseil/argos-types";
+import { schemaFromAdoStateName } from "@atconseil/argos-wit-schema";
 import type { IAdoClient, RawWorkItem, WorkItemFieldPatch } from "./ado-client.js";
 
 export type TestCaseDraft = {
@@ -68,7 +69,7 @@ function fromRaw(wi: RawWorkItem): TestVaultTestCase {
 		id: wi.id,
 		title: f["System.Title"] as string,
 		description: (f["System.Description"] as string | undefined) ?? "",
-		state: f["System.State"] as TestVaultTestCase["state"],
+		state: schemaFromAdoStateName(f["System.State"] as string) as TestVaultTestCase["state"],
 		areaPath: f["System.AreaPath"] as string,
 		iterationPath: (f["System.IterationPath"] as string | undefined) ?? "",
 		tags,

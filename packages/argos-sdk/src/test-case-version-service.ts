@@ -1,5 +1,5 @@
 import type { TestVaultTestCase } from "@atconseil/argos-types";
-import { schemaToAdoFieldRefName } from "@atconseil/argos-wit-schema";
+import { schemaToAdoFieldRefName, schemaToAdoStateName } from "@atconseil/argos-wit-schema";
 import { AdoForbiddenError } from "./ado-client.js";
 import type { IAdoClient, RawWorkItem, WorkItemFieldPatch } from "./ado-client.js";
 
@@ -79,7 +79,7 @@ export function createTestCaseVersionService(adoClient: IAdoClient): ITestCaseVe
 			}
 
 			const patches: WorkItemFieldPatch[] = [
-				{ op: "add", path: "/fields/System.State", value: "Frozen" },
+				{ op: "add", path: "/fields/System.State", value: schemaToAdoStateName("Frozen") },
 				{ op: "add", path: "/fields/TestVault.ParentTestCaseId", value: testCase.id },
 				{ op: "add", path: "/fields/TestVault.SnapshotName", value: draft.name },
 				{
