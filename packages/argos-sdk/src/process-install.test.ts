@@ -1,3 +1,4 @@
+import { TESTVAULT_SCHEMA } from "@atconseil/argos-wit-schema";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
@@ -8,7 +9,6 @@ import {
 	ProcessPermissionError,
 	createProcessInstallService,
 } from "./process-install.js";
-import { TESTVAULT_SCHEMA } from "@atconseil/argos-wit-schema";
 import { schemaToAdoFieldName, schemaToAdoFieldRefName } from "./wit-refname-matcher.js";
 
 const ORG_URL = "https://dev.azure.com/testorg";
@@ -1032,7 +1032,12 @@ describe("upgradeSchema", () => {
 			// States
 			http.get(upgradeStatesRegex, () =>
 				HttpResponse.json({
-					value: existingStates.map((n) => ({ id: "s1", name: n, color: "007acc", stateCategory: "InProgress" })),
+					value: existingStates.map((n) => ({
+						id: "s1",
+						name: n,
+						color: "007acc",
+						stateCategory: "InProgress",
+					})),
 				})
 			),
 			http.post(upgradeStatesRegex, () => HttpResponse.json({}, { status: 201 })),
@@ -1117,7 +1122,7 @@ describe("upgradeSchema", () => {
 		const result = await makeService().upgradeSchema({ processId: UPGRADE_PROC });
 		expect(patchBody).not.toBeNull();
 		if (patchBody) {
-			const desc = JSON.parse((patchBody["description"] as string) ?? "{}") as {
+			const desc = JSON.parse((patchBody.description as string) ?? "{}") as {
 				"testvault-schema": string;
 			};
 			expect(desc["testvault-schema"]).toBe("1.1.0");

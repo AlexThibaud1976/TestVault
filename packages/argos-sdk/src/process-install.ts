@@ -750,9 +750,7 @@ export function createProcessInstallService(
 
 			// 2. Fetch org-level fields once for the whole upgrade (pre-flight reuse)
 			emit({ phase: "creating-wits", message: "[UPGRADE] Fetching org-level fields..." });
-			const orgFieldsRes = await doFetch(
-				`${orgUrl}/_apis/wit/fields?api-version=${API_VERSION}`
-			);
+			const orgFieldsRes = await doFetch(`${orgUrl}/_apis/wit/fields?api-version=${API_VERSION}`);
 			const orgFieldsData = await jsonOrThrow<{
 				value: Array<{ referenceName: string; type: string }>;
 			}>(orgFieldsRes);
@@ -861,16 +859,13 @@ export function createProcessInstallService(
 			}
 
 			// 5. Update the schema version marker in the process description
-			const markerRes = await doFetch(
-				`${base}/${processId}?api-version=${API_VERSION}`,
-				{
-					method: "PATCH",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						description: JSON.stringify({ "testvault-schema": TESTVAULT_SCHEMA.version }),
-					}),
-				}
-			);
+			const markerRes = await doFetch(`${base}/${processId}?api-version=${API_VERSION}`, {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					description: JSON.stringify({ "testvault-schema": TESTVAULT_SCHEMA.version }),
+				}),
+			});
 			await throwForStatus(markerRes);
 
 			return { processId, fieldsAdded, statesAdded, markerUpdated: true };
