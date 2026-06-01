@@ -110,3 +110,73 @@ describe("InstallWizard", () => {
 		await waitFor(() => expect(onInstalled).toHaveBeenCalledWith("new-guid"));
 	});
 });
+
+// ─── InstallWizard -- needs-upgrade (Runner 0.6.0 B4) ────────────────────────
+
+describe("InstallWizard -- needs-upgrade (Runner 0.6.0)", () => {
+	it("shows needs-upgrade screen (not already-installed) when state is needs-upgrade", async () => {
+		const service = makeService({
+			detectInstallState: vi.fn().mockResolvedValue({
+				status: "needs-upgrade",
+				processId: "tv-guid",
+				processName: "TestVault - Agile",
+				schemaVersion: "1.0.0",
+				expectedVersion: "1.1.0",
+			}),
+		});
+		render(<InstallWizard service={service} />);
+		await waitFor(() => expect(screen.getByTestId("needs-upgrade-screen")).toBeDefined());
+		expect(screen.queryByTestId("already-installed-screen")).toBeNull();
+	});
+
+	it("shows installed and expected versions on needs-upgrade screen", async () => {
+		const service = makeService({
+			detectInstallState: vi.fn().mockResolvedValue({
+				status: "needs-upgrade",
+				processId: "tv-guid",
+				processName: "TestVault - Agile",
+				schemaVersion: "1.0.0",
+				expectedVersion: "1.1.0",
+			}),
+		});
+		render(<InstallWizard service={service} />);
+		await waitFor(() => expect(screen.getByTestId("needs-upgrade-screen")).toBeDefined());
+		expect(screen.getByTestId("needs-upgrade-screen").textContent).toMatch(/1\.0\.0/);
+		expect(screen.getByTestId("needs-upgrade-screen").textContent).toMatch(/1\.1\.0/);
+	});
+
+	it("calls upgradeSchema and shows upgrade-done screen on Upgrade Now", async () => {
+		const service = makeService({
+			detectInstallState: vi.fn().mockResolvedValue({
+				status: "needs-upgrade",
+				processId: "tv-guid",
+				processName: "TestVault - Agile",
+				schemaVersion: "1.0.0",
+				expectedVersion: "1.1.0",
+			}),
+		});
+		const user = userEvent.setup();
+		render(<InstallWizard service={service} />);
+		await waitFor(() => expect(screen.getByTestId("needs-upgrade-screen")).toBeDefined());
+		await user.click(screen.getByTestId("upgrade-now-button"));
+		await waitFor(() => expect(vi.mocked(service.upgradeSchema)).toHaveBeenCalledWith({ processId: "tv-guid" }));
+		await waitFor(() => expect(screen.getByTestId("upgrade-done-screen")).toBeDefined());
+	});
+
+	it("shows already-installed screen when Skip is clicked", async () => {
+		const service = makeService({
+			detectInstallState: vi.fn().mockResolvedValue({
+				status: "needs-upgrade",
+				processId: "tv-guid",
+				processName: "TestVault - Agile",
+				schemaVersion: "1.0.0",
+				expectedVersion: "1.1.0",
+			}),
+		});
+		const user = userEvent.setup();
+		render(<InstallWizard service={service} />);
+		await waitFor(() => expect(screen.getByTestId("needs-upgrade-screen")).toBeDefined());
+		await user.click(screen.getByTestId("upgrade-skip-button"));
+		await waitFor(() => expect(screen.getByTestId("already-installed-screen")).toBeDefined());
+	});
+});
