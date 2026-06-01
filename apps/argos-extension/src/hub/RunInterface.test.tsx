@@ -224,7 +224,9 @@ describe("RunInterface", () => {
 		await user.click(screen.getByTestId("step-0-status-pass"));
 		await user.click(screen.getByTestId("step-1-status-pass"));
 		await user.click(screen.getByTestId("save-button"));
-		await waitFor(() => expect(vi.mocked(execService.finalizeRun)).toHaveBeenCalledWith(99, undefined));
+		await waitFor(() =>
+			expect(vi.mocked(execService.finalizeRun)).toHaveBeenCalledWith(99, undefined)
+		);
 		expect(vi.mocked(execService.startRun)).toHaveBeenCalledWith(
 			expect.objectContaining({ testPlanId: 10, testCaseId: 42, environment: "QA" })
 		);
@@ -245,7 +247,9 @@ describe("RunInterface", () => {
 		await user.selectOptions(screen.getByTestId("env-selector"), "QA");
 		await user.click(screen.getByTestId("step-0-status-pass")); // only step 0 marked
 		await user.click(screen.getByTestId("save-button"));
-		await waitFor(() => expect(vi.mocked(execService.finalizeRun)).toHaveBeenCalledWith(99, undefined));
+		await waitFor(() =>
+			expect(vi.mocked(execService.finalizeRun)).toHaveBeenCalledWith(99, undefined)
+		);
 		expect(vi.mocked(execService.saveStepResult)).toHaveBeenCalledTimes(1);
 	});
 

@@ -115,8 +115,8 @@ export function RunInterface({
 	function setStepDefectIds(index: number, raw: string) {
 		const ids = raw
 			.split(",")
-			.map((s) => parseInt(s.trim(), 10))
-			.filter((n) => !isNaN(n));
+			.map((s) => Number.parseInt(s.trim(), 10))
+			.filter((n) => !Number.isNaN(n));
 		setStepStates((prev) => ({
 			...prev,
 			[index]: {
@@ -302,7 +302,8 @@ export function RunInterface({
 				<div data-testid="global-status" style={{ marginBottom: "8px" }}>
 					Global status:{" "}
 					<span data-testid="suggested-global-status">
-						Suggested: {overrideEnabled && globalStatusOverride ? globalStatusOverride : globalStatus}
+						Suggested:{" "}
+						{overrideEnabled && globalStatusOverride ? globalStatusOverride : globalStatus}
 					</span>
 				</div>
 
@@ -316,8 +317,8 @@ export function RunInterface({
 								setOverrideEnabled(e.target.checked);
 								if (!e.target.checked) setGlobalStatusOverride(undefined);
 							}}
-						/>
-						{" "}Override global status
+						/>{" "}
+						Override global status
 					</label>
 					{overrideEnabled && (
 						<select
@@ -327,7 +328,9 @@ export function RunInterface({
 						>
 							<option value="">— select —</option>
 							{(["Pass", "Fail", "Blocked", "Skipped", "Unexecuted"] as GlobalStatus[]).map((s) => (
-								<option key={s} value={s}>{s}</option>
+								<option key={s} value={s}>
+									{s}
+								</option>
 							))}
 						</select>
 					)}
@@ -422,11 +425,7 @@ export function RunInterface({
 
 				<div style={{ display: "flex", gap: "8px" }}>
 					{activeRunId !== null && (
-						<Button
-							data-testid="abort-run-button"
-							appearance="secondary"
-							onClick={handleAbort}
-						>
+						<Button data-testid="abort-run-button" appearance="secondary" onClick={handleAbort}>
 							Abort Run
 						</Button>
 					)}

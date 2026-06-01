@@ -10,7 +10,12 @@ function makeService(overrides?: Partial<IProcessInstallService>): IProcessInsta
 	return {
 		detectInstallState: vi.fn().mockResolvedValue({ status: "not-installed" }),
 		install: vi.fn().mockResolvedValue({ processId: "new-guid", processName: "TestVault - Agile" }),
-		upgradeSchema: vi.fn().mockResolvedValue({ processId: "new-guid", fieldsAdded: 0, statesAdded: 0, markerUpdated: true }),
+		upgradeSchema: vi.fn().mockResolvedValue({
+			processId: "new-guid",
+			fieldsAdded: 0,
+			statesAdded: 0,
+			markerUpdated: true,
+		}),
 		...overrides,
 	};
 }
@@ -159,7 +164,9 @@ describe("InstallWizard -- needs-upgrade (Runner 0.6.0)", () => {
 		render(<InstallWizard service={service} />);
 		await waitFor(() => expect(screen.getByTestId("needs-upgrade-screen")).toBeDefined());
 		await user.click(screen.getByTestId("upgrade-now-button"));
-		await waitFor(() => expect(vi.mocked(service.upgradeSchema)).toHaveBeenCalledWith({ processId: "tv-guid" }));
+		await waitFor(() =>
+			expect(vi.mocked(service.upgradeSchema)).toHaveBeenCalledWith({ processId: "tv-guid" })
+		);
 		await waitFor(() => expect(screen.getByTestId("upgrade-done-screen")).toBeDefined());
 	});
 
