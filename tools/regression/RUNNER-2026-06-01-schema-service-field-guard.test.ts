@@ -5,7 +5,7 @@ import {
 	createTestExecutionService,
 } from "@atconseil/argos-sdk";
 import type { EvidenceRef, TestStepResult } from "@atconseil/argos-types";
-import { TEST_EXECUTION_WIT } from "@atconseil/argos-wit-schema";
+import { TEST_EXECUTION_WIT, schemaToAdoStateName } from "@atconseil/argos-wit-schema";
 import { describe, expect, it } from "vitest";
 
 /**
@@ -108,7 +108,11 @@ describe("RUNNER-2026-06-01-schema-service-field-guard", () => {
 		await svc.abortRun(run2.id);
 
 		const declaredFields = new Set(TEST_EXECUTION_WIT.fields.map((f) => f.referenceName));
-		const declaredStates = new Set(TEST_EXECUTION_WIT.states.map((s) => s.name));
+		// Services write ADO-translated state names ("TestVault InProgress") — declare the
+		// translated set so the guard accepts what the service actually emits.
+		const declaredStates = new Set(
+			TEST_EXECUTION_WIT.states.map((s) => schemaToAdoStateName(s.name))
+		);
 
 		const writtenFields = new Set<string>();
 		const writtenStates = new Set<string>();
