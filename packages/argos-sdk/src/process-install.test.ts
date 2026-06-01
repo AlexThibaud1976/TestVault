@@ -993,3 +993,162 @@ describe("Sprint 2.14 -- robust state creation", () => {
 		expect(steps.some((m) => m.includes("[STATE-CREATE]"))).toBe(true);
 	});
 });
+
+// ─── upgradeSchema (Runner 0.6.0 B3) ──────────────────────────────────────────
+
+describe("upgradeSchema", () => {
+	const UPGRADE_PROC = "upgrade-proc-guid";
+	const upgradeWitsUrl = `${BASE}/${UPGRADE_PROC}/workItemTypes`;
+	const upgradeWitFieldsRegex = new RegExp(
+		`${BASE.replace(/\//g, "\\/")}\\/${UPGRADE_PROC}\\/workItemTypes\\/.+\\/fields`
+	);
+	const upgradeStatesRegex = new RegExp(
+		`${BASE.replace(/\//g, "\\/")}\\/${UPGRADE_PROC}\\/workItemTypes\\/.+\\/states`
+	);
+	const upgradeProcUrl = `${BASE.replace(/\//g, "\\/")}\\/${UPGRADE_PROC}`;
+
+	function setupUpgradeBase(existingWitFields: string[] = [], existingStates: string[] = []) {
+		server.use(
+			// WITs present in the process
+			http.get(upgradeWitsUrl, () =>
+				HttpResponse.json({
+					value: ALL_WIT_REFS.map((ref) => ({ referenceName: ref })),
+				})
+			),
+			// Org-level fields (empty by default -> all need creating)
+			http.get(ORG_FIELDS_URL, () => HttpResponse.json({ value: [] })),
+			http.post(ORG_FIELDS_URL, () =>
+				HttpResponse.json({ referenceName: "Custom.TestVaultX" }, { status: 201 })
+			),
+			// WIT-level fields already attached
+			http.get(upgradeWitFieldsRegex, () =>
+				HttpResponse.json({
+					value: existingWitFields.map((ref) => ({ referenceName: ref })),
+				})
+			),
+			// POST attach field to WIT
+			http.post(upgradeWitFieldsRegex, () => HttpResponse.json({}, { status: 200 })),
+			// States
+			http.get(upgradeStatesRegex, () =>
+				HttpResponse.json({
+					value: existingStates.map((n) => ({ id: "s1", name: n, color: "007acc", stateCategory: "InProgress" })),
+				})
+			),
+			http.post(upgradeStatesRegex, () => HttpResponse.json({}, { status: 201 })),
+			// PATCH process description (marker update)
+			http.patch(new RegExp(upgradeProcUrl + "\\?"), () => HttpResponse.json({}))
+		);
+	}
+
+	it("attaches a missing field to an existing WIT", async () => {
+		let attachCount = 0;
+		setupUpgradeBase([], []);
+		server.use(
+			http.post(upgradeWitFieldsRegex, () => {
+				attachCount++;
+				return HttpResponse.json({}, { status: 200 });
+			})
+		);
+		await makeService().upgradeSchema({ processId: UPGRADE_PROC });
+		expect(attachCount).toBeGreaterThan(0);
+	});
+
+	it("skips attaching a field that is already present on the WIT", async () => {
+		let attachCount = 0;
+		// Pre-populate every TestVault.* field as already attached
+		const allFieldRefs = TESTVAULT_SCHEMA.wits
+			.flatMap((w) => w.fields)
+			.filter((f) => f.referenceName.startsWith("TestVault."))
+			.map((f) => {
+				const parts = f.referenceName.split(".");
+				return `Custom.TestVault${parts[1]}`;
+			});
+		setupUpgradeBase(allFieldRefs, []);
+		server.use(
+			http.post(upgradeWitFieldsRegex, () => {
+				attachCount++;
+				return HttpResponse.json({}, { status: 200 });
+			})
+		);
+		await makeService().upgradeSchema({ processId: UPGRADE_PROC });
+		expect(attachCount).toBe(0);
+	});
+
+	it("creates a missing state", async () => {
+		let statePostCount = 0;
+		setupUpgradeBase([], []);
+		server.use(
+			http.post(upgradeStatesRegex, () => {
+				statePostCount++;
+				return HttpResponse.json({}, { status: 201 });
+			})
+		);
+		await makeService().upgradeSchema({ processId: UPGRADE_PROC });
+		expect(statePostCount).toBeGreaterThan(0);
+	});
+
+	it("skips creating a state that already exists", async () => {
+		// Pre-populate ALL translated state names for ALL WITs
+		const allStateNames = TESTVAULT_SCHEMA.wits
+			.flatMap((w) => w.states)
+			.map((s) => `TestVault ${s.name}`);
+		let statePostCount = 0;
+		setupUpgradeBase([], allStateNames);
+		server.use(
+			http.post(upgradeStatesRegex, () => {
+				statePostCount++;
+				return HttpResponse.json({}, { status: 201 });
+			})
+		);
+		await makeService().upgradeSchema({ processId: UPGRADE_PROC });
+		expect(statePostCount).toBe(0);
+	});
+
+	it("updates the schema version marker via PATCH", async () => {
+		let patchBody: Record<string, unknown> | null = null;
+		setupUpgradeBase([], []);
+		server.use(
+			http.patch(new RegExp(upgradeProcUrl + "\\?"), async ({ request }) => {
+				patchBody = (await request.json()) as Record<string, unknown>;
+				return HttpResponse.json({});
+			})
+		);
+		const result = await makeService().upgradeSchema({ processId: UPGRADE_PROC });
+		expect(patchBody).not.toBeNull();
+		const desc = JSON.parse((patchBody?.description as string) ?? "{}") as {
+			"testvault-schema": string;
+		};
+		expect(desc["testvault-schema"]).toBe("1.1.0");
+		expect(result.markerUpdated).toBe(true);
+	});
+
+	it("returns correct fieldsAdded, statesAdded counts", async () => {
+		// Use empty existing fields/states so everything is added
+		setupUpgradeBase([], []);
+		const result = await makeService().upgradeSchema({ processId: UPGRADE_PROC });
+		expect(result.fieldsAdded).toBeGreaterThan(0);
+		expect(result.statesAdded).toBeGreaterThan(0);
+		expect(result.processId).toBe(UPGRADE_PROC);
+	});
+
+	it("does not throw when a WIT is missing from the process", async () => {
+		server.use(
+			// Only one WIT present (TestCase) — all others absent
+			http.get(upgradeWitsUrl, () =>
+				HttpResponse.json({
+					value: [{ referenceName: "MockProcess.TestVaultTestCase" }],
+				})
+			),
+			http.get(ORG_FIELDS_URL, () => HttpResponse.json({ value: [] })),
+			http.post(ORG_FIELDS_URL, () =>
+				HttpResponse.json({ referenceName: "Custom.TestVaultX" }, { status: 201 })
+			),
+			http.get(upgradeWitFieldsRegex, () => HttpResponse.json({ value: [] })),
+			http.post(upgradeWitFieldsRegex, () => HttpResponse.json({}, { status: 200 })),
+			http.get(upgradeStatesRegex, () => HttpResponse.json({ value: [] })),
+			http.post(upgradeStatesRegex, () => HttpResponse.json({}, { status: 201 })),
+			http.patch(new RegExp(upgradeProcUrl + "\\?"), () => HttpResponse.json({}))
+		);
+		await expect(makeService().upgradeSchema({ processId: UPGRADE_PROC })).resolves.toBeDefined();
+	});
+});
