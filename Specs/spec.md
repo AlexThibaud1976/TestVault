@@ -187,7 +187,9 @@ Conséquence : les équipes ADO sérieuses sur la qualité **migrent vers Jira a
 - **Given** je suis User TestVault et un Test Plan m'est assigné, **When** je clique "Run" sur un Test Case du Test Plan, **Then** une interface dédiée s'ouvre montrant : Precondition (si liée), liste des steps avec checkbox de statut individuel (Pass/Fail/Blocked/Skipped), zone de commentaire par step, zone d'evidence par step.
 - **Given** je marque un step en Fail, **When** je sauvegarde la run, **Then** un commentaire est obligatoire (validation UI) ; à défaut, l'enregistrement est refusé.
 - **Given** tous les steps sont en Pass, **Then** le statut global du Test Case dans cette execution est automatiquement Pass. Si au moins un step est Fail, le statut global est Fail. Si au moins un step est Blocked sans aucun Fail, le statut global est Blocked.
+- **Given** des steps ont un statut, **Then** le statut global est SUGGERE par la regle (Fail > Blocked > Skipped > Pass). **When** l'utilisateur choisit explicitement un autre global, **Then** ce global force est enregistre, l'execution porte globalStatusOverridden=true, et la suggestion d'origine reste visible et auditable.
 - **Given** une exécution est terminée, **Then** elle est immutable et un nouvel essai requiert de "Re-run" (qui crée une nouvelle exécution liée à la précédente).
+- **Given** une execution est en cours (InProgress), **When** je l'abandonne sans la finaliser, **Then** elle passe a l'etat terminal Aborted (fige, sans resultat de test exploitable) ; reprendre le test requiert un nouveau "Run".
 
 **Priorité :** 🔴 Haute
 
@@ -214,6 +216,40 @@ Conséquence : les équipes ADO sérieuses sur la qualité **migrent vers Jira a
 - **Given** je consulte un historique d'exécutions d'un Test Case, **Then** je peux filtrer par Environment et voir les statuts par environment côte à côte.
 
 **Priorité :** 🔴 Haute
+
+#### US-2.4 : Lier des defects (bugs) par step et au niveau run
+
+**En tant que** Mathieu, **je veux** lier des bugs ADO a un step precis ou a l'execution entiere **afin de** tracer ou un defaut a ete observe.
+
+**Criteres d'acceptation :**
+
+- **Given** je suis sur un step, **When** je clique "+ Defect", **Then** je lie un Work Item bug a CE step (stepResults[].defectIds).
+- **Given** je suis au niveau run, **When** je clique "+ Bug", **Then** je lie un bug a l'execution (bugLinks au niveau run).
+- Les liens defect sont des relations ADO natives (ils ne mutent pas l'immutabilite d'un run finalise -- ce sont des liens, pas des champs figes du WI).
+
+**Priorite :** Haute
+
+#### US-2.5 : Saisir un Actual Result par step
+
+**En tant que** Mathieu, **je veux** saisir un resultat observe (Actual Result) sur chaque step **afin de** documenter ce qui s'est reellement produit, distinctement d'un commentaire libre.
+
+**Criteres d'acceptation :**
+
+- **Given** un step, **When** je saisis un "Actual Result", **Then** il est persiste distinctement du commentaire libre (stepResults[].actualResult).
+
+**Priorite :** Haute
+
+#### US-2.6 : Historique des runs et detection de flaky
+
+**En tant que** Aicha, **je veux** consulter l'historique des executions d'un Test Case et reperer les tests instables (flaky) **afin de** distinguer une vraie regression d'un test non fiable.
+
+**Criteres d'acceptation :**
+
+- **Given** un Test Case execute plusieurs fois, **When** j'ouvre sa vue historique, **Then** je vois la liste des runs (date, environment, global, executedBy) triee par date desc.
+- **Given** un re-run, **Then** la nouvelle execution porte previousExecutionId vers la run d'origine.
+- **Regle FLAKY :** un Test Case est signale flaky si, sur ses 5 dernieres executions au MEME environment et avec le MEME testCaseVersionId, la sous-sequence des runs Pass/Fail presente au moins une alternance Pass<->Fail. Les runs Blocked / Skipped / Unexecuted, ainsi que les runs en etat Aborted (abandonnes sans resultat), sont ignores dans le calcul d'alternance. Un echec apres changement de version (testCaseVersionId different) n'est PAS du flake (c'est une regression legitime).
+
+**Priorite :** Haute
 
 ---
 
@@ -901,20 +937,24 @@ interface TestVaultTestExecution {
   executedBy: string;
   executedAt: string;
   durationSeconds?: number;
-  bugLinks: number[]; // Work Item IDs des bugs créés
-  source: 'Manual' | 'CI' | 'Webhook';
+  bugLinks: number[]; // Work Item IDs des bugs lies au niveau run
+  globalStatusOverridden: boolean; // true si l'utilisateur a force un global != suggestion
+  previousExecutionId?: number; // run d'origine si cette execution est un re-run
+  source: 'Manual' | 'CI';
   ciMetadata?: {
     pipelineRunId: string;
     pipelineUrl: string;
     rawPayloadHash: string;
   };
-  immutable: true; // une exécution sauvegardée n'est jamais modifiée
+  immutable: true; // figee une fois en etat Completed (gel a finalisation) ; mutable tant que InProgress
 }
 
 interface TestStepResult {
   stepIndex: number;
-  status: 'Pass' | 'Fail' | 'Blocked' | 'Skipped';
+  status: 'Unexecuted' | 'Pass' | 'Fail' | 'Blocked' | 'Skipped';
   comment?: string;
+  actualResult?: string; // resultat observe, persiste distinctement du commentaire libre
+  defectIds: number[]; // Work Item IDs des bugs lies a CE step
   evidenceIds: string[]; // refs vers les attachments
 }
 
@@ -924,6 +964,8 @@ interface EvidenceRef {
   contentType: string;
   sizeBytes: number;
   uploadedAt: string;
+  stepIndex?: number; // step auquel l'evidence est rattachee (absent = niveau run)
+  url?: string; // URL de telechargement resolue cote client
 }
 
 interface TestVaultAuditLog {
