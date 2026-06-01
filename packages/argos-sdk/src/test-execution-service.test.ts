@@ -278,6 +278,171 @@ describe("linkBug", () => {
 	});
 });
 
+// ─── abortRun (Runner 0.6.0 B2) ───────────────────────────────────────────────
+
+describe("abortRun", () => {
+	it("transitions an InProgress execution to Aborted", async () => {
+		const aborted = rawExecution({ "System.State": "Aborted" });
+		const adoClient = makeAdoClient({
+			fetchWorkItem: vi.fn().mockResolvedValue(rawExecution()),
+			updateWorkItem: vi.fn().mockResolvedValue(aborted),
+		});
+		await createTestExecutionService(adoClient, PROJECT).abortRun(99);
+		const patches = vi.mocked(adoClient.updateWorkItem).mock.lastCall?.[1] ?? [];
+		expect(patches).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ path: "/fields/System.State", value: "Aborted" }),
+			])
+		);
+	});
+
+	it("throws when the execution is already Completed", async () => {
+		const adoClient = makeAdoClient({
+			fetchWorkItem: vi.fn().mockResolvedValue(rawCompleted()),
+		});
+		await expect(createTestExecutionService(adoClient, PROJECT).abortRun(99)).rejects.toThrow(
+			TestExecutionImmutableError
+		);
+	});
+
+	it("throws when the execution is already Aborted", async () => {
+		const adoClient = makeAdoClient({
+			fetchWorkItem: vi.fn().mockResolvedValue(rawExecution({ "System.State": "Aborted" })),
+		});
+		await expect(createTestExecutionService(adoClient, PROJECT).abortRun(99)).rejects.toThrow(
+			TestExecutionImmutableError
+		);
+	});
+});
+
+// ─── finalizeRun override (Runner 0.6.0 B2) ───────────────────────────────────
+
+describe("finalizeRun override", () => {
+	it("without override writes computed status and GlobalStatusOverridden=false", async () => {
+		const inProgress = rawExecution({
+			"TestVault.StepResults": JSON.stringify([
+				{ stepIndex: 0, status: "Fail", comment: "", evidenceIds: [] },
+			]),
+		});
+		const adoClient = makeAdoClient({
+			fetchWorkItem: vi.fn().mockResolvedValue(inProgress),
+			updateWorkItem: vi.fn().mockResolvedValue(rawCompleted({ "TestVault.GlobalStatus": "Fail" })),
+		});
+		await createTestExecutionService(adoClient, PROJECT).finalizeRun(99);
+		const patches = vi.mocked(adoClient.updateWorkItem).mock.lastCall?.[1] ?? [];
+		expect(patches).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ path: "/fields/TestVault.GlobalStatus", value: "Fail" }),
+				expect.objectContaining({
+					path: "/fields/TestVault.GlobalStatusOverridden",
+					value: false,
+				}),
+			])
+		);
+	});
+
+	it("with override forces the status, sets GlobalStatusOverridden=true, keeps suggestion recomputable", async () => {
+		const steps = [{ stepIndex: 0, status: "Fail", comment: "", evidenceIds: [] }];
+		const inProgress = rawExecution({ "TestVault.StepResults": JSON.stringify(steps) });
+		const adoClient = makeAdoClient({
+			fetchWorkItem: vi.fn().mockResolvedValue(inProgress),
+			updateWorkItem: vi
+				.fn()
+				.mockResolvedValue(
+					rawCompleted({
+						"TestVault.GlobalStatus": "Pass",
+						"TestVault.GlobalStatusOverridden": true,
+					})
+				),
+		});
+		const exec = await createTestExecutionService(adoClient, PROJECT).finalizeRun(99, "Pass");
+		const patches = vi.mocked(adoClient.updateWorkItem).mock.lastCall?.[1] ?? [];
+		expect(patches).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ path: "/fields/TestVault.GlobalStatus", value: "Pass" }),
+				expect.objectContaining({
+					path: "/fields/TestVault.GlobalStatusOverridden",
+					value: true,
+				}),
+			])
+		);
+		expect(exec.globalStatus).toBe("Pass");
+		expect(exec.globalStatusOverridden).toBe(true);
+		// The original suggestion stays auditable: recomputable from the persisted steps.
+		expect(computeGlobalStatus(steps)).toBe("Fail");
+	});
+});
+
+// ─── startRun previousExecutionId + override init (Runner 0.6.0 B2) ────────────
+
+describe("startRun previousExecutionId", () => {
+	it("writes PreviousExecutionId and initializes GlobalStatusOverridden=false", async () => {
+		const adoClient = makeAdoClient({
+			createWorkItem: vi
+				.fn()
+				.mockResolvedValue(rawExecution({ "TestVault.PreviousExecutionId": 42 })),
+		});
+		await createTestExecutionService(adoClient, PROJECT).startRun({
+			testPlanId: 10,
+			testCaseId: 5,
+			environment: "QA",
+			previousExecutionId: 42,
+		});
+		const patches = vi.mocked(adoClient.createWorkItem).mock.lastCall?.[1] ?? [];
+		expect(patches).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ path: "/fields/TestVault.PreviousExecutionId", value: 42 }),
+				expect.objectContaining({
+					path: "/fields/TestVault.GlobalStatusOverridden",
+					value: false,
+				}),
+			])
+		);
+	});
+
+	it("omits PreviousExecutionId patch when not provided", async () => {
+		const adoClient = makeAdoClient({
+			createWorkItem: vi.fn().mockResolvedValue(rawExecution()),
+		});
+		await createTestExecutionService(adoClient, PROJECT).startRun({
+			testPlanId: 10,
+			testCaseId: 5,
+			environment: "QA",
+		});
+		const patches = vi.mocked(adoClient.createWorkItem).mock.lastCall?.[1] ?? [];
+		expect(patches.find((p) => p.path === "/fields/TestVault.PreviousExecutionId")).toBeUndefined();
+	});
+});
+
+// ─── saveStepResult enrichment (Runner 0.6.0 B2) ──────────────────────────────
+
+describe("saveStepResult enrichment", () => {
+	it("round-trips actualResult and defectIds through the StepResults JSON", async () => {
+		let writtenJson = "";
+		const adoClient = makeAdoClient({
+			fetchWorkItem: vi.fn().mockResolvedValue(rawExecution()),
+			updateWorkItem: vi.fn().mockImplementation((_id, patches) => {
+				writtenJson = (patches as Array<{ path: string; value: unknown }>).find(
+					(p) => p.path === "/fields/TestVault.StepResults"
+				)?.value as string;
+				return Promise.resolve(rawExecution({ "TestVault.StepResults": writtenJson }));
+			}),
+		});
+		const run = await createTestExecutionService(adoClient, PROJECT).saveStepResult(99, {
+			stepIndex: 0,
+			status: "Fail",
+			actualResult: "Got 500 instead of 200",
+			defectIds: [7],
+			evidenceIds: [],
+		});
+		const parsed = JSON.parse(writtenJson) as Array<Record<string, unknown>>;
+		expect(parsed[0]?.actualResult).toBe("Got 500 instead of 200");
+		expect(parsed[0]?.defectIds).toEqual([7]);
+		expect(run.stepResults[0]?.actualResult).toBe("Got 500 instead of 200");
+		expect(run.stepResults[0]?.defectIds).toEqual([7]);
+	});
+});
+
 // ─── globalStatus derivation ──────────────────────────────────────────────────
 
 describe("globalStatus derivation (via finalizeRun)", () => {
