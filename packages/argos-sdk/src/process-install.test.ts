@@ -65,7 +65,7 @@ describe("detectInstallState", () => {
 		expect(state.status).toBe("not-installed");
 	});
 
-	it("returns installed when all 7 WITs are present", async () => {
+	it("returns installed when all 7 WITs are present and version is current", async () => {
 		server.use(
 			http.get(BASE, () =>
 				HttpResponse.json({
@@ -73,7 +73,7 @@ describe("detectInstallState", () => {
 						{
 							typeId: "tv-guid",
 							name: "TestVault - Agile",
-							description: '{"testvault-schema":"1.0.0"}',
+							description: '{"testvault-schema":"1.1.0"}',
 						},
 					],
 				})
@@ -87,7 +87,7 @@ describe("detectInstallState", () => {
 		if (state.status === "installed") {
 			expect(state.processId).toBe("tv-guid");
 			expect(state.processName).toBe("TestVault - Agile");
-			expect(state.schemaVersion).toBe("1.0.0");
+			expect(state.schemaVersion).toBe("1.1.0");
 		}
 	});
 

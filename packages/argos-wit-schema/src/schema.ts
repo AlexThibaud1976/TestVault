@@ -8,8 +8,8 @@ import { TEST_PLAN_WIT } from "./wits/test-plan.js";
 import { TEST_SET_WIT } from "./wits/test-set.js";
 
 export const TESTVAULT_SCHEMA: TestvaultSchema = {
-	version: "1.0.0",
-	generatedAt: "2026-05-08T00:00:00.000Z",
+	version: "1.1.0",
+	generatedAt: "2026-06-01T00:00:00.000Z",
 	wits: [
 		TEST_CASE_WIT,
 		TEST_PLAN_WIT,

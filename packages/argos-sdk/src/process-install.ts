@@ -67,6 +67,13 @@ export class ProcessInstallError extends Error {
 export type ProcessInstallState =
 	| { status: "not-installed" }
 	| { status: "installed"; processId: string; processName: string; schemaVersion: string }
+	| {
+			status: "needs-upgrade";
+			processId: string;
+			processName: string;
+			schemaVersion: string;
+			expectedVersion: string;
+	  }
 	| { status: "partial"; processId: string; processName: string; missingWitRefs: string[] };
 
 export interface InstallProgressStep {
@@ -317,6 +324,17 @@ export function createProcessInstallService(
 		customizationType?: string;
 	}
 
+	// Returns true if versionA < versionB using semver major.minor.patch integer
+	// comparison. Non-X.Y.Z input returns false (treat as not needing upgrade).
+	function semverLessThan(a: string, b: string): boolean {
+		const parse = (v: string) => v.split(".").map((n) => Number.parseInt(n, 10));
+		const [aMaj = 0, aMin = 0, aPat = 0] = parse(a);
+		const [bMaj = 0, bMin = 0, bPat = 0] = parse(b);
+		if (aMaj !== bMaj) return aMaj < bMaj;
+		if (aMin !== bMin) return aMin < bMin;
+		return aPat < bPat;
+	}
+
 	async function getExistingStates(procId: string, adoWitRefName: string): Promise<AdoState[]> {
 		const url = `${base}/${procId}/workItemTypes/${encodeURIComponent(adoWitRefName)}/states?api-version=${API_VERSION}`;
 		const res = await doFetch(url, { method: "GET" });
@@ -358,6 +376,21 @@ export function createProcessInstallService(
 				.map((schemaWit) => schemaWit.referenceName);
 
 			if (missingWitRefs.length === 0) {
+				// Compare installed schema version against the expected version using
+				// semver major.minor.patch integer comparison. No external dependency —
+				// just parseInt on split("."). Unknown version ("unknown") is treated
+				// as not-needing-upgrade to avoid false alarms.
+				const needsUpgrade =
+					schemaVersion !== "unknown" && semverLessThan(schemaVersion, TESTVAULT_SCHEMA.version);
+				if (needsUpgrade) {
+					return {
+						status: "needs-upgrade",
+						processId: tv.typeId,
+						processName: tv.name,
+						schemaVersion,
+						expectedVersion: TESTVAULT_SCHEMA.version,
+					};
+				}
 				return {
 					status: "installed",
 					processId: tv.typeId,
