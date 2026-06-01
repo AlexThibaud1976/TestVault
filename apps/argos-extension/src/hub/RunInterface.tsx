@@ -6,6 +6,7 @@ import type {
 } from "@atconseil/argos-sdk";
 import { buildBugDraft } from "@atconseil/argos-sdk";
 import type {
+	GlobalStatus,
 	TestVaultPrecondition,
 	TestVaultTestCase,
 	TestVaultTestExecution,
@@ -21,6 +22,7 @@ type StepState = {
 	status: StepStatus | null;
 	comment: string;
 	defectIds: number[];
+	actualResult: string;
 };
 
 export interface RunInterfaceProps {
@@ -69,6 +71,10 @@ export function RunInterface({
 	const [evidenceError, setEvidenceError] = useState<string | undefined>();
 	const [uploading, setUploading] = useState(false);
 	const [showBugForm, setShowBugForm] = useState(false);
+	const [activeRunId, setActiveRunId] = useState<number | null>(null);
+	const [overrideEnabled, setOverrideEnabled] = useState(false);
+	const [globalStatusOverride, setGlobalStatusOverride] = useState<GlobalStatus | undefined>();
+	const [abortedRunId, setAbortedRunId] = useState<number | null>(null);
 
 	function setStepStatus(index: number, status: StepStatus) {
 		setStepStates((prev) => ({
@@ -77,6 +83,7 @@ export function RunInterface({
 				status,
 				comment: prev[index]?.comment ?? "",
 				defectIds: prev[index]?.defectIds ?? [],
+				actualResult: prev[index]?.actualResult ?? "",
 			},
 		}));
 	}
@@ -88,6 +95,35 @@ export function RunInterface({
 				status: prev[index]?.status ?? null,
 				comment,
 				defectIds: prev[index]?.defectIds ?? [],
+				actualResult: prev[index]?.actualResult ?? "",
+			},
+		}));
+	}
+
+	function setStepActualResult(index: number, actualResult: string) {
+		setStepStates((prev) => ({
+			...prev,
+			[index]: {
+				status: prev[index]?.status ?? null,
+				comment: prev[index]?.comment ?? "",
+				defectIds: prev[index]?.defectIds ?? [],
+				actualResult,
+			},
+		}));
+	}
+
+	function setStepDefectIds(index: number, raw: string) {
+		const ids = raw
+			.split(",")
+			.map((s) => parseInt(s.trim(), 10))
+			.filter((n) => !isNaN(n));
+		setStepStates((prev) => ({
+			...prev,
+			[index]: {
+				status: prev[index]?.status ?? null,
+				comment: prev[index]?.comment ?? "",
+				defectIds: ids,
+				actualResult: prev[index]?.actualResult ?? "",
 			},
 		}));
 	}
@@ -121,6 +157,7 @@ export function RunInterface({
 				testCaseId: testCase.id,
 				environment,
 			});
+			setActiveRunId(run.id);
 
 			if (uploadService && pendingFiles.length > 0) {
 				setUploading(true);
@@ -142,12 +179,17 @@ export function RunInterface({
 					stepIndex: step.index,
 					status: state.status,
 					comment: state.comment ?? "",
+					actualResult: state.actualResult?.trim() || undefined,
 					evidenceIds: [],
 					defectIds: state.defectIds ?? [],
 				});
 			}
 
-			const finalized = await executionService.finalizeRun(run.id);
+			const finalized = await executionService.finalizeRun(
+				run.id,
+				overrideEnabled ? globalStatusOverride : undefined
+			);
+			setActiveRunId(null);
 			setSavedExec(finalized);
 			onSaved?.(finalized);
 		} finally {
@@ -155,7 +197,29 @@ export function RunInterface({
 		}
 	}
 
+	async function handleAbort() {
+		if (activeRunId === null) return;
+		try {
+			await executionService.abortRun(activeRunId);
+			setAbortedRunId(activeRunId);
+			setActiveRunId(null);
+		} catch {
+			// ignore
+		}
+	}
+
 	const globalStatus = calcGlobalStatus(stepStates);
+
+	if (abortedRunId !== null) {
+		return (
+			<div data-testid="run-aborted" style={{ padding: "24px" }}>
+				Run aborted.
+				<Button style={{ marginLeft: "16px" }} onClick={() => setAbortedRunId(null)}>
+					Back
+				</Button>
+			</div>
+		);
+	}
 
 	if (savedExec) {
 		return (
@@ -235,8 +299,38 @@ export function RunInterface({
 					)}
 				</div>
 
-				<div data-testid="global-status" style={{ marginBottom: "16px" }}>
-					Global status: {globalStatus}
+				<div data-testid="global-status" style={{ marginBottom: "8px" }}>
+					Global status:{" "}
+					<span data-testid="suggested-global-status">
+						Suggested: {overrideEnabled && globalStatusOverride ? globalStatusOverride : globalStatus}
+					</span>
+				</div>
+
+				<div style={{ marginBottom: "16px", display: "flex", gap: "12px", alignItems: "center" }}>
+					<label>
+						<input
+							type="checkbox"
+							data-testid="override-global-status-checkbox"
+							checked={overrideEnabled}
+							onChange={(e) => {
+								setOverrideEnabled(e.target.checked);
+								if (!e.target.checked) setGlobalStatusOverride(undefined);
+							}}
+						/>
+						{" "}Override global status
+					</label>
+					{overrideEnabled && (
+						<select
+							data-testid="override-global-status-select"
+							value={globalStatusOverride ?? ""}
+							onChange={(e) => setGlobalStatusOverride(e.target.value as GlobalStatus)}
+						>
+							<option value="">— select —</option>
+							{(["Pass", "Fail", "Blocked", "Skipped", "Unexecuted"] as GlobalStatus[]).map((s) => (
+								<option key={s} value={s}>{s}</option>
+							))}
+						</select>
+					)}
 				</div>
 
 				{preconditions && preconditions.length > 0 && (
@@ -305,12 +399,37 @@ export function RunInterface({
 										)}
 									</>
 								)}
+								<input
+									type="text"
+									data-testid={`step-${step.index}-actual-result`}
+									placeholder="Actual result (optional)"
+									value={state?.actualResult ?? ""}
+									onChange={(e) => setStepActualResult(step.index, e.target.value)}
+									style={{ marginTop: "6px", width: "100%", display: "block" }}
+								/>
+								<input
+									type="text"
+									data-testid={`step-${step.index}-defect-ids`}
+									placeholder="Bug IDs (comma-separated, e.g. 42, 53)"
+									value={(state?.defectIds ?? []).join(", ")}
+									onChange={(e) => setStepDefectIds(step.index, e.target.value)}
+									style={{ marginTop: "4px", width: "100%", display: "block" }}
+								/>
 							</div>
 						);
 					})}
 				</div>
 
 				<div style={{ display: "flex", gap: "8px" }}>
+					{activeRunId !== null && (
+						<Button
+							data-testid="abort-run-button"
+							appearance="secondary"
+							onClick={handleAbort}
+						>
+							Abort Run
+						</Button>
+					)}
 					<Button
 						data-testid="save-button"
 						appearance="primary"

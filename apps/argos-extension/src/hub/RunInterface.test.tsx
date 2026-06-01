@@ -8,7 +8,7 @@ import type {
 	TestVaultTestCase,
 	TestVaultTestExecution,
 } from "@atconseil/argos-types";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { RunInterface } from "./RunInterface.js";
@@ -224,7 +224,7 @@ describe("RunInterface", () => {
 		await user.click(screen.getByTestId("step-0-status-pass"));
 		await user.click(screen.getByTestId("step-1-status-pass"));
 		await user.click(screen.getByTestId("save-button"));
-		await waitFor(() => expect(vi.mocked(execService.finalizeRun)).toHaveBeenCalledWith(99));
+		await waitFor(() => expect(vi.mocked(execService.finalizeRun)).toHaveBeenCalledWith(99, undefined));
 		expect(vi.mocked(execService.startRun)).toHaveBeenCalledWith(
 			expect.objectContaining({ testPlanId: 10, testCaseId: 42, environment: "QA" })
 		);
@@ -245,7 +245,7 @@ describe("RunInterface", () => {
 		await user.selectOptions(screen.getByTestId("env-selector"), "QA");
 		await user.click(screen.getByTestId("step-0-status-pass")); // only step 0 marked
 		await user.click(screen.getByTestId("save-button"));
-		await waitFor(() => expect(vi.mocked(execService.finalizeRun)).toHaveBeenCalledWith(99));
+		await waitFor(() => expect(vi.mocked(execService.finalizeRun)).toHaveBeenCalledWith(99, undefined));
 		expect(vi.mocked(execService.saveStepResult)).toHaveBeenCalledTimes(1);
 	});
 
@@ -448,7 +448,8 @@ describe("RunInterface -- new fields (Runner 0.6.0)", () => {
 		);
 		await user.selectOptions(screen.getByTestId("env-selector"), "QA");
 		await user.click(screen.getByTestId("step-0-status-pass"));
-		await user.type(screen.getByTestId("step-0-defect-ids"), "42, 53");
+		// Use fireEvent.change for controlled inputs to set the full value atomically
+		fireEvent.change(screen.getByTestId("step-0-defect-ids"), { target: { value: "42, 53" } });
 		await user.click(screen.getByTestId("save-button"));
 		await waitFor(() => expect(vi.mocked(execService.saveStepResult)).toHaveBeenCalled());
 		const call = vi.mocked(execService.saveStepResult).mock.calls[0]?.[1];
