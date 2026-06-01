@@ -27,7 +27,7 @@ function rawExecution(fieldOverrides?: Record<string, unknown>): RawWorkItem {
 		rev: 1,
 		url: `https://dev.azure.com/org/${PROJECT}/_apis/wit/workitems/99`,
 		fields: {
-			"System.State": "InProgress",
+			"System.State": "TestVault InProgress",
 			"System.CreatedBy": "tester@example.com",
 			"System.CreatedDate": NOW,
 			"TestVault.TestPlanId": 10,
@@ -45,7 +45,7 @@ function rawExecution(fieldOverrides?: Record<string, unknown>): RawWorkItem {
 
 function rawCompleted(fieldOverrides?: Record<string, unknown>): RawWorkItem {
 	return rawExecution({
-		"System.State": "Completed",
+		"System.State": "TestVault Completed",
 		"TestVault.GlobalStatus": "Pass",
 		"TestVault.StepResults": JSON.stringify([
 			{ stepIndex: 0, status: "Pass", comment: "", evidenceIds: [], defectIds: [] },
@@ -57,7 +57,7 @@ function rawCompleted(fieldOverrides?: Record<string, unknown>): RawWorkItem {
 // ─── startRun ─────────────────────────────────────────────────────────────────
 
 describe("startRun", () => {
-	it("creates a TestVault.TestExecution WI with InProgress state", async () => {
+	it("creates a TestVault.TestExecution WI with translated InProgress state + System.Title", async () => {
 		const adoClient = makeAdoClient({
 			createWorkItem: vi.fn().mockResolvedValue(rawExecution()),
 		});
@@ -69,7 +69,8 @@ describe("startRun", () => {
 		expect(vi.mocked(adoClient.createWorkItem)).toHaveBeenCalledWith(
 			"TestVault.TestExecution",
 			expect.arrayContaining([
-				expect.objectContaining({ path: "/fields/System.State", value: "InProgress" }),
+				expect.objectContaining({ path: "/fields/System.State", value: "TestVault InProgress" }),
+				expect.objectContaining({ path: "/fields/System.Title" }),
 				expect.objectContaining({ path: "/fields/TestVault.TestPlanId", value: 10 }),
 				expect.objectContaining({ path: "/fields/TestVault.TestCaseId", value: 5 }),
 				expect.objectContaining({ path: "/fields/TestVault.Environment", value: "QA" }),
@@ -230,7 +231,7 @@ describe("finalizeRun", () => {
 		const patches = vi.mocked(adoClient.updateWorkItem).mock.lastCall?.[1] ?? [];
 		expect(patches).toEqual(
 			expect.arrayContaining([
-				expect.objectContaining({ path: "/fields/System.State", value: "Completed" }),
+				expect.objectContaining({ path: "/fields/System.State", value: "TestVault Completed" }),
 				expect.objectContaining({ path: "/fields/TestVault.GlobalStatus", value: "Pass" }),
 			])
 		);
@@ -284,7 +285,7 @@ describe("linkBug", () => {
 
 describe("abortRun", () => {
 	it("transitions an InProgress execution to Aborted", async () => {
-		const aborted = rawExecution({ "System.State": "Aborted" });
+		const aborted = rawExecution({ "System.State": "TestVault Aborted" });
 		const adoClient = makeAdoClient({
 			fetchWorkItem: vi.fn().mockResolvedValue(rawExecution()),
 			updateWorkItem: vi.fn().mockResolvedValue(aborted),
@@ -293,7 +294,7 @@ describe("abortRun", () => {
 		const patches = vi.mocked(adoClient.updateWorkItem).mock.lastCall?.[1] ?? [];
 		expect(patches).toEqual(
 			expect.arrayContaining([
-				expect.objectContaining({ path: "/fields/System.State", value: "Aborted" }),
+				expect.objectContaining({ path: "/fields/System.State", value: "TestVault Aborted" }),
 			])
 		);
 	});
@@ -309,7 +310,9 @@ describe("abortRun", () => {
 
 	it("throws when the execution is already Aborted", async () => {
 		const adoClient = makeAdoClient({
-			fetchWorkItem: vi.fn().mockResolvedValue(rawExecution({ "System.State": "Aborted" })),
+			fetchWorkItem: vi
+				.fn()
+				.mockResolvedValue(rawExecution({ "System.State": "TestVault Aborted" })),
 		});
 		await expect(createTestExecutionService(adoClient, PROJECT).abortRun(99)).rejects.toThrow(
 			TestExecutionImmutableError
@@ -546,7 +549,7 @@ function rawCompletedWith(id: number, env: string, status: string, date: string)
 		rev: 1,
 		url: `https://dev.azure.com/org/${PROJECT}/_apis/wit/workitems/${id}`,
 		fields: {
-			"System.State": "Completed",
+			"System.State": "TestVault Completed",
 			"System.CreatedBy": "tester@example.com",
 			"System.CreatedDate": date,
 			"TestVault.TestPlanId": 10,

@@ -52,7 +52,7 @@ function rawVersion(id: number, name: string): RawWorkItem {
 		rev: 1,
 		url: `https://dev.azure.com/org/MyProject/_apis/wit/workitems/${id}`,
 		fields: {
-			"System.State": "Frozen",
+			"System.State": "TestVault Frozen",
 			"System.CreatedBy": "alice@example.com",
 			"System.CreatedDate": NOW,
 			"TestVault.ParentTestCaseId": 42,
@@ -89,7 +89,7 @@ describe("createSnapshot", () => {
 		await service.createSnapshot(makeTestCase(), { name: "v1.0", parentTestCaseId: 42 });
 		const patches = vi.mocked(adoClient.createWorkItem).mock.lastCall?.[1] ?? [];
 		const statePatch = patches.find((p) => p.path === "/fields/System.State");
-		expect(statePatch?.value).toBe("Frozen");
+		expect(statePatch?.value).toBe("TestVault Frozen");
 	});
 
 	it("stores the snapshot name and parent TC ID", async () => {

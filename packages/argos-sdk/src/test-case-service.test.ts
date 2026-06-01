@@ -25,7 +25,7 @@ function rawTestCase(fieldOverrides?: Record<string, unknown>): RawWorkItem {
 		fields: {
 			"System.Title": "Login flow",
 			"System.Description": "<p>Test description</p>",
-			"System.State": "Design",
+			"System.State": "TestVault Design",
 			"System.AreaPath": "MyProject\\Auth",
 			"System.IterationPath": "MyProject\\Sprint 1",
 			"System.Tags": "auth; login",
