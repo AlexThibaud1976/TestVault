@@ -1111,22 +1111,19 @@ describe("upgradeSchema", () => {
 	});
 
 	it("updates the schema version marker via PATCH", async () => {
-		let patchBody: Record<string, unknown> | null = null;
+		let patchBody: { description: string } | null = null;
 		setupUpgradeBase([], []);
 		server.use(
 			http.patch(upgradeProcBase, async ({ request }) => {
-				patchBody = (await request.json()) as Record<string, unknown>;
+				patchBody = (await request.json()) as { description: string };
 				return HttpResponse.json({});
 			})
 		);
 		const result = await makeService().upgradeSchema({ processId: UPGRADE_PROC });
 		expect(patchBody).not.toBeNull();
-		if (patchBody) {
-			const desc = JSON.parse((patchBody.description as string) ?? "{}") as {
-				"testvault-schema": string;
-			};
-			expect(desc["testvault-schema"]).toBe("1.1.0");
-		}
+		const body = patchBody as unknown as { description: string };
+		const desc = JSON.parse(body.description ?? "{}") as { "testvault-schema": string };
+		expect(desc["testvault-schema"]).toBe("1.1.0");
 		expect(result.markerUpdated).toBe(true);
 	});
 
