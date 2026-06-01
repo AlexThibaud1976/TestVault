@@ -4,7 +4,6 @@
 	"commit": false,
 	"fixed": [
 		[
-			"argos",
 			"argosTesting",
 			"argos-functions",
 			"docs-site",
