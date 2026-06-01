@@ -6,7 +6,8 @@
 	"scripts": {
 		"build": "node scripts/build.mjs",
 		"dev": "node scripts/build.mjs --watch",
-		"build:vsix": "tfx extension create --manifest-globs vss-extension.json --output-path ../../dist/argos.vsix",
+		"build:vsix": "node scripts/package.mjs",
+		"package": "node scripts/package.mjs",
 		"preview": "node scripts/build-preview.mjs",
 		"preview:watch": "node scripts/build-preview.mjs --watch",
 		"typecheck": "tsc --noEmit",
